@@ -1,0 +1,34 @@
+{
+  "name": "onsen",
+  "version": "1.0.0",
+  "description": "Nuxt.js project",
+  "author": "k",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "precommit": "npm run lint"
+  },
+  "dependencies": {
+    "firebase": "^5.4.2",
+    "lodash": "^4.17.10",
+    "nuxt": "^1.0.0",
+    "quasar": "0.0.18",
+    "v-calendar": "^0.9.7",
+    "vue": "^2.5.17",
+    "vue-style-loader": "^4.1.2",
+    "vuexfire": "^3.0.0-alpha.9"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.2.1",
+    "eslint": "^4.15.0",
+    "eslint-friendly-formatter": "^3.0.0",
+    "eslint-loader": "^1.7.1",
+    "eslint-plugin-vue": "^4.0.0",
+    "onsenui": "^2.10.4",
+    "vue-onsenui": "^2.6.1"
+  }
+}
