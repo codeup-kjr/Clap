@@ -73,6 +73,9 @@ export default {
       this.bindSchedule()
       this.bindTeamU()
     }
+    if(this.$store.state.uid) {
+      this.bindMyRoom()
+    }
 
   },
 
@@ -80,6 +83,7 @@ export default {
     this.unBindTeam()
     this.unBindSchedule()
     this.unBindTeamU()
+    this.unBindMyRoom()
   },
 
   methods: {
@@ -87,9 +91,12 @@ export default {
       bindTeam: 'bindTeam',
       bindSchedule: 'bindSchedule',
       bindTeamU: 'bindTeamU',
+      bindMyRoom: 'bindMyRoom',
+
       unBindTeam: 'unBindTeam',
       unBindSchedule: 'unBindSchedule',
       unBindTeamU: 'unBindTeamU',
+      unBindMyRoom: 'unBindMyRoom',
     }),
 
     onSwipe(index, animationOptions) {

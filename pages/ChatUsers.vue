@@ -4,9 +4,9 @@
        <v-ons-list>
         <v-ons-list-item tappable @click="makeGroup">グループ作成</v-ons-list-item>
         <v-ons-list-header>グループ</v-ons-list-header>
-        <v-ons-list-item v-for="room in rooms" :key="room.id" tappable @click="selectGroup(room.img, room.name)">
-            <img class="list-item__thumbnail" :src="room.img">
-            {{room.name}}
+        <v-ons-list-item v-for="group in groups" :key="group.id" tappable @click="selectGroup(group.img, group.name)">
+            <img class="list-item__thumbnail" :src="group.img">
+            {{group.name}}
         </v-ons-list-item>
         <v-ons-list-header>ユーザー</v-ons-list-header>
         <v-ons-list-item v-for="user in users" :key="user.id" tappable @click="goRoom(user.id, user.name)">
@@ -96,7 +96,31 @@ export default {
   computed: {
 
 
-  }
+  },
+
+  asyncComputed: {//npm installした非同期処理を行えるcomputed
+        async groups() {
+            
+            let groups = []
+            let ids = []
+            const l = this.$store.state.myRoom.length
+
+            for(let i=0; i<l; i++) {
+                await ids.push(this.$store.state.myRoom[i].roomId)
+            }
+
+            await this.$store.dispatch('getGroup', {ids: ids})
+        
+            for(let i=0; i<l; i++) {
+                await groups.push({
+                    id: this.$store.state.groupList[i].id,
+                    name: this.$store.state.groupList[i].name,
+                    img: "http://placekitten.com/g/40/40"
+                })
+            }
+            return groups
+        }
+    }
 };
 </script>
 

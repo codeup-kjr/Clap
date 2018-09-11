@@ -17,6 +17,8 @@ db.settings(settings);
 
  export const state = () => {
     return {
+        myRoom: [],
+        groupList: [],
         usersData: [],
         loginErrMsg: '', //ログイン試行時のエラーメッセージ結果格納用
         schTeamId: '', //チームに参加の時のteamIdによるチーム存在調査結果格納用
@@ -59,6 +61,7 @@ export const teamRef = db.collection('team')
 // export const scheduleRef = teamRef.doc(String(state.teamId)).collection('schedule')
 // export const teamURef = teamRef.doc(String(state.teamId)).collection('users')
 export const userRef = db.collection('users')
+export const roomRef = db.collection('room')
 
 export const mutations = {
 
@@ -106,13 +109,15 @@ export const mutations = {
         state.usersData = data
     },
 
+    setGroupList(state, data) {
+        state.groupList = data
+    },
+
   }
 
 export const actions = {
     bindTeam: firebaseAction(async ({bindFirebaseRef, state}) => {
-        // await console.log(state.teamId)
         await bindFirebaseRef('team', teamRef.doc(String(state.teamId)))
-        // await console.log(state.team)
     }),
 
     bindSchedule: firebaseAction(async ({bindFirebaseRef, state}) => {
@@ -122,6 +127,10 @@ export const actions = {
     bindTeamU: firebaseAction(async ({bindFirebaseRef, state}) => {
         await bindFirebaseRef('teamU', teamRef.doc(String(state.teamId)).collection('users'))
     }),
+
+    bindMyRoom: firebaseAction(async ({bindFirebaseRef, state}) => {
+        await bindFirebaseRef('myRoom', userRef.doc(String(state.uid)).collection('rooms'))
+      }),
 
     unBindTeam: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('team')
@@ -134,6 +143,10 @@ export const actions = {
     unBindTeamU: firebaseAction(async ({unbindFirebaseRef}) => {
       await unbindFirebaseRef('teamU')
     }),
+
+    unBindMyRoom: firebaseAction(async ({unbindFirebaseRef}) => {
+        await unbindFirebaseRef('myRoom')
+      }),
 
 
     teamRegist: firebaseAction(({context, state}, {name, type, event}) => {
@@ -305,5 +318,53 @@ export const actions = {
         }
         //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
         (flg = true ? commit('setUsersData', usersData) : '')
+      }),
+
+    //Applaud.vueにて、学年で絞って表示している状態でも最新の情報を取得したい場合は下記を使用する。
+    // ただし、今の所影響がありそうなのは名前と写真くらいなので、学年で絞るたびに最新化するコストは無駄と考え、stateの全メンバー情報から絞り込む方式をとっている。
+    //   getUserByGrade: firebaseAction(async({context, state, commit}, {ids, grade}) => {
+    //     let flg = false
+    //     let usersData = []
+    //     const l = ids.length
+        
+    //     for(let i=0; i<l; i++) {
+            
+    //      await userRef.where("grade", "==", grade)
+    //                     .get().then(function(querySnapshot) {
+    //         querySnapshot.forEach(function(doc) {
+    //                 if (doc.exists) {
+    //                     flg = true
+    //                     usersData.push(doc.data())
+    //                 } else {
+    //                     console.log("No such document!");
+    //                 }
+    //             })
+    //         }).catch(function(error) {
+    //             console.log("Error getting document:", error);
+    //         });
+    //     }
+    //     //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
+    //     (flg = true ? commit('setUsersData', usersData) : '')
+    //   }),
+
+    getGroup: firebaseAction(async({context, state, commit}, {ids}) => {
+        let flg = false
+        let groups = []
+        const l = ids.length
+        
+        for(let i=0; i<l; i++) {
+         await roomRef.doc(String(ids[i])).get().then(function(doc) {
+                if (doc.exists) {
+                    flg = true
+                    groups.push(doc.data())
+                } else {
+                    console.log("No such document!");
+                }
+            }).catch(function(error) {
+                console.log("Error getting document:", error);
+            });
+        }
+        //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
+        (flg = true ? commit('setGroupList', groups) : '')
       }),
   }

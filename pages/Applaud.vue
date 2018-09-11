@@ -21,50 +21,21 @@
 </template>
 
 <script>
-import AsyncComputed from 'vue-async-computed'
 
 export default {
     data() {
         return {
-            // members: [
-            //     {id: 1, name: '中山雅史', role: '選手', grade: 3},
-            //     {id: 2, name: '中田英寿', role: '選手', grade: 2},
-            //     {id: 3, name: '高原直泰', role: '選手', grade: 1},
-            //     {id: 4, name: 'べロンべロンべロン', role: '選手', grade: 3},
-            //     {id: 5, name: 'ベッカム', role: '選手', grade: 3},
-            //     {id: 6, name: 'オルテガ', role: '選手', grade: 3},
-            //     {id: 7, name: 'リケルメ', role: '選手', grade: 1},
-            // ],
-            // showMembers: [
-            //     {id: 1, name: '中山雅史', role: '選手', grade: 3},
-            //     {id: 2, name: '中田英寿', role: '選手', grade: 2},
-            //     {id: 3, name: '高原直泰', role: '選手', grade: 1},
-            //     {id: 4, name: 'べロンべロンべロン', role: '選手', grade: 3},
-            //     {id: 5, name: 'ベッカム', role: '選手', grade: 3},
-            //     {id: 6, name: 'オルテガ', role: '選手', grade: 3},
-            //     {id: 7, name: 'リケルメ', role: '選手', grade: 1},
-            // ],
+            gradeNum: null
         }
     },
+
     methods: {
         allSch(grade) {
-
-            let members = []
-            let member = {}
-            const l = this.$store.state.teamU.length
-            for(let i=0; i<l; i++) {
-                const id = this.$store.state.teamU[i].userId
-                member = this.$store.dispatch('getUser', {id: id})
-                console.log(member)
-                members.push({
-                    id: id,
-                    name: ''
-                })
-            }
+            this.gradeNum = null
         },
 
         gradeSch(grade) {
-            this. showMembers = this.members.filter((member)=>{return (member.grade == grade && member.role == '選手')})
+            this.gradeNum = grade
         },
 
         memberClick(member) {
@@ -72,9 +43,17 @@ export default {
         }
     },
 
-    // computed: {
     asyncComputed: {//npm installした非同期処理を行えるcomputed
         async showMembers() {
+            //学年で絞って表示している状態でも最新の情報を取得したい場合は下記をfirestoreを見にいく仕様に修正する。
+            // ただし、今の所影響がありそうなのは名前と写真くらいなので、学年で絞るたびに最新化するコストは無駄と考え、stateの全メンバー情報から絞り込む方式をとっている。
+            if(this.gradeNum != null) {
+                return [...this.$store.state.usersData.filter(user => user.grade == this.gradeNum)]
+            }
+
+        //改善点。orderByがされていない/監督、部長、スタッフを検索できない。
+        //UI上で、roleと学年をselectboxで選択させ、onchangeイベントで絞り込む。
+        //条件分岐としてgradeだけでなく、roleも必要になる。
             let members = []
             let ids = []
             const l = this.$store.state.teamU.length
