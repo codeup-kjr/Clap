@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import AsyncComputed from 'vue-async-computed'
+
 export default {
     data() {
         return {
@@ -70,20 +72,25 @@ export default {
         }
     },
 
-    computed: {
-        showMembers() {
+    // computed: {
+    asyncComputed: {//npm installした非同期処理を行えるcomputed
+        async showMembers() {
             let members = []
+            let ids = []
             const l = this.$store.state.teamU.length
 
             for(let i=0; i<l; i++) {
-                console.log(this.$store.state.teamU[i])
-                const id = this.$store.state.teamU[i].userId
-                this.$store.dispatch('getUser', {id: id})
-                members.push({
-                    id: id,
-                    name: this.$store.state.userData.name,
-                    grade: this.$store.state.userData.grade,
-                    role: this.$store.state.userData.role,
+                await ids.push(this.$store.state.teamU[i].userId)
+            }
+
+            await this.$store.dispatch('getUser', {ids: ids})
+        
+            for(let i=0; i<l; i++) {
+                await members.push({
+                    id: this.$store.state.usersData[i].id,
+                    name: this.$store.state.usersData[i].name,
+                    grade: this.$store.state.usersData[i].grade,
+                    role: this.$store.state.usersData[i].role,
                 })
             }
             return members

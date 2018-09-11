@@ -19,6 +19,7 @@
     "quasar": "0.0.18",
     "v-calendar": "^0.9.7",
     "vue": "^2.5.17",
+    "vue-async-computed": "^3.4.1",
     "vue-style-loader": "^4.1.2",
     "vuexfire": "^3.0.0-alpha.9"
   },

@@ -17,7 +17,7 @@ db.settings(settings);
 
  export const state = () => {
     return {
-        userData: {},
+        usersData: [],
         loginErrMsg: '', //ログイン試行時のエラーメッセージ結果格納用
         schTeamId: '', //チームに参加の時のteamIdによるチーム存在調査結果格納用
         uid: '',//authのuid格納用
@@ -102,8 +102,8 @@ export const mutations = {
         state.loginErrMsg = msg
     },
 
-    setUserData(state, data) {
-        state.userData = data
+    setUsersData(state, data) {
+        state.usersData = data
     },
 
   }
@@ -286,20 +286,24 @@ export const actions = {
         })
       }),
 
-      getUser: firebaseAction(async({context, state, commit}, {id}) => {
+      getUser: firebaseAction(async({context, state, commit}, {ids}) => {
         let flg = false
-        let docData = ''
-        await userRef.doc(String(id)).get().then(function(doc) {
-            if (doc.exists) {
-                flg = true
-                docData = doc.data()
-            } else {
-                console.log("No such document!");
-            }
-        }).catch(function(error) {
-            console.log("Error getting document:", error);
-        });
+        let usersData = []
+        const l = ids.length
+        
+        for(let i=0; i<l; i++) {
+         await userRef.doc(String(ids[i])).get().then(function(doc) {
+                if (doc.exists) {
+                    flg = true
+                    usersData.push(doc.data())
+                } else {
+                    console.log("No such document!");
+                }
+            }).catch(function(error) {
+                console.log("Error getting document:", error);
+            });
+        }
         //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
-        await (flg = true ? commit('setUserData', docData) : '')
+        (flg = true ? commit('setUsersData', usersData) : '')
       }),
   }
