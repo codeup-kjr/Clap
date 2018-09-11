@@ -73,9 +73,10 @@ export default {
     computed: {
         showMembers() {
             let members = []
-            let member = {}
             const l = this.$store.state.teamU.length
+
             for(let i=0; i<l; i++) {
+                console.log(this.$store.state.teamU[i])
                 const id = this.$store.state.teamU[i].userId
                 this.$store.dispatch('getUser', {id: id})
                 members.push({

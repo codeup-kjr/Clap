@@ -267,10 +267,6 @@ export const actions = {
                 commit('push', page)
             }
         })
-        // await (flg = true ? commit('setUid', uid) : '')
-        // await (flg = true ? console.log(uid) : '')
-        // await (flg = true ? dispatch('getTeamByUid') : '')
-        // await dispatch('bindTeam')
     }),
 
     scheduleAdd: firebaseAction(async({context, state}, {id, title, place, sYear, sMonth, sDate, eYear, eMonth, eDate, sTime, eTime, exInfo}) => {
