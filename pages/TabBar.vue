@@ -77,6 +77,8 @@ export default {
       this.bindMyRoom()
     }
 
+    this.bindPlayers()
+
   },
 
   destroyed() {
@@ -92,6 +94,7 @@ export default {
       bindSchedule: 'bindSchedule',
       bindTeamU: 'bindTeamU',
       bindMyRoom: 'bindMyRoom',
+      bindPlayers: 'bindPlayers',
 
       unBindTeam: 'unBindTeam',
       unBindSchedule: 'unBindSchedule',

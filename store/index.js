@@ -17,6 +17,7 @@ db.settings(settings);
 
  export const state = () => {
     return {
+        players: [],
         myRoom: [],
         groupList: [],
         usersData: [],
@@ -116,6 +117,10 @@ export const mutations = {
   }
 
 export const actions = {
+    bindPlayers: firebaseAction(async ({bindFirebaseRef, state}) => {
+        await bindFirebaseRef('players', userRef.where("role", "==", "選手"))
+    }),
+
     bindTeam: firebaseAction(async ({bindFirebaseRef, state}) => {
         await bindFirebaseRef('team', teamRef.doc(String(state.teamId)))
     }),
