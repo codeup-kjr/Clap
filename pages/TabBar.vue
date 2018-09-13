@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import TypeSelect from './TypeSelect'
+import MyPage from './MyPage'
 import Home from './Home'
 import Calendar from './Calendar'
 import Applaud from './Applaud'
@@ -60,7 +60,7 @@ export default {
         {
           // label: 'マイページ',
           icon: 'ion-person',
-          page: TypeSelect,
+          page: MyPage,
           theme: gray
         }
       ]
@@ -75,6 +75,8 @@ export default {
     }
     if(this.$store.state.uid) {
       this.bindMyRoom()
+      //myDataはstore/index.jsのcheckLoginでbindする。
+      // this.bindMyData()
     }
 
     this.bindPlayers()
@@ -86,20 +88,23 @@ export default {
     this.unBindSchedule()
     this.unBindTeamU()
     this.unBindMyRoom()
+    this.unBindMyData()
   },
 
   methods: {
     ...mapActions({
       bindTeam: 'bindTeam',
       bindSchedule: 'bindSchedule',
-      bindTeamU: 'bindTeamU',
+      // bindTeamU: 'bindTeamU',
       bindMyRoom: 'bindMyRoom',
       bindPlayers: 'bindPlayers',
+      bindMyData: 'bindMyData',
 
       unBindTeam: 'unBindTeam',
       unBindSchedule: 'unBindSchedule',
       unBindTeamU: 'unBindTeamU',
       unBindMyRoom: 'unBindMyRoom',
+      unBindMyData: 'unBindMyData',
     }),
 
     onSwipe(index, animationOptions) {

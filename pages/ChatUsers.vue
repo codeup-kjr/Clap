@@ -69,6 +69,10 @@ export default {
     };
   },
 
+  mounted() {
+
+  },
+
   methods: {
       makeGroup() {
           this.$store.commit('push', {extends: ChatMakeGroup, data() {return {type: '作成', right: '保存', groupName: '', checkedMembers: []}}})
@@ -100,25 +104,7 @@ export default {
 
   asyncComputed: {//npm installした非同期処理を行えるcomputed
         async groups() {
-            
-            let groups = []
-            let ids = []
-            const l = this.$store.state.myRoom.length
-
-            for(let i=0; i<l; i++) {
-                await ids.push(this.$store.state.myRoom[i].roomId)
-            }
-
-            await this.$store.dispatch('getGroup', {ids: ids})
-        
-            for(let i=0; i<l; i++) {
-                await groups.push({
-                    id: this.$store.state.groupList[i].id,
-                    name: this.$store.state.groupList[i].name,
-                    img: "http://placekitten.com/g/40/40"
-                })
-            }
-            return groups
+            return this.$store.state.groupList
         }
     }
 };

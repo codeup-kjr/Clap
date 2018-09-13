@@ -17,7 +17,10 @@ db.settings(settings);
 
  export const state = () => {
     return {
-        players: [],
+        myData: {},
+            //チャット検証用
+            players: [],
+            //チャット検証用
         myRoom: [],
         groupList: [],
         usersData: [],
@@ -117,9 +120,11 @@ export const mutations = {
   }
 
 export const actions = {
+    //チャット検証用
     bindPlayers: firebaseAction(async ({bindFirebaseRef, state}) => {
         await bindFirebaseRef('players', userRef.where("role", "==", "選手"))
     }),
+    //チャット検証用
 
     bindTeam: firebaseAction(async ({bindFirebaseRef, state}) => {
         await bindFirebaseRef('team', teamRef.doc(String(state.teamId)))
@@ -137,6 +142,10 @@ export const actions = {
         await bindFirebaseRef('myRoom', userRef.doc(String(state.uid)).collection('rooms'))
       }),
 
+    bindMyData: firebaseAction(async ({bindFirebaseRef, state}) => {
+        await bindFirebaseRef('myData', userRef.doc(String(state.uid)))
+    }),
+
     unBindTeam: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('team')
     }),
@@ -146,12 +155,16 @@ export const actions = {
     }),
   
     unBindTeamU: firebaseAction(async ({unbindFirebaseRef}) => {
-      await unbindFirebaseRef('teamU')
+        await unbindFirebaseRef('teamU')
     }),
 
     unBindMyRoom: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('myRoom')
       }),
+
+    unBindMyData: firebaseAction(async ({unbindFirebaseRef}) => {
+        await unbindFirebaseRef('myData')
+    }),
 
 
     teamRegist: firebaseAction(({context, state}, {name, type, event}) => {
@@ -258,12 +271,15 @@ export const actions = {
     getTeamByUid: firebaseAction(({context, state, commit, dispatch}) => {
         userRef.doc(String(state.uid)).collection('teams').where("regist", "==", true)
             .get().then(function(querySnapshot) {
-                querySnapshot.forEach(function(doc) {
+                querySnapshot.forEach(async function(doc) {
                     if (doc.exists) {
                         commit('setTeamId', doc.data().teamId)
                         dispatch('bindTeam')
                         dispatch('bindSchedule')
-                        dispatch('bindTeamU')
+                        await dispatch('bindTeamU')
+                        dispatch('getUser', {ids: state.teamU})
+                        await dispatch('bindMyRoom')
+                        dispatch('getGroup', {ids: state.myRoom})
                     } else {
                         console.log("No such document!");
                     }
@@ -282,6 +298,7 @@ export const actions = {
                 uid = user.uid
                 commit('setUid', uid)
                 dispatch('getTeamByUid')
+                // dispatch('bindMyData')
                 commit('push', page)
             }
         })
@@ -310,7 +327,8 @@ export const actions = {
         const l = ids.length
         
         for(let i=0; i<l; i++) {
-         await userRef.doc(String(ids[i])).get().then(function(doc) {
+
+         await userRef.doc(String(ids[i].id)).get().then(function(doc) {
                 if (doc.exists) {
                     flg = true
                     usersData.push(doc.data())
@@ -358,7 +376,7 @@ export const actions = {
         const l = ids.length
         
         for(let i=0; i<l; i++) {
-         await roomRef.doc(String(ids[i])).get().then(function(doc) {
+         await roomRef.doc(String(ids[i].roomId)).get().then(function(doc) {
                 if (doc.exists) {
                     flg = true
                     groups.push(doc.data())

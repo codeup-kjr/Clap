@@ -10,7 +10,11 @@
                 <span v-for="grade in 3" :key="grade" @click="gradeSch(grade)">{{grade}}</span>
             </div>
             <div class="menber-list">
-                <div v-for="member in showMembers" :key="member.id" class="member-container" @click="memberClick(member)">
+                <div v-show="gradeNum==null" v-for="member in showMembers" :key="'all'+member.id" class="member-container" @click="memberClick(member)">
+                    <img class="list-item__thumbnail" src="http://placekitten.com/g/40/40">
+                    <p class="member-name">{{member.name}}</p>
+                </div>
+                <div v-show="gradeNum!=null" v-for="member in membersByGrade" :key="member.id" class="member-container" @click="memberClick(member)">
                     <img class="list-item__thumbnail" src="http://placekitten.com/g/40/40">
                     <p class="member-name">{{member.name}}</p>
                 </div>
@@ -25,13 +29,20 @@
 export default {
     data() {
         return {
-            gradeNum: null
+            gradeNum: null,
+            gradeBool: false
+
         }
     },
 
+    mounted() {
+
+    },
+
     methods: {
-        allSch(grade) {
+       allSch() {
             this.gradeNum = null
+            this.$store.dispatch('getUser', {ids: this.$store.state.teamU})
         },
 
         gradeSch(grade) {
@@ -43,36 +54,28 @@ export default {
         }
     },
 
-    asyncComputed: {//npm installした非同期処理を行えるcomputed
-        async showMembers() {
+    computed: {
+        membersByGrade() {
             //学年で絞って表示している状態でも最新の情報を取得したい場合は下記をfirestoreを見にいく仕様に修正する。
             // ただし、今の所影響がありそうなのは名前と写真くらいなので、学年で絞るたびに最新化するコストは無駄と考え、stateの全メンバー情報から絞り込む方式をとっている。
-            if(this.gradeNum != null) {
-                return [...this.$store.state.usersData.filter(user => user.grade == this.gradeNum)]
+            if(this.gradeNum) {
+                return this.$store.state.usersData.filter(user => user.grade == this.gradeNum)
+            } else {
+                return ''
             }
+        }
+    },
+
+    asyncComputed: {//npm installした非同期処理を行えるcomputed
+        async showMembers() {
 
         //改善点。orderByがされていない/監督、部長、スタッフを検索できない。
         //UI上で、roleと学年をselectboxで選択させ、onchangeイベントで絞り込む。
         //条件分岐としてgradeだけでなく、roleも必要になる。
-            let members = []
-            let ids = []
-            const l = this.$store.state.teamU.length
+            // const ids = [...this.$store.state.teamU]
+            // await this.$store.dispatch('getUser', {ids: ids})
 
-            for(let i=0; i<l; i++) {
-                await ids.push(this.$store.state.teamU[i].userId)
-            }
-
-            await this.$store.dispatch('getUser', {ids: ids})
-        
-            for(let i=0; i<l; i++) {
-                await members.push({
-                    id: this.$store.state.usersData[i].id,
-                    name: this.$store.state.usersData[i].name,
-                    grade: this.$store.state.usersData[i].grade,
-                    role: this.$store.state.usersData[i].role,
-                })
-            }
-            return members
+            return this.$store.state.usersData
         }
     }
 }
