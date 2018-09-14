@@ -175,13 +175,12 @@ export default {
         width: 270px;
         height: 96px;
         margin-bottom: 32px;
+        text-align: center;
     }
 
     .name-emp {
         font-size: 1.3rem;
         font-weight: bold;
-        position: relative;
-        left: 24px;
         overflow: auto;
         font-style: italic;
     }

@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import Home from './Home'
 import TabBar from './TabBar'
 import { mapActions } from 'vuex'
 
@@ -93,7 +94,7 @@ export default {
                 return
             }
             if(this.mail.indexOf('@')==-1 || (this.mail.indexOf('.com')==-1 && this.mail.indexOf('.co.jp')==-1)) {
-                this.$ons.notification.alert('メールアドレスを入力ください。', {title:''})
+                this.$ons.notification.alert('メールアドレスを正しく入力ください。', {title:''})
                 return
             }
             if(this.pass == '') {
@@ -131,7 +132,12 @@ export default {
                                                 grade: this.grade
                                 })
             this.$ons.notification.alert({messageHTML:'登録しました。<br>チームIDをマイページで確認して、<br>チームメートに共有しよう！', title:''})
-            this.$store.commit('push', TabBar)
+            // this.$store.commit('push', TabBar)
+            // this.$store.commit('push', Home)
+            for (let i=0; i <= 3; i++) {
+                this.$store.commit('pop')
+            }
+
         },
 
         cancel() {

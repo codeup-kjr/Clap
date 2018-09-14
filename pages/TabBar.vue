@@ -69,12 +69,12 @@ export default {
 
   mounted() {
     if(this.$store.state.teamId) {
-      this.bindTeam()
-      this.bindSchedule()
-      this.bindTeamU()
+      // this.bindTeam()
+      // this.bindSchedule()
+      // this.bindTeamU()
     }
     if(this.$store.state.uid) {
-      this.bindMyRoom()
+        // this.bindMyRoom()
       //myDataはstore/index.jsのcheckLoginでbindする。
       // this.bindMyData()
     }

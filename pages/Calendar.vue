@@ -379,6 +379,7 @@ export default {
       },
 
       addSchedule() {
+        console.log(this.editId)
           if(this.addBText=='編集する') {
             this.isDetail = false
             this.isEdit = true
@@ -390,7 +391,7 @@ export default {
             this.$ons.notification.alert('タイトルを入力ください。', {title:''})
             return
           }
-          if(!this.start) {
+          if(!this.sYear) {
             this.$ons.notification.alert('日付を入力ください。', {title:''})
             return
           }
@@ -406,7 +407,7 @@ export default {
                   id += c[Math.floor(Math.random()*cl)];
               }
           }
-          this.$store.dispatch('scheduleAdd', { id: this.addBText = '登録' ? id : this.editId,
+          this.$store.dispatch('scheduleAdd', { id: this.addBText == '登録' ? id : this.editId,
                                                 title: this.title,
                                                 place: this.place,
                                                 sYear: Number(this.sYear),

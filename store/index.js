@@ -175,7 +175,7 @@ export const actions = {
         })
       }),
 
-    userRegist: firebaseAction(async({context, state, commit}, {name, mail, pass, role, grade}) => {
+    userRegist: firebaseAction(async({context, state, commit, dispatch}, {name, mail, pass, role, grade}) => {
         await firebase.auth().createUserWithEmailAndPassword(mail, pass).catch(function(error) {
             const errorCode = error.code;
             const errorMessage = error.message;
@@ -210,8 +210,10 @@ export const actions = {
         })
 
         await userRef.doc(String(state.uid)).collection('teams').doc(String(state.teamId)).set({
+            teamId: state.teamId,
             regist: true
         })
+
       }),
 
       searchTeamId: firebaseAction(async({context, state, commit}, {teamId}) => {
@@ -273,11 +275,11 @@ export const actions = {
             .get().then(function(querySnapshot) {
                 querySnapshot.forEach(async function(doc) {
                     if (doc.exists) {
-                        commit('setTeamId', doc.data().teamId)
+                        await commit('setTeamId', doc.data().teamId)
                         dispatch('bindTeam')
-                        dispatch('bindSchedule')
+                        await dispatch('bindSchedule')
                         await dispatch('bindTeamU')
-                        dispatch('getUser', {ids: state.teamU})
+                        await dispatch('getUser', {ids: state.teamU})
                         await dispatch('bindMyRoom')
                         dispatch('getGroup', {ids: state.myRoom})
                     } else {
