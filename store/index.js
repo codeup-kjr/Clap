@@ -1,14 +1,15 @@
 import firebase from 'firebase';
 import 'firebase/firestore'
+import 'firebase/storage'
 import { firebaseMutations, firebaseAction } from 'vuexfire'
 
 if (!firebase.apps.length) {
-    firebase.initializeApp(JSON.parse(process.env.FIREBASE_KEY));
+    firebase.initializeApp(JSON.parse(process.env.FIREBASE_KEY))
 }
 
-const db = firebase.firestore();
-const settings = {/* your settings... */ timestampsInSnapshots: true};
-db.settings(settings);
+const db = firebase.firestore()
+const settings = {/* your settings... */ timestampsInSnapshots: true}
+db.settings(settings)
 
 // const teamRef = db.collection('team')
 // teamIdが必要だが、stateのexportの前に定義することはできないので、actions内で定義する。
@@ -17,6 +18,11 @@ db.settings(settings);
 
  export const state = () => {
     return {
+        confirmed: false,
+        sentFlg: false,
+        //エラーメッセージ(未登録メール警告)表示調整のため、初期値をtrueに。
+        emailFlg: true,
+        emailUse: false,
         myData: {},
             //チャット検証用
             players: [],
@@ -117,6 +123,22 @@ export const mutations = {
         state.groupList = data
     },
 
+    setEmailUse(state, bool) {
+        state.emailUse = bool
+    },
+
+    setEmailFlg(state, bool) {
+        state.emailFlg = bool
+    },
+
+    setSentFlg(state, bool) {
+        state.sentFlg = bool
+    },
+
+    setConfirmed(state, bool) {
+        state.confirmed = bool
+    },
+
   }
 
 export const actions = {
@@ -180,40 +202,45 @@ export const actions = {
             const errorCode = error.code;
             const errorMessage = error.message;
             console.log(errorMessage)
+            //メールアドレスが使われているかどうか
+            commit('setEmailUse', true)
           })
+        if(!state.emailUse) {
+            await firebase.auth().signInWithEmailAndPassword(mail, pass).catch(function(error) {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                console.log(errorMessage)
+            });
+            
+            await firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    commit('setUid', user.uid)
+                }
+            });
 
-        await firebase.auth().signInWithEmailAndPassword(mail, pass).catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            console.log(errorMessage)
-          });
-        
-        await firebase.auth().onAuthStateChanged(function(user) {
-            if (user) {
-              commit('setUid', user.uid)
-            }
-          });
+            await teamRef.doc(String(state.teamId)).collection('users').doc(String(state.uid)).set({
+                userId: state.uid,
+                regist: true
+            })
+            
+            await userRef.doc(String(state.uid)).set({
+                id: state.uid,
+                name: name,
+                role: role,
+                grade: Number(grade),
+                clap: 3,
+                email: mail,
+                input_at: firebase.firestore.FieldValue.serverTimestamp(),
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            })
 
-        await teamRef.doc(String(state.teamId)).collection('users').doc(String(state.uid)).set({
-            userId: state.uid,
-            regist: true
-        })
+            await userRef.doc(String(state.uid)).collection('teams').doc(String(state.teamId)).set({
+                teamId: state.teamId,
+                regist: true
+            })
 
-        await userRef.doc(String(state.uid)).set({
-            id: state.uid,
-            name: name,
-            role: role,
-            grade: Number(grade),
-            clap: 3,
-            input_at: firebase.firestore.FieldValue.serverTimestamp(),
-            updated_at: firebase.firestore.FieldValue.serverTimestamp()
-        })
-
-        await userRef.doc(String(state.uid)).collection('teams').doc(String(state.teamId)).set({
-            teamId: state.teamId,
-            regist: true
-        })
-
+            dispatch('getUser', {ids: state.teamU})
+        }
       }),
 
       searchTeamId: firebaseAction(async({context, state, commit}, {teamId}) => {
@@ -230,7 +257,7 @@ export const actions = {
             console.log("Error getting document:", error);
         });
         //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
-        await (flg = true ? commit('setSchTeamId', docData) : '')
+        (flg = true ? commit('setSchTeamId', docData) : '')
       }),
 
       deleteTeam: firebaseAction(async({context, state, commit}, {teamId}) => {
@@ -241,18 +268,18 @@ export const actions = {
         }).catch(function(error) {
             console.error("Error removing document: ", error);
         });
-        await (flg = true ? commit('setTeamId', '') : '')
+        (flg = true ? commit('setTeamId', '') : '')
       }),
 
 
       login: firebaseAction(async({context, state, commit}, {mail, pass}) => {
         //signOut()は、ログアウトと初期表示の調整(ログイン状態ならTabBarへ遷移)が済めば不要なので、削除すること。
-        await firebase.auth().signOut().catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            console.log(errorMessage)
-            return
-          })
+        // await firebase.auth().signOut().catch(function(error) {
+        //     var errorCode = error.code;
+        //     var errorMessage = error.message;
+        //     console.log(errorMessage)
+        //     return
+        //   })
 
         await firebase.auth().signInWithEmailAndPassword(mail, pass).catch(function(error) {
             var errorCode = error.code;
@@ -270,13 +297,25 @@ export const actions = {
           })
     }),
 
+    logout: firebaseAction(async({context, state, commit}) => {
+        await firebase.auth().signOut().catch(function(error) {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            console.log(errorMessage)
+            return
+          })
+        //popにしたかったが、Can not read property 'length' of null エラーが発生するため、location.reload()としている。
+          location.reload()
+
+    }),
+
     getTeamByUid: firebaseAction(({context, state, commit, dispatch}) => {
         userRef.doc(String(state.uid)).collection('teams').where("regist", "==", true)
             .get().then(function(querySnapshot) {
                 querySnapshot.forEach(async function(doc) {
                     if (doc.exists) {
                         await commit('setTeamId', doc.data().teamId)
-                        dispatch('bindTeam')
+                        await dispatch('bindTeam')
                         await dispatch('bindSchedule')
                         await dispatch('bindTeamU')
                         await dispatch('getUser', {ids: state.teamU})
@@ -291,16 +330,16 @@ export const actions = {
         });
     }),
 
-    checkLogin: firebaseAction(async({context, state, commit, dispatch}, {page}) => {
+    checkLogin: firebaseAction(({context, state, commit, dispatch}, {page}) => {
         let uid = ''
         let flg = false
-        await firebase.auth().onAuthStateChanged(function(user) {
+        firebase.auth().onAuthStateChanged(async function(user) {
             if (user) {
                 flg = true
                 uid = user.uid
-                commit('setUid', uid)
-                dispatch('getTeamByUid')
-                // dispatch('bindMyData')
+                await commit('setUid', uid)
+                await dispatch('bindMyData')
+                await dispatch('getTeamByUid')
                 commit('push', page)
             }
         })
@@ -323,7 +362,7 @@ export const actions = {
         })
       }),
 
-      getUser: firebaseAction(async({context, state, commit}, {ids}) => {
+      getUser: firebaseAction(async({context, state, commit, dispatch}, {ids}) => {
         let flg = false
         let usersData = []
         const l = ids.length
@@ -392,4 +431,59 @@ export const actions = {
         //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
         (flg = true ? commit('setGroupList', groups) : '')
       }),
+
+      updateUser: firebaseAction(async ({context, state, commit, dispatch}, {name, role, grade, img}) => {
+        if(img) {
+            let imgSrc = ''
+            const ref = firebase.storage().ref(state.uid)
+            await ref.put(img)
+            await ref.getDownloadURL().then(function(url){imgSrc = url})
+            userRef.doc(String(state.uid)).update({
+                name: name,
+                role: role,
+                grade: Number(grade),
+                image: imgSrc,
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            })
+        } else {
+            userRef.doc(String(state.uid)).update({
+                name: name,
+                role: role,
+                grade: Number(grade),
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            })
+        }
+      }),
+
+      searchEmail: firebaseAction(async ({context, state, commit, dispatch}, {email}) => {
+        //エラーメッセージ(未登録メール警告)表示調整用
+        let flg = false
+        await commit('setSentFlg', false)
+        await userRef.where("email", "==", email).get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+                flg = true
+                commit('setEmailFlg', true)
+                dispatch('sendPasswordReset', {email: email})
+            })
+            }).catch(function(error) {
+                commit('setEmailFlg', false)
+                console.log("Error getting document:", error);
+            });
+            if(!flg) {
+                commit('setEmailFlg', false)
+            }
+            commit('setConfirmed', true)
+      }),
+
+      sendPasswordReset: firebaseAction(({context, commit}, {email}) => {
+        firebase.auth().sendPasswordResetEmail(email).then(function() {
+            commit('setSentFlg', true)
+            console.log('Successfully Sent.')
+          }).catch(function(error) {
+            commit('setSentFlg', false)
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorMessage)
+          })
+        })
   }

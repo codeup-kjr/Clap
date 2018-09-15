@@ -31,8 +31,7 @@ const yerrow = [146, 146, 10];
 export default {
   data () {
     return {
-      shutUp: !this.md,
-      showingTip: false,
+
       colors: blue,
       animationOptions: {},
       topPosition: 0,
@@ -79,32 +78,34 @@ export default {
       // this.bindMyData()
     }
 
-    this.bindPlayers()
+    // this.bindPlayers()
 
   },
 
   destroyed() {
-    this.unBindTeam()
-    this.unBindSchedule()
-    this.unBindTeamU()
-    this.unBindMyRoom()
-    this.unBindMyData()
+  
+    // this.unBindMyRoom()
+    // this.unBindTeam()
+    // this.unBindSchedule()
+    // this.unBindTeamU()
+
+    // this.unBindMyData()
   },
 
   methods: {
     ...mapActions({
-      bindTeam: 'bindTeam',
-      bindSchedule: 'bindSchedule',
+      // bindTeam: 'bindTeam',
+      // bindSchedule: 'bindSchedule',
       // bindTeamU: 'bindTeamU',
-      bindMyRoom: 'bindMyRoom',
-      bindPlayers: 'bindPlayers',
-      bindMyData: 'bindMyData',
+      // bindMyRoom: 'bindMyRoom',
+      // bindPlayers: 'bindPlayers',
+      // bindMyData: 'bindMyData',
 
-      unBindTeam: 'unBindTeam',
-      unBindSchedule: 'unBindSchedule',
-      unBindTeamU: 'unBindTeamU',
-      unBindMyRoom: 'unBindMyRoom',
-      unBindMyData: 'unBindMyData',
+      // unBindTeam: 'unBindTeam',
+      // unBindSchedule: 'unBindSchedule',
+      // unBindTeamU: 'unBindTeamU',
+      // unBindMyRoom: 'unBindMyRoom',
+      // unBindMyData: 'unBindMyData',
     }),
 
     onSwipe(index, animationOptions) {

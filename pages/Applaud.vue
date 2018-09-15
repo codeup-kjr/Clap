@@ -10,7 +10,7 @@
                 <span v-for="grade in 3" :key="grade" @click="gradeSch(grade)">{{grade}}</span>
             </div>
             <div class="menber-list">
-                <div v-show="gradeNum==null" v-for="member in showMembers" :key="'all'+member.id" class="member-container" @click="memberClick(member)">
+                <div v-show="gradeNum==null" v-for="member in $store.state.usersData" :key="'all'+member.id" class="member-container" @click="memberClick(member)">
                     <img class="list-item__thumbnail" src="http://placekitten.com/g/40/40">
                     <p class="member-name">{{member.name}}</p>
                 </div>

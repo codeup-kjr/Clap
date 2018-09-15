@@ -22,10 +22,11 @@
                     ユーザー情報
                 </div>
             </div>
-            <p class="request">ユーザー情報を登録ください。</p>
+            <p v-if="!$store.state.emailUse" class="request">ユーザー情報を登録ください。</p>
+            <p v-else class="error">そのメールアドレスは使われています。</p>
             
             <v-ons-input modifier="material" type="text" placeholder="お名前" v-model="userName" class="input"/>
-            <v-ons-input modifier="material" type="text" placeholder="メールアドレス" v-model="mail" class="input"/>
+            <v-ons-input modifier="material" type="email" placeholder="メールアドレス" v-model="mail" class="input"/>
             <v-ons-input modifier="material" type="text" placeholder="パスワード" v-model="pass" class="input"/>
             <v-ons-input modifier="material" type="text" placeholder="パスワードの確認" v-model="passRe" class="input"/>
 
@@ -71,20 +72,28 @@ export default {
     mounted() {
         Promise.resolve()
             .then( () => this.bindTeam())
+            .then( () => this.bindTeamU())
     },
 
     destroyed() {
         Promise.resolve()
             .then( () => this.unBindTeam())
+            .then( () => this.unBindTeamU())
     },
 
     methods: {
         ...mapActions({
             bindTeam: 'bindTeam',
-            unBindTeam: 'unBindTeam'
+            bindTeamU: 'bindTeamU',
+            unBindTeam: 'unBindTeam',
+            unBindTeamU: 'unBindTeamU'
         }),
 
-        regist() {
+        async regist() {
+            if(this.$store.state.emailUse) {
+                await this.$store.commit('setEmailUse', false)
+            }
+
             if(this.userName == '') {
                 this.$ons.notification.alert('お名前を入力ください。', {title:''})
                 return
@@ -124,18 +133,16 @@ export default {
                 return
             }
             
-            this.$store.dispatch('userRegist', {
+            await this.$store.dispatch('userRegist', {
                                                 name:  this.userName,
                                                 mail:  this.mail,
                                                 pass:  this.pass,
                                                 role:  this.role,
                                                 grade: this.grade
                                 })
-            this.$ons.notification.alert({messageHTML:'登録しました。<br>チームIDをマイページで確認して、<br>チームメートに共有しよう！', title:''})
-            // this.$store.commit('push', TabBar)
-            // this.$store.commit('push', Home)
-            for (let i=0; i <= 3; i++) {
-                this.$store.commit('pop')
+
+            if(!this.$store.state.emailUse) {          
+                this.$ons.notification.alert({messageHTML:'登録しました。<br>チームIDをマイページで確認して、<br>チームメートに共有しよう！', title:''})
             }
 
         },
@@ -248,6 +255,11 @@ export default {
 
     .request {
         margin-bottom: 32px;
+    }
+
+    .error {
+        margin-bottom: 32px;
+        color: #db2e76;
     }
 
     .input {

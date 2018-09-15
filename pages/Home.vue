@@ -6,13 +6,13 @@
       <p class="lead">仲間のいいとこ見つけよう</p>
 
       <div v-html="errMsg" class="err-msg"></div>
-      <v-ons-input modifier="material" type="text" placeholder="メールアドレス" class="input" v-model="mail"/>
+      <v-ons-input modifier="material" type="email" placeholder="メールアドレス" class="input" v-model="mail"/>
 
       <v-ons-input modifier="material" type="password" placeholder="パスワード" class="input" v-model="pass"/>
 
       <v-ons-button class="btn" @click.prevent="login">ログイン</v-ons-button>
 
-      <v-ons-button modifier="quiet" class="forgot-b">パスワードを忘れた方</v-ons-button>
+      <v-ons-button modifier="quiet" class="forgot-b" @click="forgotPass">パスワードを忘れた方</v-ons-button>
 
       <v-ons-button class="btn" @click.prevent="regist">新規登録</v-ons-button>
     </div>
@@ -24,6 +24,7 @@
 import Logo from '../components/Logo'
 import TabBar from './TabBar'
 import TypeSelect from './TypeSelect'
+import PasswordReset from './PasswordReset'
 import Home from './Home'
 import { mapActions } from 'vuex'
 
@@ -41,7 +42,7 @@ export default {
   },
 
   destroyed() {
-    this.unBindTeam()
+
   },
 
 
@@ -49,9 +50,6 @@ export default {
     Logo,
   },
     methods: {
-        ...mapActions({
-          unBindTeam: 'unBindTeam',
-        }),
 
         pushPage(page) {
             this.$emit('push-page', page)
@@ -69,13 +67,16 @@ export default {
               }
               this.pass = ''
           } else {
-              this.$store.commit('push', TabBar)
           }
        
         },
 
         regist() {
           this.$store.commit('push', TypeSelect)
+        },
+
+        forgotPass() {
+          this.$store.commit('push', PasswordReset)
         }
   }
 }

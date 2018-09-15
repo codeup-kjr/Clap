@@ -2,45 +2,67 @@
    <!-- <no-ssr> -->
     <v-ons-page>
       <div class="container">
-            <div class="edit">
-                <v-ons-button modifier="quiet" class="edit-b" @click="editPush">{{edit}}</v-ons-button>
-            </div>
-        <div class="underTB">
             <input type="file" accept="image/*" id="f" @change="changeImg" :style="{display: 'none'}">
             <div class="imgInp">
                 <img class="list-item__thumbnail" :src="upImg" id="upImg" @click="upImage">
-                <input v-if="edit=='保存'" type="text" v-model="userName" placeholder="ユーザー名" class="user-name">
-                <div v-else class="user-name">{{userName}}</div>
-                <div v-if="edit=='保存'" class="user-name">
-                    <v-ons-select modifier="material" v-model="grade" class="grade" v-if="$store.state.team.type!='社会人' && ($store.state.myData.role=='選手' || $store.state.myData.role=='マネジャー')">
-                        <option disabled selected>学年</option>
-                        <option v-for="item in gradeNum" :key="item.id">
-                            {{ item }}
-                        </option>
-                    </v-ons-select>
+                <!-- <img v-else class="list-item__thumbnail" :src="$store.state.myData.image"> -->
+                <div class="name-rg">
+                    <input v-if="edit=='保存する'" type="text" v-model="userName" placeholder="ユーザー名" class="user-name">
+                    <div v-else class="user-name">{{$store.state.myData.name}}</div>
+                    <div class="role-grade">
+                        <v-ons-select v-if="edit=='保存する'" v-model="role" class="role">
+                            <option disabled selected>役割</option>
+                            <option v-for="item in $store.state.role" :key="item.id">
+                                {{ item.text }}
+                            </option>
+                        </v-ons-select>
+                        <div v-else class="role">
+                            {{$store.state.myData.role}}
+                        </div>
+                        <div v-if="edit=='保存する'">
+                            <v-ons-select v-model="grade" class="grade" v-if="$store.state.team.type!='社会人' && (role=='選手' || role=='マネジャー')">
+                                <option disabled selected>学年</option>
+                                <option v-for="item in gradeNum" :key="item.id">
+                                    {{ item }}
+                                </option>
+                            </v-ons-select>
+                        </div>
+                        <div v-else-if="$store.state.team.type!='社会人' && ($store.state.myData.role=='選手' || $store.state.myData.role=='マネジャー')" class="grade">
+                            {{$store.state.myData.grade}}年生
+                        </div>
+                    </div>
                 </div>
-                <div v-else class="grade">{{grade}}年生</div>
             </div>
+            <v-ons-button modifier="quiet" class="edit-b" @click="editPush">{{edit}}</v-ons-button>
+            <v-ons-list class="team-info">
+            <v-ons-list-header>チーム名</v-ons-list-header>
+            <v-ons-list-item>
+                {{$store.state.team.name}}
+            </v-ons-list-item>
+            <v-ons-list-header>チームID</v-ons-list-header>
+            <v-ons-list-item>
+                {{$store.state.teamId}}
+            </v-ons-list-item>
+            </v-ons-list>
+            <v-ons-button modifier="quiet" class="logout-b" @click="logoutPush">ログアウト</v-ons-button>
         </div>
-      </div>
     </v-ons-page>
     <!-- </no-ssr> -->
 </template>
 
 <script>
-
+import Home from './Home'
 export default {
     
     data() {
         return {
-            edit: '編集',
-            // userName: this.$store.state.myData.name,
-            // userName: '',
-            // userName: this.$store.state.usersData.filter(user => user.id == "5KeWBCa4gGdiOVL3CwmleYFQAJE2")[0].name,
+            file: '',
+            edit: '編集する',
+            userName: this.$store.state.myData.name,
+            role: this.$store.state.myData.role,
             grade: this.$store.state.myData.grade,
             androidStyle: {position: 'relative', left: '-4px'},//androidの場合、右に寄ってしまうため、調整。
-            upImg: 'http://placekitten.com/g/40/40',
-            // checkedMembers: ["1", "2"],//ページ遷移の際にextendsで渡す。中の要素は文字列である必要がある。
+            upImg: this.$store.state.myData.image == null ? "http://placekitten.com/g/40/40" : this.$store.state.myData.image,
             addVisible: false,
             users: [
             {id: 1, name: '中山雅史'},
@@ -76,11 +98,6 @@ export default {
             return num
         },
 
-        userName() {
-            // return this.$store.state.usersData.filter(user => user.id == "5KeWBCa4gGdiOVL3CwmleYFQAJE2")[0].name
-            return ''
-        }
-
     },
 
     components: {
@@ -90,39 +107,57 @@ export default {
     methods: {
         editPush() {
             console.log(this.userName)
-            if(this.edit == '編集') {
-                this.edit = '保存'
+            if(this.edit == '編集する') {
+                this.edit = '保存する'
             } else {
                 if(this.userName == '') {
-                    this.$ons.notification.alert('グループ名を入力ください。', {title:''})
+                    this.$ons.notification.alert('ユーザー名を入力ください。', {title:''})
                     return
                 } else {
-
+                    if(this.file) {
+                        this.$store.dispatch('updateUser', {name: this.userName, role: this.role, grade: this.grade, img: this.file})
+                    } else {
+                        this.$store.dispatch('updateUser', {name: this.userName, role: this.role, grade: this.grade})
+                    }
+                    this.$ons.notification.alert('保存しました', {title:''})
+                    this.file = ''
+                    this.edit = '編集する'
                 }
             }
         },
 
         upImage() {
-            if(this.edit == '保存') {
+            if(this.edit == '保存する') {
                 document.getElementById('f').click()
             } 
         },
 
         changeImg() {
-            const imgF = document.getElementById('f').files;
-            const file = imgF[0];
+            const imgF = document.getElementById('f').files
+            // const file = imgF[0]
+            this.file = imgF[0];
             const fr = new FileReader()
             const vm = this
             fr.onload = function() {
                 vm.upImg = fr.result
             }
             
-            fr.readAsDataURL(file)
+            fr.readAsDataURL(this.file)
         },
 
-        addMember() {
-            this.addVisible = true
-        }
+        logoutPush() {
+            const vm = this
+            this.$ons.notification.confirm({messageHTML:'ログアウトします。<br>よろしいですか。',
+                                                title:'',
+                                                callback: function(idx) {
+                                                                if (idx == 0) {
+                                                                    return
+                                                                } else {
+                                                                    vm.$store.dispatch('logout')
+                                                                }
+                                                }})
+        },
+
     }
     
 }
@@ -130,103 +165,70 @@ export default {
 </script>
 
 <style scoped>
-  .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100vw;
-      height: 100vh;
-      background-color: #fdfeff;
-  }
-
-    .tool-b-c {
+    .container {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.1rem;
-        color:#fdfeff;
+        flex-direction: column;
+        width: 100vw;
+        height: 90vh;
+        background-color: #fdfeff;
     }
 
-    .edit-b {
-        font-size: 1rem;
-        padding-right: 12px;
+
+    .name-rg {
+        margin-left: 8px;
+        display: flex;
+        flex-direction: column;
     }
 
     .user-name {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         font-weight: bold;
         border: none;
         width: 40vw;
         overflow: auto;
-    }
-
-    .list-item__thumbnail{
-        margin-right: 12px;
-    }
-
-    .underTB {
-        width: 100vw;
+        height: 32px;
     }
 
     .imgInp {
         display: flex;
         align-items: center;
+        padding-top: 4vh;
+        margin-bottom: 1vh;
     }
 
-    #upImg {
-        /* height: 70px;
-        width: 70px; */
+    .list-item__thumbnail{
         height: 15vh;
         width: 15vh;
         border-radius: 7vh;
-        /* margin: 12px 16px 18px 16px; */
-        margin: 2vh 18px 2.7vh 16px;
+        margin: 0 18px 0 32px;
     }
 
-    .add-b-w {
+    .role-grade {
         display: flex;
-        justify-content: flex-end;
-    }
-    .add-b {
-        margin-right: 24px;
+        font-size: 1rem;
     }
 
-    .add-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .add-header {
-        width: 90vw; 
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #fdfeff;
-        /* padding-bottom: 2px; */
-        border-bottom: dotted 1px #6d6d72;
-    }
- 
-    .add-btns {
-        display: flex;
-        justify-content: space-between;
-        width: 176px;
+    .role {
         margin-right: 8px;
     }
 
-    .add-member-l {
-        overflow: auto;
-        font-size: 0.85rem;
-        width: 90vw;
-        height: 70vh;
+    .team-info{
+        margin-bottom: 32px;
     }
 
-    .member-l {
-        overflow: auto;
-        font-size: 0.85rem;
-        width: 100vw;
-        /* min-height: 54vh; */
-        height: 59vh;
+    .edit-b {
+        display: flex;
+        justify-content: center;
+        font-size: 1rem;
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+    }
+ 
+
+    .logout-b {
+        display: flex;
+        justify-content: center;
+        font-size: 1rem;
+        font-size: 1.2rem;
     }
 </style>
