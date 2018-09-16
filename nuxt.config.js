@@ -36,7 +36,7 @@ module.exports = {
         })
       }
     },
-    vendor: ['onsenui', 'vue-onsenui','firebase']
+    vendor: ['onsenui', 'vue-onsenui','firebase','lodash']
     
   },
 
