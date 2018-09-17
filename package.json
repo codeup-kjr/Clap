@@ -13,10 +13,7 @@
     "precommit": "npm run lint"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@nuxtjs/pwa": "^2.5.0",
-=======
->>>>>>> 8f60b3fddeb91bb639a3ddcff3870985c5aa38a5
     "firebase": "^5.5.0",
     "lodash": "^4.17.10",
     "nuxt": "^1.0.0",
