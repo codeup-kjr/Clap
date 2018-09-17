@@ -25,8 +25,6 @@ import Logo from '../components/Logo'
 import TabBar from './TabBar'
 import TypeSelect from './TypeSelect'
 import PasswordReset from './PasswordReset'
-import Home from './Home'
-import { mapActions } from 'vuex'
 
 export default {
   data() {
@@ -45,17 +43,12 @@ export default {
 
   },
 
-
   components: {
     Logo,
   },
     methods: {
-
-        pushPage(page) {
-            this.$emit('push-page', page)
-        },
-
         async login() {
+          this.errMsg = 'ロード中...'
           await this.$store.dispatch('login', {mail: this.mail, pass: this.pass})
           const loginErrMsg = this.$store.state.loginErrMsg
           if(loginErrMsg) {
@@ -99,7 +92,7 @@ export default {
 
   .lead {
     font-style: italic;
-    /* margin-bottom: 8px; */
+    margin-bottom: 8px;
   }
 
   .err-msg {

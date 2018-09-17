@@ -22,7 +22,7 @@
                     ユーザー情報
                 </div>
             </div>
-            <p v-if="!$store.state.emailUse" class="request">ユーザー情報を登録ください。</p>
+            <p v-if="!$store.state.emailUse" class="request">{{request}}</p>
             <p v-else class="error">そのメールアドレスは使われています。</p>
             
             <v-ons-input modifier="material" type="text" placeholder="お名前" v-model="userName" class="input"/>
@@ -53,13 +53,15 @@
 </template>
 
 <script>
-import Home from './Home'
+// import Home from './Home'
 import TabBar from './TabBar'
 import { mapActions } from 'vuex'
 
 export default {
     data() {
         return {
+            request: 'ユーザー情報を登録ください。',
+            teamRegist: '',
             userName: '',
             mail: '',
             pass: '',
@@ -132,6 +134,8 @@ export default {
                 this.$ons.notification.alert('学年を選択ください。', {title:''})
                 return
             }
+
+            this.request = 'ロード中...'
             
             await this.$store.dispatch('userRegist', {
                                                 name:  this.userName,
@@ -148,7 +152,6 @@ export default {
         },
 
         cancel() {
-            console.log(this.teamRegist)
             const vm = this
             if(this.teamRegist) {
                 this.$ons.notification.confirm({messageHTML:'ログインページに戻ります。<br>作成したチーム情報は削除されます。',

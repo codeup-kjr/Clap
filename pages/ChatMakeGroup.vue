@@ -83,10 +83,12 @@ export default {
     
     data() {
         return {
-
+            right: '',
+            type: '',
             androidStyle: {position: 'relative', left: '-4px'},//androidの場合、右に寄ってしまうため、調整。
             upImg: 'http://placekitten.com/g/40/40',
             // checkedMembers: ["1", "2"],//ページ遷移の際にextendsで渡す。中の要素は文字列である必要がある。
+            checkedMembers: [],
             addVisible: false,
             users: [
             {id: 1, name: '中山雅史'},

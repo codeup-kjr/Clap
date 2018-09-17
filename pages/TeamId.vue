@@ -16,7 +16,7 @@
             <div v-show="!confirmed&&!incorrect">
                 <p class="description">チームIDを入力ください。
                 <br>わからない場合は、<br>使用中のチームメンバーに
-                <br>MyPageを確認してもらいましょう。</p>
+                <br>MyPageを確認してもらおう。</p>
             </div>
 
             <div v-show="confirmed&&!incorrect">

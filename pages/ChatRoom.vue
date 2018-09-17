@@ -21,7 +21,7 @@
         </div>  
             <div class="inB">
                 <div contenteditable="true" class="textInput"/>
-                <submit-b class="submitB"/>
+                <v-ons-button class="btn">送信</v-ons-button>
             </div>
   
         </div>
@@ -30,10 +30,10 @@
 </template>
 
 <script>
-import NormalB from '../components/NormalB'
 export default {
   data () {
     return {
+        roomName: '',
         userId: 3,
         androidStyle: {position: 'relative', left: '-24px'},//androidの場合、右に寄ってしまうため、調整。
         messages: [
@@ -47,10 +47,7 @@ export default {
   },
 
   components: {
-      submitB: { extends: NormalB,
-                    data() {
-                        return { text: '送信', nextP: '' }
-                    } },
+
   },
 
   methods: {
@@ -105,6 +102,7 @@ export default {
 <style scoped>
     .container {
         height: 100vh;
+        background-color: rgb(232, 235, 234);
     }
 
     .b-button {
@@ -141,7 +139,7 @@ export default {
         width: 50%;
         max-height: 80px;
         word-wrap: break-word;
-        background-color: rgba(255, 255, 255, 0.934);
+        background-color: rgba(216, 213, 213, 0.934);
         border-radius: 20px;
         padding: 8px;
         font-size: 0.9rem;
@@ -159,12 +157,13 @@ export default {
 
     }
 
-    .submitB {
+    .btn {
         width: 60px;
         font-size: 0.8rem;
-        margin: 0;
         position: fixed;
         left: 71.4%;
+        text-align: center;
+         margin: 3px 0;
     }
 
     .message {

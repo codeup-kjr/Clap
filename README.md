@@ -1,4 +1,4 @@
-# onsen
+# Clap
 
 > Nuxt.js project
 

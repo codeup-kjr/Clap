@@ -21,20 +21,20 @@
               :input-props='{ class: "input", placeholder: "日付", readonly: true }'
               @input="datePicked"
               is-expanded
-               v-show="!isROnly"
+              v-show="!isROnly"
               >
                 <v-ons-input
                   type='text'
                   slot-scope='{ inputValue, updateValue }'
                   v-model='dateRange'
-                  placeholder='日付'
+                  placeholder='日付（長押し）'
                   class="add-input"
                   :readonly="true"/>
             </v-date-picker>
             <div class="time-container add-input">
-              <v-ons-input type="time" v-model="sTime" :readonly="isROnly"/>
-              <span class="time-btw"> 〜 </span>
-              <v-ons-input type="time" v-model="eTime" :readonly="isROnly"/>
+              <v-ons-input type="time" v-model="sTime" :readonly="isROnly" class="time"/>
+              <p class="time-btw"> 〜 </p>
+              <v-ons-input type="time" v-model="eTime" :readonly="isROnly" class="time"/>
             </div>
             <textarea cols="30" rows="10" class="ex-info" placeholder="備考（任意、300字以内）" v-model="exInfo" :readonly="isROnly"></textarea>
             <div class="add-btns">
@@ -83,8 +83,8 @@ export default {
           dRPicked: false,
           title: '',
           place: '',
-          sTime: '',
-          eTime: '',
+          sTime: '00:00',
+          eTime: '00:00',
           sYear: '',
           sMonth: '',
           sDate: '',
@@ -300,7 +300,6 @@ export default {
     methods: {
       dayClick(data) {
         this.dayClicked = true
-        console.log(data)
         this.selectedDay = data
         this.isToday = data.isToday
         // イベントリストアイテムを更新する処理を書く。
@@ -309,6 +308,11 @@ export default {
 
       addPushed() {
         this.addVisible = true
+        this.isROnly = false
+        this.isDetail = false
+        this.isEdit = false
+        this.sTime = '00:00'
+        this.eTime = '00:00'
       },
 
       addCancel() {
@@ -333,7 +337,6 @@ export default {
       },
 
       datePicked() {
-        console.log(this.selectedValue)
         this.start = String(this.selectedValue.start)
         this.end = String(this.selectedValue.end)
       
@@ -353,8 +356,6 @@ export default {
       },
 
       eventClick(attr) {
-          //詳細表示を作成
-          console.log(attr)
           this.addVisible = true
           this.isDetail = true
           this.isROnly = true
@@ -379,7 +380,6 @@ export default {
       },
 
       addSchedule() {
-        console.log(this.editId)
           if(this.addBText=='編集する') {
             this.isDetail = false
             this.isEdit = true
@@ -541,9 +541,14 @@ export default {
     margin-bottom: 16px;
   }
 
+  .time {
+    /* width: 100px; */
+    margin-right: 8px;
+  }
+
   .time-btw {
-    margin-right: 2vw;
-    padding-top: 4px;
+    margin-right: 16px;
+    /* padding-top: 7px; */
   }
 
   .ex-info {

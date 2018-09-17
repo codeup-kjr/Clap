@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import Home from './Home'
+import png from '../assets/dUsrImg.jpg'
 export default {
     
     data() {
@@ -62,19 +62,9 @@ export default {
             role: this.$store.state.myData.role,
             grade: this.$store.state.myData.grade,
             androidStyle: {position: 'relative', left: '-4px'},//androidの場合、右に寄ってしまうため、調整。
-            upImg: this.$store.state.myData.image == null ? "http://placekitten.com/g/40/40" : this.$store.state.myData.image,
+            // upImg: this.$store.state.myData.image == null ? "http://placekitten.com/g/40/40" : this.$store.state.myData.image,
+            upImg: this.$store.state.myData.image == null ? png : this.$store.state.myData.image,
             addVisible: false,
-            users: [
-            {id: 1, name: '中山雅史'},
-            {id: 2, name: '中田英寿'},
-            {id: 3, name: '高原直泰'},
-            {id: 4, name: 'べロン'},
-            {id: 5, name: 'ベッカム'},
-            {id: 6, name: 'オルテガ'},
-            {id: 7, name: 'リケルメ'},
-            {id: 8, name: 'カヌ'},
-        ]
-
         }
     },
 
@@ -106,7 +96,6 @@ export default {
 
     methods: {
         editPush() {
-            console.log(this.userName)
             if(this.edit == '編集する') {
                 this.edit = '保存する'
             } else {

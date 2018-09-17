@@ -98,14 +98,16 @@ export default {
   },
 
   computed: {
-
+        groups() {
+            return this.$store.state.groupList
+        }
 
   },
 
   asyncComputed: {//npm installした非同期処理を行えるcomputed
-        async groups() {
-            return this.$store.state.groupList
-        }
+        // async groups() {
+        //     return this.$store.state.groupList
+        // }
     }
 };
 </script>

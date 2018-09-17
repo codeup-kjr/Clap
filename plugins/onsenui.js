@@ -10,8 +10,7 @@ if (process.browser) {
   })
   const VueOnsen = require('vue-onsenui')
   Vue.use(VueOnsen)
-
   Vue.use(AsyncComputed)
+
 }
 // this.$ons.platform.select('android')
-// Vue.prototype.md = this.$ons.platform.isAndroid()

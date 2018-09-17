@@ -1,10 +1,11 @@
 const firebaseKey = require('./firebase.key.json');
+
 module.exports = {
   /*
   ** Headers of the page
   */
   head: {
-    title: 'onsen',
+    title: 'Clap',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -36,7 +37,7 @@ module.exports = {
         })
       }
     },
-    vendor: ['onsenui', 'vue-onsenui','firebase']
+    vendor: ['onsenui', 'vue-onsenui','firebase','lodash']
     
   },
 
@@ -50,6 +51,21 @@ module.exports = {
   ],
 
   plugins: [{src: '~/plugins/onsenui', ssr: true}],
+
+  modules: [
+    '@nuxtjs/pwa'
+  ],
+
+  manifest: {
+    name: 'Clap',
+    lang: 'ja',
+    description: '仲間のいいとこ見つけよう', 
+    icons: [{
+      src: 'static/icon.png',
+      sizes: '48×48',
+      type: 'image/png'
+    }],
+  }
 
 }
 

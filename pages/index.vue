@@ -1,19 +1,19 @@
 <template>
-  <!-- <no-ssr> -->
+  <no-ssr>
   <v-ons-navigator swipeable
     :page-stack="pageStack"
     :pop-page="pagePop"
   ></v-ons-navigator>
-  <!-- </no-ssr> -->
+  </no-ssr>
 </template>
 
 <script>
 import Home from './Home'
 import TypeSelect from './TypeSelect'
-import Vue from 'vue'
+import PasswordReset from './PasswordReset'
+import TabBar from './TabBar'
 import { mapActions } from 'vuex'
-import { throws } from 'assert';
-
+import Vue from 'vue'
 export default {
 
   beforeCreate() {
@@ -24,19 +24,11 @@ export default {
   mounted() {
       // this.$ons.platform.select('android')//検証用
       Vue.prototype.md = this.$ons.platform.isAndroid()//onsenui.jsで定義すべきか検討。
-
-      // Promise.resolve()
-      //   .then( () => this.bindTeam())
-        
-      //   .then( () => this.bindSchedule())
-      //   .then( () => this.bindTeamU())
+      // this.$store.commit('push', TabBar)
   },
 
   destroyed() {
-      // Promise.resolve()
-      //   .then( () => this.unBindTeam())
-      //   .then( () => this.unBindSchedule())
-      //   .then( () => this.unBindTeamU())
+
   },
 
   computed: {
@@ -46,12 +38,6 @@ export default {
   },
 
   methods: {
-    ...mapActions({
-      bindTeam: 'bindTeam',
-      bindSchedule: 'bindSchedule',
-      bindTeamU: 'bindTeamU',
-    }),
-
     pagePop() {
       this.$store.commit('pop')
     },

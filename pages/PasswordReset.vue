@@ -44,6 +44,7 @@ export default {
         ...mapActions({
             // bindTeam: 'bindTeam',
             // unBindTeam: 'unBindTeam'
+            //
         }),
 
         async confirm() {

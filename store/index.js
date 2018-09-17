@@ -1,5 +1,6 @@
 import firebase from 'firebase';
 import 'firebase/firestore'
+import 'firebase/auth'
 import 'firebase/storage'
 import { firebaseMutations, firebaseAction } from 'vuexfire'
 
@@ -273,14 +274,7 @@ export const actions = {
 
 
       login: firebaseAction(async({context, state, commit}, {mail, pass}) => {
-        //signOut()は、ログアウトと初期表示の調整(ログイン状態ならTabBarへ遷移)が済めば不要なので、削除すること。
-        // await firebase.auth().signOut().catch(function(error) {
-        //     var errorCode = error.code;
-        //     var errorMessage = error.message;
-        //     console.log(errorMessage)
-        //     return
-        //   })
-
+        await commit('setLoginErrMsg', '')
         await firebase.auth().signInWithEmailAndPassword(mail, pass).catch(function(error) {
             var errorCode = error.code;
             var errorMessage = error.message;
@@ -291,7 +285,7 @@ export const actions = {
         
         await firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
-                commit('setLoginErrMsg', '')
+                // commit('setLoginErrMsg', '')
                 commit('setUid', user.uid)
             }
           })
