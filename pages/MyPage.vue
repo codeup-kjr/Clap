@@ -1,11 +1,38 @@
 <template>
    <!-- <no-ssr> -->
     <v-ons-page>
-      <div class="container">
-            <input type="file" accept="image/*" id="f" @change="changeImg" :style="{display: 'none'}">
+        <div class="container">
+            <v-ons-modal :visible="croppaVisible">
+            <croppa
+                v-model="myCroppa"
+                :width="250"
+                :height="250"
+                :accept="'image/*'"
+                :placeholder="'タップして写真を選択'"
+                :placeholder-font-size="20"
+                :placeholder-color="'white'"
+                :quality="5"
+                :zoom-speed="3"
+                :prevent-white-space="true"
+                :show-loading="true"
+                @init="onInit"
+                class="croppa"
+                >
+            <div class="spinner" v-if="myCroppa && myCroppa.loading"></div>
+            </croppa>
+
+            <div class="croppa-btns">
+                <v-ons-icon icon="ion-android-refresh" class="rotate-b" v-show="myCroppa.imageSet" @click="rotate"></v-ons-icon>
+                <div class="rotate-b dummy" v-show="!myCroppa.imageSet">dummy</div>
+            </div>
+            <div class="croppa-btns">
+                <v-ons-button class="cancel-b" @click="cancel" modifier="quiet">キャンセル</v-ons-button>
+                <v-ons-button class="choose-b" @click="choose" v-show="myCroppa.imageSet">決定</v-ons-button>
+            </div>
+            </v-ons-modal>
+            <!-- <input type="file" accept="image/*" id="f" @change="changeImg" :style="{display: 'none'}"> -->
             <div class="imgInp">
                 <img class="list-item__thumbnail" :src="upImg" id="upImg" @click="upImage">
-                <!-- <img v-else class="list-item__thumbnail" :src="$store.state.myData.image"> -->
                 <div class="name-rg">
                     <input v-if="edit=='保存する'" type="text" v-model="userName" placeholder="ユーザー名" class="user-name">
                     <div v-else class="user-name">{{$store.state.myData.name}}</div>
@@ -51,11 +78,14 @@
 </template>
 
 <script>
+// import loadImage from 'blueimp-load-image'
 import png from '../assets/dUsrImg.jpg'
 export default {
     
     data() {
         return {
+            croppaVisible: false,
+            myCroppa: {},
             file: '',
             edit: '編集する',
             userName: this.$store.state.myData.name,
@@ -64,9 +94,11 @@ export default {
             androidStyle: {position: 'relative', left: '-4px'},//androidの場合、右に寄ってしまうため、調整。
             // upImg: this.$store.state.myData.image == null ? "http://placekitten.com/g/40/40" : this.$store.state.myData.image,
             upImg: this.$store.state.myData.image == null ? png : this.$store.state.myData.image,
+            // upImg: this.$store.state.myData.image == null ? png : '',
             addVisible: false,
         }
     },
+
 
     computed: {
         gradeNum() {
@@ -90,12 +122,9 @@ export default {
 
     },
 
-    components: {
-        
-    },
-
     methods: {
         editPush() {
+            console.log(this.upImg)
             if(this.edit == '編集する') {
                 this.edit = '保存する'
             } else {
@@ -115,23 +144,49 @@ export default {
             }
         },
 
-        upImage() {
-            if(this.edit == '保存する') {
-                document.getElementById('f').click()
-            } 
+        onInit() {
+            this.myCroppa.addClipPlugin(function (ctx, x, y, w, h) {
+                /*
+                * ctx: canvas context
+                * x: start point (top-left corner) x coordination
+                * y: start point (top-left corner) y coordination
+                * w: croppa width
+                * h: croppa height
+                */
+                ctx.beginPath()
+                ctx.arc(x + w / 2, y + h / 2, w / 2, 0, 2 * Math.PI, true)
+                ctx.closePath()
+            })
+
         },
 
-        changeImg() {
-            const imgF = document.getElementById('f').files
-            // const file = imgF[0]
-            this.file = imgF[0];
-            const fr = new FileReader()
-            const vm = this
-            fr.onload = function() {
-                vm.upImg = fr.result
-            }
-            
-            fr.readAsDataURL(this.file)
+        rotate() {
+            this.myCroppa.rotate()
+        },
+
+        choose() {
+            this.myCroppa.generateBlob(
+                (blob) => {
+                    this.file = blob
+                },
+                'image/jpeg', 0.3)
+                
+            this.upImg = this.myCroppa.generateDataUrl('image/jpeg', 0.3)
+            this.croppaVisible = false
+            this.myCroppa.remove()
+        },
+
+        cancel() {
+            this.croppaVisible = false
+            this.myCroppa.remove()
+        },
+
+        upImage() {
+            if(this.edit == '保存する') {
+                // document.getElementById('f').click()
+                this.croppaVisible = true
+                console.log(this.myCroppa)
+            } 
         },
 
         logoutPush() {
@@ -147,7 +202,7 @@ export default {
                                                 }})
         },
 
-    }
+    },
     
 }
 
@@ -219,5 +274,78 @@ export default {
         justify-content: center;
         font-size: 1rem;
         font-size: 1.2rem;
+    }
+
+    .croppa {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+
+    .spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        height: 70px;
+        width: 70px;
+        margin-left: -35px;
+        margin-top: -35px;
+        -webkit-animation: spin 1s linear infinite;
+                animation: spin 1s linear infinite;
+        border: 3px solid #ddd;
+        border-top: 3px solid #42a5f5;
+        border-radius: 50%;
+    }
+
+    @-webkit-keyframes spin {
+    to {
+        border-top-color: #ec407a;
+        -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+    }
+    }
+
+    @keyframes spin {
+    to {
+        border-top-color: #ec407a;
+        -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+    }
+    }
+
+    .croppa-btns {
+        display: flex;
+        justify-content: center;
+        padding: 16px 0;
+    }
+
+    .rotate-b-center {
+        display: flex;
+        justify-content: center;
+        height: 72px;
+        
+    }
+
+    .rotate-b {
+        font-size: 2.4rem;
+        width: 80px;
+        text-align: center;
+    }
+
+    .dummy {
+        color: transparent;
+    }
+
+    .choose-b {
+        font-size: 1.1rem;
+        text-align: center;
+        width: 80px;
+        margin-left: 56px;
+    }
+
+    .cancel-b {
+        font-size: 1.1rem;
+        text-align: center;
+        width: 120px;
     }
 </style>
