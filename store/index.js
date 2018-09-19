@@ -332,8 +332,10 @@ export const actions = {
                 await commit('setUid', uid)
                 await dispatch('bindMyData')
                 await dispatch('getTeamByUid')
+                commit('clear')
                 commit('push', page2)
             } else {
+                commit('clear')
                 commit('push', page1)
             }
         })
