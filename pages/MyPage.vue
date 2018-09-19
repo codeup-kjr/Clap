@@ -12,8 +12,8 @@
                 :placeholder="'タップして写真を選択'"
                 :placeholder-font-size="20"
                 :placeholder-color="'white'"
-                :quality="5"
-                :zoom-speed="3"
+                :quality="1"
+                :zoom-speed="9"
                 :prevent-white-space="true"
                 :show-loading="true"
                 @init="onInit"
@@ -126,7 +126,6 @@ export default {
     methods: {
         //todo: croppaにfile-size-limitを設定し、limit超過時にtoastメッセージを表示する。
         editPush() {
-            console.log(this.upImg)
             if(this.edit == '編集する') {
                 this.edit = '保存する'
             } else {
@@ -171,9 +170,9 @@ export default {
                 (blob) => {
                     this.file =  blob
                 },
-                'image/jpeg', 0.25)
+                'image/jpeg', 0.5)
                 
-            this.upImg = this.myCroppa.generateDataUrl('image/jpeg', 0.25)
+            this.upImg = this.myCroppa.generateDataUrl('image/jpeg', 0.5)
             this.croppaVisible = false
             this.myCroppa.remove()
         },
@@ -187,7 +186,6 @@ export default {
             if(this.edit == '保存する') {
                 // document.getElementById('f').click()
                 this.croppaVisible = true
-                console.log(this.myCroppa)
             } 
         },
 
