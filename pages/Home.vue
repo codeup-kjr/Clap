@@ -36,7 +36,7 @@ export default {
   },
 
   mounted() {
-    this.$store.dispatch('checkLogin', {page: TabBar})
+    // this.$store.dispatch('checkLogin', {page: TabBar})
   },
 
   destroyed() {

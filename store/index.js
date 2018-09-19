@@ -324,17 +324,17 @@ export const actions = {
         });
     }),
 
-    checkLogin: firebaseAction(({context, state, commit, dispatch}, {page}) => {
+    checkLogin: firebaseAction(({context, state, commit, dispatch}, {page1, page2}) => {
         let uid = ''
-        let flg = false
         firebase.auth().onAuthStateChanged(async function(user) {
             if (user) {
-                flg = true
                 uid = user.uid
                 await commit('setUid', uid)
                 await dispatch('bindMyData')
                 await dispatch('getTeamByUid')
-                commit('push', page)
+                commit('push', page2)
+            } else {
+                commit('push', page1)
             }
         })
     }),

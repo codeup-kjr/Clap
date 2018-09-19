@@ -8,17 +8,13 @@
 </template>
 
 <script>
-import Home from './Home'
-import TypeSelect from './TypeSelect'
-import PasswordReset from './PasswordReset'
-import TabBar from './TabBar'
-import { mapActions } from 'vuex'
+import LoginCheck from './LoginCheck'
 import Vue from 'vue'
 export default {
 
   beforeCreate() {
     this.$store.commit('clear')
-    this.$store.commit('push', Home)
+    this.$store.commit('push', LoginCheck)
   },
 
   mounted() {

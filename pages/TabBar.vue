@@ -44,12 +44,12 @@ export default {
         //   style: this.md ? { maxWidth: '60px' } : {}, //小さくする場合
           top: 0 // Toolbarを使用する場合は、-(Toolbar + Tabbar heights)
         },
- {
-          // label: 'メンバー評価',
-          icon: 'ion-star',
-          page: Applaud,
-          theme: yerrow
-        },
+//  {
+//           // label: 'メンバー評価',
+//           icon: 'ion-star',
+//           page: Applaud,
+//           theme: yerrow
+//         },
         // {
         //   // label: 'チャット',
         //   icon: 'ion-chatboxes',
