@@ -8,7 +8,7 @@
                 <span class="userName">{{message.userName}}</span>
                 <p class="talk">{{adjustedCount(message.talk)}}</p>
             </span>
-            <span v-if="message.unread!=0" class="list-item__unread">{{message.unread}}</span>
+            <span v-if="message.unread!=0" class="list-item__unread"></span>
         </v-ons-list-item>
        </v-ons-list>
     </v-ons-page>
@@ -68,7 +68,7 @@ export default {
     .rightContents {
         display: flex;
         flex-direction: column;
-        width: 76%;
+        width: 70vw;
     }
 
     .talk {
@@ -80,9 +80,9 @@ export default {
     }
 
     .list-item__unread {
-        width: 24px;
-        height: 24px;
-        border-radius: 12px;
+        width: 12px;
+        height: 12px;
+        border-radius: 6px;
         display: block;
         margin: 0;
         background-color: rgb(84, 175, 38);

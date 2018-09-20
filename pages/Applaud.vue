@@ -15,7 +15,7 @@
                     <p class="member-name">{{member.name}}</p>
                 </div>
                 <div v-show="gradeNum!=null" v-for="member in membersByGrade" :key="member.id" class="member-container" @click="memberClick(member)">
-                    <img class="list-item__thumbnail" src="http://placekitten.com/g/40/40">
+                    <img class="list-item__thumbnail" :src="member.image==null ? 'http://placekitten.com/g/40/40' : member.image">
                     <p class="member-name">{{member.name}}</p>
                 </div>
             </div>

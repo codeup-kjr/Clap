@@ -14,11 +14,9 @@
 
 <script>
 import MyPage from './MyPage'
-// import Home from './Home'
 import Calendar from './Calendar'
 import Applaud from './Applaud'
 import Chat from './Chat'
-import { mapActions } from 'vuex'
 
 // Just a linear interpolation formula
 const lerp = (x0, x1, t) => parseInt((1 - t) * x0 + t * x1, 10);
@@ -31,7 +29,6 @@ const yerrow = [146, 146, 10];
 export default {
   data () {
     return {
-
       colors: blue,
       animationOptions: {},
       topPosition: 0,
@@ -44,18 +41,18 @@ export default {
         //   style: this.md ? { maxWidth: '60px' } : {}, //小さくする場合
           top: 0 // Toolbarを使用する場合は、-(Toolbar + Tabbar heights)
         },
-//  {
-//           // label: 'メンバー評価',
-//           icon: 'ion-star',
-//           page: Applaud,
-//           theme: yerrow
-//         },
-        // {
-        //   // label: 'チャット',
-        //   icon: 'ion-chatboxes',
-        //   page: Chat,
-        //   theme: green
-        // },
+ {
+          // label: 'メンバー評価',
+          icon: 'ion-star',
+          page: Applaud,
+          theme: yerrow
+        },
+        {
+          // label: 'チャット',
+          icon: 'ion-chatboxes',
+          page: Chat,
+          theme: green
+        },
         {
           // label: 'マイページ',
           icon: 'ion-person',
@@ -66,47 +63,7 @@ export default {
     };
   },
 
-  mounted() {
-    if(this.$store.state.teamId) {
-      // this.bindTeam()
-      // this.bindSchedule()
-      // this.bindTeamU()
-    }
-    if(this.$store.state.uid) {
-        // this.bindMyRoom()
-      //myDataはstore/index.jsのcheckLoginでbindする。
-      // this.bindMyData()
-    }
-
-    // this.bindPlayers()
-
-  },
-
-  destroyed() {
-  
-    // this.unBindMyRoom()
-    // this.unBindTeam()
-    // this.unBindSchedule()
-    // this.unBindTeamU()
-
-    // this.unBindMyData()
-  },
-
   methods: {
-    ...mapActions({
-      // bindTeam: 'bindTeam',
-      // bindSchedule: 'bindSchedule',
-      // bindTeamU: 'bindTeamU',
-      // bindMyRoom: 'bindMyRoom',
-      // bindPlayers: 'bindPlayers',
-      // bindMyData: 'bindMyData',
-
-      // unBindTeam: 'unBindTeam',
-      // unBindSchedule: 'unBindSchedule',
-      // unBindTeamU: 'unBindTeamU',
-      // unBindMyRoom: 'unBindMyRoom',
-      // unBindMyData: 'unBindMyData',
-    }),
 
     onSwipe(index, animationOptions) {
       // Apply the same transition as ons-tabbar

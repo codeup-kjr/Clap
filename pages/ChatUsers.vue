@@ -5,7 +5,7 @@
         <v-ons-list-item tappable @click="makeGroup">グループ作成</v-ons-list-item>
         <v-ons-list-header>グループ</v-ons-list-header>
         <v-ons-list-item v-for="group in groups" :key="group.id" tappable @click="selectGroup(group.img, group.name)">
-            <img class="list-item__thumbnail" :src="group.img">
+            <img class="list-item__thumbnail" :src="group.img==null ? 'http://placekitten.com/g/40/40' : group.img">
             {{group.name}}
         </v-ons-list-item>
         <v-ons-list-header>ユーザー</v-ons-list-header>
@@ -17,7 +17,8 @@
  
         <v-ons-modal :visible="groupVisible">
             <div class="group-modal-container">
-                <img :src="groupImg" alt="グループ写真" class="selected-group-img">
+                <!-- ↓:src部分は暫定措置。imgが設定されないことはない（選ばない場合はデフォルトを設定する）ので。 -->
+                <img :src="groupImg==null ? 'http://placekitten.com/g/40/40' : groupImg" alt="グループ写真" class="selected-group-img">
                 <div class="under-group-img">
                     <p class="selected-group-name">{{groupName}}</p>
                     <div class="group-btns">

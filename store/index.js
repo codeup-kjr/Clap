@@ -199,6 +199,7 @@ export const actions = {
       }),
 
     userRegist: firebaseAction(async({context, state, commit, dispatch}, {name, mail, pass, role, grade}) => {
+        // await commit('setURErr', '')
         await firebase.auth().createUserWithEmailAndPassword(mail, pass).catch(function(error) {
             const errorCode = error.code;
             const errorMessage = error.message;
@@ -222,6 +223,8 @@ export const actions = {
             await teamRef.doc(String(state.teamId)).collection('users').doc(String(state.uid)).set({
                 userId: state.uid,
                 regist: true
+            }).catch(function(error) {
+                console.error("Error writing document: ", error)
             })
             
             await userRef.doc(String(state.uid)).set({
@@ -233,11 +236,15 @@ export const actions = {
                 email: mail,
                 input_at: firebase.firestore.FieldValue.serverTimestamp(),
                 updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function(error) {
+                console.error("Error writing document: ", error)
             })
 
             await userRef.doc(String(state.uid)).collection('teams').doc(String(state.teamId)).set({
                 teamId: state.teamId,
                 regist: true
+            }).catch(function(error) {
+                console.error("Error writing document: ", error)
             })
 
             dispatch('getUser', {ids: state.teamU})
@@ -252,7 +259,7 @@ export const actions = {
                 flg = true
                 docData = doc.data()
             } else {
-                console.log("No such document!");
+                console.log("No such document!")
             }
         }).catch(function(error) {
             console.log("Error getting document:", error);
@@ -264,10 +271,10 @@ export const actions = {
       deleteTeam: firebaseAction(async({context, state, commit}, {teamId}) => {
         let flg = false
         await teamRef.doc(String(teamId)).delete().then(function() {
-            console.log("Document successfully deleted!");
+            console.log("Document successfully deleted!")
             flg = true
         }).catch(function(error) {
-            console.error("Error removing document: ", error);
+            console.error("Error removing document: ", error)
         });
         (flg = true ? commit('setTeamId', '') : '')
       }),
@@ -285,7 +292,6 @@ export const actions = {
         
         await firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
-                // commit('setLoginErrMsg', '')
                 commit('setUid', user.uid)
             }
           })
@@ -316,12 +322,12 @@ export const actions = {
                         await dispatch('bindMyRoom')
                         dispatch('getGroup', {ids: state.myRoom})
                     } else {
-                        console.log("No such document!");
+                        console.log("No such document!")
                     }
                 })
         }).catch(function(error) {
-            console.log("Error getting document:", error);
-        });
+            console.log("Error getting document:", error)
+        })
     }),
 
     checkLogin: firebaseAction(({context, state, commit, dispatch}, {page1, page2}) => {
@@ -370,11 +376,11 @@ export const actions = {
                     flg = true
                     usersData.push(doc.data())
                 } else {
-                    console.log("No such document!");
+                    console.log("No such document!")
                 }
             }).catch(function(error) {
-                console.log("Error getting document:", error);
-            });
+                console.log("Error getting document:", error)
+            })
         }
         //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
         (flg = true ? commit('setUsersData', usersData) : '')
@@ -421,7 +427,7 @@ export const actions = {
                     console.log("No such document!");
                 }
             }).catch(function(error) {
-                console.log("Error getting document:", error);
+                console.log("Error getting document:", error)
             });
         }
         //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
@@ -440,6 +446,9 @@ export const actions = {
                 grade: Number(grade),
                 image: imgSrc,
                 updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function(error) {
+                // The document probably doesn't exist.
+                console.error("Error updating document: ", error)
             })
         } else {
             userRef.doc(String(state.uid)).update({
@@ -447,6 +456,9 @@ export const actions = {
                 role: role,
                 grade: Number(grade),
                 updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function(error) {
+                // The document probably doesn't exist.
+                console.error("Error updating document: ", error)
             })
         }
       }),
@@ -463,7 +475,7 @@ export const actions = {
             })
             }).catch(function(error) {
                 commit('setEmailFlg', false)
-                console.log("Error getting document:", error);
+                console.log("Error getting document:", error)
             });
             if(!flg) {
                 commit('setEmailFlg', false)
@@ -477,8 +489,8 @@ export const actions = {
             console.log('Successfully Sent.')
           }).catch(function(error) {
             commit('setSentFlg', false)
-            const errorCode = error.code;
-            const errorMessage = error.message;
+            const errorCode = error.code
+            const errorMessage = error.message
             console.log(errorMessage)
           })
         })

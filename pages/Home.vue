@@ -48,6 +48,15 @@ export default {
   },
     methods: {
         async login() {
+          if(this.mail == '') {
+              this.$ons.notification.alert('メールアドレスを入力ください。', {title:''})
+              return
+          }
+          if(this.pass == '') {
+            this.$ons.notification.alert('パスワードを入力ください。', {title:''})
+            return
+          }
+
           this.errMsg = 'ロード中...'
           await this.$store.dispatch('login', {mail: this.mail, pass: this.pass})
           const loginErrMsg = this.$store.state.loginErrMsg
