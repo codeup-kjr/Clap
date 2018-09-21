@@ -64,6 +64,12 @@ export default {
                 this.$ons.notification.alert('競技種目を選択ください。', {title:''})
                 return
             }
+
+            if (!navigator.onLine) {
+                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
+                return
+            }
+            
             // 生成する文字列の長さ
             const l = 20;
             // 生成する文字列に含める文字セット

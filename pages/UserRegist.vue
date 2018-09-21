@@ -22,8 +22,8 @@
                     ユーザー情報
                 </div>
             </div>
-            <p v-if="!$store.state.emailUse" class="request">{{request}}</p>
-            <p v-else class="error">そのメールアドレスは使われています。</p>
+            <p v-if="!$store.state.uRErr" class="request">{{request}}</p>
+            <p v-else class="error">{{$store.state.uRErr}}</p>
             
             <v-ons-input modifier="material" type="text" placeholder="お名前" v-model="userName" class="input"/>
             <v-ons-input modifier="material" type="email" placeholder="メールアドレス" v-model="mail" class="input"/>
@@ -92,8 +92,8 @@ export default {
         }),
 
         async regist() {
-            if(this.$store.state.emailUse) {
-                await this.$store.commit('setEmailUse', false)
+            if(this.$store.state.uRErr) {
+                await this.$store.commit('setURErr', '')
             }
 
             if(this.userName == '') {
@@ -136,7 +136,11 @@ export default {
             }
 
             this.request = 'ロード中...'
-            
+            if (!navigator.onLine) {
+                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
+                return
+            }
+
             await this.$store.dispatch('userRegist', {
                                                 name:  this.userName,
                                                 mail:  this.mail,
@@ -145,10 +149,9 @@ export default {
                                                 grade: this.grade
                                 })
 
-            if(!this.$store.state.emailUse) {          
+            if(!this.$store.state.uRErr) {          
                 this.$ons.notification.alert({messageHTML:'登録しました。<br>チームIDをマイページで確認して、<br>チームメートに共有しよう！', title:''})
             }
-
         },
 
         cancel() {

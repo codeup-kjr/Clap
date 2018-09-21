@@ -6,8 +6,8 @@
             <div class="description">
                 <p v-show="!$store.state.confirmed">メールアドレスを入力ください。</p>
                 <p class="success" v-show="$store.state.confirmed&&$store.state.emailFlg&&$store.state.sentFlg">メールを送信しました。<br>メールの内容に従い、<br>手続きを進めてください。</p>
-                <!-- <p class="error" v-show="$store.state.confirmed&&$store.state.emailFlg&&!$store.state.sentFlg">メールの送信に失敗しました。<br>しばらくしてから再実行ください。</p> -->
-                <p class="error" v-show="$store.state.confirmed&&!$store.state.emailFlg&&!$store.state.sentFlg">そのメールアドレスは未登録です。</p>
+                <!-- querySnapshotはerrorを返すことができないため、未登録か、ネットワークの問題かをわけないことにした。 -->
+                <p class="error" v-show="$store.state.confirmed&&!$store.state.emailFlg&&!$store.state.sentFlg">そのメールアドレスは未登録か、<br>ネットワークに問題があります。</p>
             </div>
 
             <v-ons-input modifier="material" type="email" placeholder="メールアドレス" v-model="email" class="email"/>
@@ -20,7 +20,6 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 
 export default {
     data() {
@@ -30,26 +29,16 @@ export default {
         }
     },
 
-    mounted() {
-        // Promise.resolve()
-        //     .then( () => this.bindTeam())
-    },
-
-    destroyed() {
-        // Promise.resolve()
-        //     .then( () => this.unBindTeam())
-    },
-
     methods: {
-        ...mapActions({
-            // bindTeam: 'bindTeam',
-            // unBindTeam: 'unBindTeam'
-            //
-        }),
 
         async confirm() {
             if(this.email == '') {
                 this.$ons.notification.alert('メールアドレスを入力ください。', {title:''})
+                return
+            }
+
+            if (!navigator.onLine) {
+                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
                 return
             }
             
@@ -64,9 +53,6 @@ export default {
         }
     },
 
-    computed: {
-        
-    }
 }
 </script>
 

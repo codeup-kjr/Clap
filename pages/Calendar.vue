@@ -379,7 +379,7 @@ export default {
 
       },
 
-      addSchedule() {
+    async addSchedule() {
           if(this.addBText=='編集する') {
             this.isDetail = false
             this.isEdit = true
@@ -407,7 +407,8 @@ export default {
                   id += c[Math.floor(Math.random()*cl)];
               }
           }
-          this.$store.dispatch('scheduleAdd', { id: this.addBText == '登録' ? id : this.editId,
+          
+          await this.$store.dispatch('scheduleAdd', { id: this.addBText == '登録' ? id : this.editId,
                                                 title: this.title,
                                                 place: this.place,
                                                 sYear: Number(this.sYear),
@@ -420,14 +421,21 @@ export default {
                                                 eTime: this.eTime,
                                                 exInfo: this.exInfo})
           // エラーが起きた時の対処(stateの更新など)をindex.js内に記述し、ここでstateを読み込んで判定する処理を書く。
-          
-          if(this.addBText=='登録') {
-            this.$ons.notification.alert('登録しました', {title:''})
-          } else if(this.addBText=='保存') {
-            this.$ons.notification.alert('保存しました', {title:''})
-            this.editId = ''
+          if (!navigator.onLine) {
+              if(this.addBText=='登録') {
+                this.$ons.notification.alert({messageHTML:'オンラインになると登録されます。<br>オンラインになる前に画面を更新すると登録されません。', title:''})
+              } else if(this.addBText=='保存') {
+                this.$ons.notification.alert({messageHTML:'オンラインになると保存されます。<br>オンラインになる前に画面を更新すると保存されません。', title:''})
+                this.editId = ''
+              }
+          } else {
+            if(this.addBText=='登録') {
+              this.$ons.notification.alert('登録しました', {title:''})
+            } else if(this.addBText=='保存') {
+              this.$ons.notification.alert('保存しました', {title:''})
+              this.editId = ''
+            }
           }
-
           this.addVisible = false
           this.dayClicked = false
           this.title = ''

@@ -13,21 +13,18 @@
                     チーム情報
                 </div>
             </div>
-            <div v-show="!confirmed&&!incorrect">
+            <div v-show="!confirmed&&!err">
                 <p class="description">チームIDを入力ください。
                 <br>わからない場合は、<br>使用中のチームメンバーに
                 <br>MyPageを確認してもらおう。</p>
             </div>
 
-            <div v-show="confirmed&&!incorrect">
+            <div v-show="confirmed&&!err">
                 <p class="description">あなたのチームはこちらですか？
                 <br><span class="name-emp">{{teamName}}</span></p>
             </div>
 
-            <div v-show="incorrect">
-                <p class="description">そのIDは登録されていません。
-                <br>正しいチームIDを入力ください。</p>
-            </div>
+            <div v-show="err" v-html="err" class="description"></div>
             <div class="height-container">
                 <div class="un-confirmed" v-show="!confirmed">
                     <v-ons-input modifier="material" type="text" placeholder="チームID" v-model="teamId" class="input"/>
@@ -47,7 +44,6 @@
 
 <script>
 import UserRegist from './UserRegist'
-import { mapActions } from 'vuex'
 
 export default {
     data() {
@@ -55,48 +51,42 @@ export default {
             teamId: '',
             teamName: '',
             confirmed: false,
-            incorrect: false
+            err: ''
             
         }
     },
 
-    mounted() {
-        // Promise.resolve()
-        //     .then( () => this.bindTeam())
-    },
-
-    destroyed() {
-        // Promise.resolve()
-        //     .then( () => this.unBindTeam())
-    },
-
     methods: {
-        ...mapActions({
-            // bindTeam: 'bindTeam',
-            // unBindTeam: 'unBindTeam'
-        }),
 
-        confirm() {
+        async confirm() {
+            this.$store.commit('setSchTIdErr', '')
             if(this.teamId == '') {
                 this.$ons.notification.alert('チームIDを入力ください。', {title:''})
                 return
             }
+
+            if (!navigator.onLine) {
+                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
+                return
+            }
             
             let teamName = ''
-            Promise.resolve()
-                //store/index.jsで引数を複数指定しているため、呼び出し元では引数をオブジェクトで指定する。
-                .then( () => this.$store.dispatch('searchTeamId', {teamId: this.teamId}))
-                .then( () => teamName = this.$store.state.schTeamId.name)
-                .then( () => {
-                                if(teamName) {
-                                    this.teamName = teamName
-                                    this.incorrect = false
-                                    this.confirmed = true
+            //store/index.jsで引数を複数指定しているため、呼び出し元では引数をオブジェクトで指定する。
+            await this.$store.dispatch('searchTeamId', {teamId: this.teamId})
+            teamName = this.$store.state.schTeamId.name
+            if(teamName) {
+                            this.err = ''
+                            this.teamName = teamName
+                            this.confirmed = true
 
+                            } else {
+                                if(this.$store.state.schTIdErr) {
+                                    console.log(this.$store.state.schTIdErr)
+                                    this.err = 'ネットワークの問題が発生しました。'
                                 } else {
-                                    this.incorrect = true
+                                    this.err = 'そのIDは登録されていません。<br>正しいチームIDを入力ください。'
                                 }
-                            })
+                            }
         },
 
         yes() {
@@ -172,7 +162,7 @@ export default {
     }
 
     .description {
-        width: 270px;
+        width: 280px;
         height: 96px;
         margin-bottom: 32px;
         text-align: center;

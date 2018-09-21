@@ -3,6 +3,7 @@ import 'firebase/firestore'
 import 'firebase/auth'
 import 'firebase/storage'
 import { firebaseMutations, firebaseAction } from 'vuexfire'
+import { setTimeout } from 'timers';
 
 if (!firebase.apps.length) {
     firebase.initializeApp(JSON.parse(process.env.FIREBASE_KEY))
@@ -19,11 +20,13 @@ db.settings(settings)
 
  export const state = () => {
     return {
+        scheduleAddErr: '',
+        schTIdErr: '',
         confirmed: false,
         sentFlg: false,
         //エラーメッセージ(未登録メール警告)表示調整のため、初期値をtrueに。
         emailFlg: true,
-        emailUse: false,
+        uRErr: '',
         myData: {},
             //チャット検証用
             players: [],
@@ -124,8 +127,8 @@ export const mutations = {
         state.groupList = data
     },
 
-    setEmailUse(state, bool) {
-        state.emailUse = bool
+    setURErr(state, txt) {
+        state.uRErr = txt
     },
 
     setEmailFlg(state, bool) {
@@ -138,6 +141,14 @@ export const mutations = {
 
     setConfirmed(state, bool) {
         state.confirmed = bool
+    },
+
+    setSchTIdErr(state, text) {
+        state.schTIdErr = text
+    },
+
+    setScheduleAddErr(state, text) {
+        state.scheduleAddErr = text
     },
 
   }
@@ -199,35 +210,29 @@ export const actions = {
       }),
 
     userRegist: firebaseAction(async({context, state, commit, dispatch}, {name, mail, pass, role, grade}) => {
-        // await commit('setURErr', '')
         await firebase.auth().createUserWithEmailAndPassword(mail, pass).catch(function(error) {
             const errorCode = error.code;
             const errorMessage = error.message;
             console.log(errorMessage)
             //メールアドレスが使われているかどうか
-            commit('setEmailUse', true)
+            if(errorMessage == 'The email address is already in use by another account.') {
+                commit('setURErr', 'そのメールアドレスは使われています')
+            } else {
+                commit('setURErr', 'ネットワークの問題が発生しました。')
+            }
           })
-        if(!state.emailUse) {
-            await firebase.auth().signInWithEmailAndPassword(mail, pass).catch(function(error) {
-                var errorCode = error.code;
-                var errorMessage = error.message;
-                console.log(errorMessage)
-            });
-            
-            await firebase.auth().onAuthStateChanged(function(user) {
-                if (user) {
-                    commit('setUid', user.uid)
-                }
-            });
 
-            await teamRef.doc(String(state.teamId)).collection('users').doc(String(state.uid)).set({
+          if(state.uRErr) {
+              return
+            }
+
+            //LoginCheck.vueのcheckLoginにより、create後にstate.uidがセットされる。
+            let batch = db.batch()
+            batch.set(teamRef.doc(String(state.teamId)).collection('users').doc(String(state.uid)), {
                 userId: state.uid,
                 regist: true
-            }).catch(function(error) {
-                console.error("Error writing document: ", error)
             })
-            
-            await userRef.doc(String(state.uid)).set({
+            batch.set(userRef.doc(String(state.uid)), {
                 id: state.uid,
                 name: name,
                 role: role,
@@ -236,19 +241,18 @@ export const actions = {
                 email: mail,
                 input_at: firebase.firestore.FieldValue.serverTimestamp(),
                 updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(function(error) {
-                console.error("Error writing document: ", error)
             })
-
-            await userRef.doc(String(state.uid)).collection('teams').doc(String(state.teamId)).set({
+            batch.set(userRef.doc(String(state.uid)).collection('teams').doc(String(state.teamId)), {
                 teamId: state.teamId,
                 regist: true
-            }).catch(function(error) {
-                console.error("Error writing document: ", error)
             })
+            //batchはオフラインでも実行でき、オンラインになった瞬間にDB操作されるため、エラーが起きない。
+            await batch.commit()
+
+            await dispatch('bindMyData')
 
             dispatch('getUser', {ids: state.teamU})
-        }
+        
       }),
 
       searchTeamId: firebaseAction(async({context, state, commit}, {teamId}) => {
@@ -262,7 +266,8 @@ export const actions = {
                 console.log("No such document!")
             }
         }).catch(function(error) {
-            console.log("Error getting document:", error);
+            console.log("Error getting document:", error)
+            commit('setSchTIdErr', error.message)
         });
         //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
         (flg = true ? commit('setSchTeamId', docData) : '')
@@ -297,16 +302,15 @@ export const actions = {
           })
     }),
 
-    logout: firebaseAction(async({context, state, commit}) => {
-        await firebase.auth().signOut().catch(function(error) {
+    logout: firebaseAction(({context}) => {       
+        firebase.auth().signOut().then(function(){
+            location.reload()
+        }).catch(function(error) {
             var errorCode = error.code;
             var errorMessage = error.message;
             console.log(errorMessage)
-            return
           })
-        //popにしたかったが、Can not read property 'length' of null エラーが発生するため、location.reload()としている。
-          location.reload()
-
+          
     }),
 
     getTeamByUid: firebaseAction(({context, state, commit, dispatch}) => {
@@ -333,22 +337,23 @@ export const actions = {
     checkLogin: firebaseAction(({context, state, commit, dispatch}, {page1, page2}) => {
         let uid = ''
         firebase.auth().onAuthStateChanged(async function(user) {
-            if (user) {
-                uid = user.uid
-                await commit('setUid', uid)
-                await dispatch('bindMyData')
-                await dispatch('getTeamByUid')
-                commit('clear')
-                commit('push', page2)
-            } else {
-                commit('clear')
-                commit('push', page1)
-            }
+                if (user) {
+                    uid = user.uid
+                    await commit('setUid', uid)
+                    await dispatch('bindMyData')
+                    await dispatch('getTeamByUid')
+                    commit('clear')
+                    commit('push', page2)
+                } else {
+                    commit('clear')
+                    commit('push', page1)
+                }
         })
     }),
 
-    scheduleAdd: firebaseAction(async({context, state}, {id, title, place, sYear, sMonth, sDate, eYear, eMonth, eDate, sTime, eTime, exInfo}) => {
-        await teamRef.doc(String(state.teamId)).collection('schedule').doc(String(id)).set({
+    scheduleAdd: firebaseAction(async({context, state, commit}, {id, title, place, sYear, sMonth, sDate, eYear, eMonth, eDate, sTime, eTime, exInfo}) => {
+        await commit('setScheduleAddErr', '')
+        teamRef.doc(String(state.teamId)).collection('schedule').doc(String(id)).set({
             id: id,
             title: title,
             place: place,
@@ -361,6 +366,10 @@ export const actions = {
             time_start: sTime,
             time_end: eTime,
             ex_info: exInfo
+        }).catch(function(error) {
+            console.log('スケジュールアドエラー')
+            console.log("Error writing document: ", error)
+            commit('setScheduleAddErr', error)
         })
       }),
 
@@ -447,7 +456,6 @@ export const actions = {
                 image: imgSrc,
                 updated_at: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(function(error) {
-                // The document probably doesn't exist.
                 console.error("Error updating document: ", error)
             })
         } else {
@@ -457,7 +465,6 @@ export const actions = {
                 grade: Number(grade),
                 updated_at: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(function(error) {
-                // The document probably doesn't exist.
                 console.error("Error updating document: ", error)
             })
         }
@@ -473,10 +480,8 @@ export const actions = {
                 commit('setEmailFlg', true)
                 dispatch('sendPasswordReset', {email: email})
             })
-            }).catch(function(error) {
-                commit('setEmailFlg', false)
-                console.log("Error getting document:", error)
-            });
+        })
+        //querySnapshotはerrorを返すことができない。
             if(!flg) {
                 commit('setEmailFlg', false)
             }
