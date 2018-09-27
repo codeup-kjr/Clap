@@ -3,7 +3,6 @@ import 'firebase/firestore'
 import 'firebase/auth'
 import 'firebase/storage'
 import { firebaseMutations, firebaseAction } from 'vuexfire'
-import { setTimeout } from 'timers';
 
 if (!firebase.apps.length) {
     firebase.initializeApp(JSON.parse(process.env.FIREBASE_KEY))
@@ -20,6 +19,48 @@ db.settings(settings)
 
  export const state = () => {
     return {
+        diaries: [{
+                id: 'AGedfCPondJrTwDbB012',// 自動生成ID
+				userId:'',
+				submit: false, //trueの場合提出済み。falseの場合、下書き
+				hcChecked: false, //監督(head coach)が確認したかどうか
+				commentCount: 2,
+				comment1:'',
+				comment1UserId:'',
+				comment2:'',
+				comment2UserId:'',
+				date: '2018年9月25日(火)',
+				time: '20:26',
+				title:'プロテイン飲もう',
+				content1:'',
+				content2:'',
+				content3:'',
+				content4:'',
+				content5:'',
+				input_at:'',
+				update_at:''
+        },
+        {
+            id: 'AGedfCPondJrTwDbB012',// 自動生成ID
+            userId:'',
+            submit: false, //trueの場合提出済み。falseの場合、下書き
+            hcChecked: false, //監督(head coach)が確認したかどうか
+            commentCount: 2,
+            comment1:'',
+            comment1UserId:'',
+            comment2:'',
+            comment2UserId:'',
+            date: '2018年9月24日(月)',
+            time: '20:26',
+            title:'プロテイン飲もう',
+            content1:'',
+            content2:'',
+            content3:'',
+            content4:'',
+            content5:'',
+            input_at:'',
+            update_at:''
+    }],
         scheduleAddErr: '',
         schTIdErr: '',
         confirmed: false,

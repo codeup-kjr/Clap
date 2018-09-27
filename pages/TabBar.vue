@@ -15,6 +15,7 @@
 <script>
 import MyPage from './MyPage'
 import Calendar from './Calendar'
+import Diary from './Diary'
 import Applaud from './Applaud'
 import Chat from './Chat'
 
@@ -41,16 +42,22 @@ export default {
         //   style: this.md ? { maxWidth: '60px' } : {}, //小さくする場合
           top: 0 // Toolbarを使用する場合は、-(Toolbar + Tabbar heights)
         },
- {
-          // label: 'メンバー評価',
-          icon: 'ion-star',
-          page: Applaud,
-          theme: yerrow
-        },
+        // {
+        //   // label: 'メンバー評価',
+        //   icon: 'ion-star',
+        //   page: Applaud,
+        //   theme: yerrow
+        // },
+        // {
+        //   // label: 'チャット',
+        //   icon: 'ion-chatboxes',
+        //   page: Chat,
+        //   theme: green
+        // },
         {
-          // label: 'チャット',
-          icon: 'ion-chatboxes',
-          page: Chat,
+          // label: '日誌',
+          icon: 'ion-ios-book',
+          page: Diary,
           theme: green
         },
         {
