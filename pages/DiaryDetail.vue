@@ -129,15 +129,15 @@ export default {
         },
 
         close() {
-            this.$store.commit('pop')
+            this.$store.commit('pop');
         },
 
         focus() {
-            this.commentFocus = true
+            this.commentFocus = true;
         },
 
         blur() {
-            this.commentFocus = false
+            this.commentFocus = false;
         }
         
 
