@@ -420,7 +420,7 @@ export default {
                                                 sTime: this.sTime,
                                                 eTime: this.eTime,
                                                 exInfo: this.exInfo})
-          // エラーが起きた時の対処(stateの更新など)をindex.js内に記述し、ここでstateを読み込んで判定する処理を書く。
+          
           if (!navigator.onLine) {
               if(this.addBText=='登録') {
                 this.$ons.notification.alert({messageHTML:'オンラインになると登録されます。<br>オンラインになる前に画面を更新すると登録されません。', title:''})
@@ -430,9 +430,9 @@ export default {
               }
           } else {
             if(this.addBText=='登録') {
-              this.$ons.notification.alert('登録しました', {title:''})
+              this.$ons.notification.alert('登録しました。', {title:''})
             } else if(this.addBText=='保存') {
-              this.$ons.notification.alert('保存しました', {title:''})
+              this.$ons.notification.alert('保存しました。', {title:''})
               this.editId = ''
             }
           }
@@ -467,10 +467,7 @@ export default {
   }
 
   .calendar {
-    /* height: 264px; */
     width: 100vw;
-    /* height: 48vh; */
-    height: 44vh;
   }
 
   .dateTitle {
@@ -487,8 +484,7 @@ export default {
     overflow: auto;
     font-size: 0.85rem;
     width: 100vw;
-    /* height: 34vh; */
-    height: 38vh;
+    height: 33vh;
   }
 
   .eventLItem {

@@ -117,6 +117,7 @@ export const teamRef = db.collection('team')
 // export const teamURef = teamRef.doc(String(state.teamId)).collection('users')
 export const userRef = db.collection('users')
 export const roomRef = db.collection('room')
+export const diaryRef = db.collection('diary')
 
 export const mutations = {
 
@@ -188,9 +189,6 @@ export const mutations = {
         state.schTIdErr = text
     },
 
-    setScheduleAddErr(state, text) {
-        state.scheduleAddErr = text
-    },
 
   }
 
@@ -221,6 +219,10 @@ export const actions = {
         await bindFirebaseRef('myData', userRef.doc(String(state.uid)))
     }),
 
+    bindDiaries: firebaseAction(async ({bindFirebaseRef, state}) => {
+        await bindFirebaseRef('diaries', diaryRef.doc(String(state.teamId)).collection('diaries').orderBy('update_at', 'desc'))
+    }),
+
     unBindTeam: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('team')
     }),
@@ -241,6 +243,9 @@ export const actions = {
         await unbindFirebaseRef('myData')
     }),
 
+    unBindDiaries: firebaseAction(async ({unbindFirebaseRef}) => {
+        await unbindFirebaseRef('diaries')
+    }),
 
     teamRegist: firebaseAction(({context, state}, {name, type, event}) => {
         teamRef.doc(String(state.teamId)).set({
@@ -292,7 +297,7 @@ export const actions = {
 
             await dispatch('bindMyData')
 
-            dispatch('getUser', {ids: state.teamU})
+            // dispatch('getUser', {ids: state.teamU})
         
       }),
 
@@ -354,18 +359,22 @@ export const actions = {
           
     }),
 
-    getTeamByUid: firebaseAction(({context, state, commit, dispatch}) => {
+    getTeamByUid: firebaseAction(({context, state, commit, dispatch}, {page}) => {
         userRef.doc(String(state.uid)).collection('teams').where("regist", "==", true)
             .get().then(function(querySnapshot) {
                 querySnapshot.forEach(async function(doc) {
                     if (doc.exists) {
                         await commit('setTeamId', doc.data().teamId)
+                        dispatch('bindSchedule')
                         await dispatch('bindTeam')
-                        await dispatch('bindSchedule')
                         await dispatch('bindTeamU')
                         await dispatch('getUser', {ids: state.teamU})
-                        await dispatch('bindMyRoom')
-                        dispatch('getGroup', {ids: state.myRoom})
+                        await dispatch('bindDiaries')
+
+                        commit('clear')
+                        commit('push', page)
+                        // await dispatch('bindMyRoom')
+                        // dispatch('getGroup', {ids: state.myRoom})
                     } else {
                         console.log("No such document!")
                     }
@@ -382,9 +391,9 @@ export const actions = {
                     uid = user.uid
                     await commit('setUid', uid)
                     await dispatch('bindMyData')
-                    await dispatch('getTeamByUid')
-                    commit('clear')
-                    commit('push', page2)
+                    await dispatch('getTeamByUid', {page: page2})
+                    // commit('clear')
+                    // commit('push', page2)
                 } else {
                     commit('clear')
                     commit('push', page1)
@@ -393,7 +402,6 @@ export const actions = {
     }),
 
     scheduleAdd: firebaseAction(async({context, state, commit}, {id, title, place, sYear, sMonth, sDate, eYear, eMonth, eDate, sTime, eTime, exInfo}) => {
-        await commit('setScheduleAddErr', '')
         teamRef.doc(String(state.teamId)).collection('schedule').doc(String(id)).set({
             id: id,
             title: title,
@@ -408,9 +416,7 @@ export const actions = {
             time_end: eTime,
             ex_info: exInfo
         }).catch(function(error) {
-            console.log('スケジュールアドエラー')
             console.log("Error writing document: ", error)
-            commit('setScheduleAddErr', error)
         })
       }),
 
@@ -534,10 +540,60 @@ export const actions = {
             commit('setSentFlg', true)
             console.log('Successfully Sent.')
           }).catch(function(error) {
-            commit('setSentFlg', false)
-            const errorCode = error.code
-            const errorMessage = error.message
-            console.log(errorMessage)
-          })
-        })
+                commit('setSentFlg', false)
+                const errorCode = error.code
+                const errorMessage = error.message
+                console.log(errorMessage)
+            })
+        }),
+    
+    
+    diaryAdd: firebaseAction(async({context, state}, {id, submit, date, title, content1, content2, content3, content4, content5, edit}) => {
+        const now = new Date();
+        const h = String(now.getHours());
+        let m = String(now.getMinutes());
+        if(m.length==1) {
+            m = String('0' + m);
+        }
+
+        if(edit) {
+            diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).update({
+                submit:         submit,
+                hcChecked:      false,
+                commentCount:   0,
+                date:           date,
+                time:           `${h}:${m}`,
+                title:          title,
+                content1:       content1,
+                content2:       content2,
+                content3:       content3,
+                content4:       content4,
+                content5:       content5,
+                update_at:      firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function(error) {
+                console.log("Error writing document: ", error)
+            })
+        } else {
+            diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).set({
+                id:             id,
+                userId:         state.uid,
+                submit:         submit,
+                hcChecked:      false,
+                commentCount:   0,
+                date:           date,
+                time:           `${h}:${m}`,
+                title:          title,
+                content1:       content1,
+                content2:       content2,
+                content3:       content3,
+                content4:       content4,
+                content5:       content5,
+                input_at:       firebase.firestore.FieldValue.serverTimestamp(),
+                update_at:      firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function(error) {
+                console.log("Error writing document: ", error)
+            })
+        }
+    }),
+    
   }
