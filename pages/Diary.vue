@@ -149,27 +149,7 @@ export default {
                 },
 
     showDetail(data, uData, uDataImage) {
-        console.log(data);
-        this.$store.commit('push', {extends: DiaryDetail,
-                            data() {return {
-                                        answers: {
-                                            q1:     data.content1,
-                                            q2:     data.content2,
-                                            q3:     data.content3,
-                                            q4:     data.content4,
-                                            q5:     data.content5,
-                                            title:  data.title
-                                        },
-                                        name:   uData.name,
-                                        image:  uDataImage,
-                                        id: data.id,
-                                        date: data.date,
-                                        userId: data.userId
-                            }},
-                            onsNavigatorOptions: {
-                                animation: 'lift',
-                                animationOptions: { duration: 0.5 }
-                    }});
+        this.$store.dispatch('showDetail', {data: data, uData: uData, uDataImage: uDataImage, page: DiaryDetail});
     }
 
   },

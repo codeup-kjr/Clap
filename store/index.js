@@ -19,48 +19,8 @@ db.settings(settings)
 
  export const state = () => {
     return {
-        diaries: [{
-                id: 'AGedfCPondJrTwDbB012',// 自動生成ID
-				userId:'',
-				submit: false, //trueの場合提出済み。falseの場合、下書き
-				hcChecked: false, //監督(head coach)が確認したかどうか
-				commentCount: 2,
-				comment1:'',
-				comment1UserId:'',
-				comment2:'',
-				comment2UserId:'',
-				date: '2018年9月25日(火)',
-				time: '20:26',
-				title:'プロテイン飲もう',
-				content1:'',
-				content2:'',
-				content3:'',
-				content4:'',
-				content5:'',
-				input_at:'',
-				update_at:''
-        },
-        {
-            id: 'AGedfCPondJrTwDbB012',// 自動生成ID
-            userId:'',
-            submit: false, //trueの場合提出済み。falseの場合、下書き
-            hcChecked: false, //監督(head coach)が確認したかどうか
-            commentCount: 2,
-            comment1:'',
-            comment1UserId:'',
-            comment2:'',
-            comment2UserId:'',
-            date: '2018年9月24日(月)',
-            time: '20:26',
-            title:'プロテイン飲もう',
-            content1:'',
-            content2:'',
-            content3:'',
-            content4:'',
-            content5:'',
-            input_at:'',
-            update_at:''
-    }],
+        diaryData: {},
+        diaries: [],
         scheduleAddErr: '',
         schTIdErr: '',
         confirmed: false,
@@ -223,6 +183,10 @@ export const actions = {
         await bindFirebaseRef('diaries', diaryRef.doc(String(state.teamId)).collection('diaries').orderBy('update_at', 'desc'))
     }),
 
+    bindDiaryData: firebaseAction(async ({bindFirebaseRef, state}, {id}) => {
+        await bindFirebaseRef('diaryData', diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)))
+    }),
+
     unBindTeam: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('team')
     }),
@@ -245,6 +209,10 @@ export const actions = {
 
     unBindDiaries: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('diaries')
+    }),
+
+    unBindDiaryData: firebaseAction(async ({unbindFirebaseRef}) => {
+        await unbindFirebaseRef('diaryData')
     }),
 
     teamRegist: firebaseAction(({context, state}, {name, type, event}) => {
@@ -595,5 +563,29 @@ export const actions = {
             })
         }
     }),
+
+    showDetail : firebaseAction(async({context, state, commit, dispatch}, {data, uData, uDataImage, page}) => {
+        await dispatch('bindDiaryData', {id: data.id});
+        commit('push', {extends: page,
+            data() {return {
+                        answers: {
+                            q1:     data.content1,
+                            q2:     data.content2,
+                            q3:     data.content3,
+                            q4:     data.content4,
+                            q5:     data.content5,
+                            title:  data.title
+                        },
+                        name:   uData.name,
+                        image:  uDataImage,
+                        id: data.id,
+                        date: data.date,
+                        userId: data.userId
+            }},
+            onsNavigatorOptions: {
+                animation: 'lift',
+                animationOptions: { duration: 0.5 }
+        }});
+      })
     
   }

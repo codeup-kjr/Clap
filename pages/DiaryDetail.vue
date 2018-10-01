@@ -41,6 +41,14 @@
                 <textarea cols="30" :style="commentHeight" class="comment-input" placeholder="コメントを入力" v-model="comment" @focus="focus" @blur="blur"></textarea>
             </div>
         </div>
+        <v-ons-list class="list">
+            <v-ons-lazy-repeat
+                :render-item="commentItem"
+                :length="commentLength"
+                :calculate-item-height="commentItemHeight"
+            >
+            </v-ons-lazy-repeat>
+        </v-ons-list>
         <v-ons-button modifier="quiet" class="logout-b" @click="test">ログアウト</v-ons-button>
 
     </v-ons-page>
@@ -48,6 +56,8 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import png from '../assets/dUsrImg.jpg'
 export default {
     
     data() {
@@ -74,9 +84,132 @@ export default {
             date:   '',
             userId: '',
             comment: '',
-            commentFocus: false
+            commentFocus: false,
+            replyCF: '',
+
+
+                    replyItemHeight:
+                    index => {
+                            return 204;
+                        },
+
+                    replyItem:
+                    index => {
+                        const vm = this
+                        // const diaryData = this.$store.state.diaryData
+
+                        return new Vue({
+                        render: createElement => {
+                            if(diaryData[replyCF] > 0) {
+                            return createElement(
+                                "div",
+                                {class: 'comment-item'},
+                                [
+                                    (()=> {
+                                            vm.replyF = commentF + 'Reply' + (index + 1);
+                                            const replyUserIdF = replyF + 'UserId';
+                                            const replyTimeF = replyF + 'Time';
+
+                                            const replyUData = vm.$store.state.usersData.filter(data => data.id == diaryData[replyUserIdF])[0];
+                                            const replyUDataImage = replyUData.image == '' ? png : replyUData.image;
+                                            
+                                            // cardはonsenuiのcss
+                                            return createElement('div', {style:{display: 'flex', justifyContent: 'flex-start'}},[
+                                                createElement('img', {attrs: { src: replyUDataImage}, style:{height: '6vw', maxHeight: '56px', width: '6vw', maxWidth: '56px', borderRadius: '3vw', marginRight: '2vw'}},),
+                                                createElement('div', {style:{display: 'flex', flexDirection:'column'}},[
+                                                    createElement('div', {style:{display: 'flex'}},[
+                                                        createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, replyUData.name),
+                                                        createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, diaryData[replyTimeF])]),
+                                                    createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, diaryData[replyF]),
+                                                ])
+                                            ]);
+                                    })(),
+
+                                ]
+                            );
+                            } else {
+                                return '';
+                            }
+                        },
+                        
+                    })
+                    },
+
+        commentItemHeight:
+        i => {
+                return 204;
+             },
+
+        commentItem:
+        i => {
+            const vm = this
+            const diaryData = this.$store.state.diaryData
+            const commentF = 'comment' + (i + 1);
+            const userIdF = commentF + 'UserId';
+            const timeF = commentF + 'Time';
+            const replyCF = commentF + 'ReplyCount';
+
+            const uData = vm.$store.state.usersData.filter(data => data.id == diaryData[userIdF])[0];
+            const uDataImage = uData.image == '' ? png : uData.image;
+            let replyShow = {i: false}
+            
+            const replyItem = vm.replyItem;
+            // const replyLength = vm.replyLength(replyCF);
+            const replyLength = vm.$store.state.diaryData[replyCF]
+            const replyHeight = vm.replyItemHeight;
+
+            return new Vue({
+
+                render: createElement => {
+                    // const ivm = this;
+                    if(diaryData.commentCount > 0) {
+                    return createElement(
+                        "div",
+                        {style:{width: '90vw'}},
+                        [
+                            (()=> {
+                                    const comment = createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: '90vw'}},[
+                                        createElement('img', {attrs: { src: uDataImage}, style:{height: '6vw', maxHeight: '56px', width: '6vw', maxWidth: '56px', borderRadius: '3vw', marginRight: '2vw'}},),
+                                        createElement('div', {style:{display: 'flex', flexDirection:'column', width: '60vw'}},[
+                                            createElement('div', {style:{display: 'flex', width: '60vw'}},[
+                                                createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, uData.name),
+                                                createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, diaryData[timeF])]),
+                                            createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, diaryData[commentF]),
+                                            vm.replyLength(replyCF) > 0 ?
+                                            createElement('div', {on: {click: ()=>{replyShow.i = true;}}}, replyShow.i == true ? '返信を非表示' : '返信を表示') : '',
+                                        ])
+                                    ]);
+                                    let reply = ''
+                                    // replyShow.i == true ?
+                                        reply = createElement('v-ons-list', {}, [ 
+                                                createElement('v-ons-lazy-repeat', {attrs: { renderItem: replyItem, length: replyLength, calculateItemHeight: replyHeight}, style:{}},)])
+                                        reply.bind('render-item', replyItem);
+                                        reply.bind('length', replyLength);
+                                        reply.bind('calculate-item-eight', replyHeight);
+                                    // : ''
+                                    if(reply) {
+                                        return [comment, reply]
+                                    } else {
+                                        return [comment]
+                                    }
+                            })(),
+
+                        ]
+                    );
+                    } else {
+                        return '';
+                    }
+                },
+            
+        })
+        },
 
         }
+
+    },
+
+    destroyed() {
+        this.$store.dispatch('unBindDiaryData');
     },
 
 
@@ -90,6 +223,16 @@ export default {
             const kaigyou = this.comment.split(/\n/).length - 1;
             const lineCount = ((this.comment.bytes() - kaigyou) == 0 ? 1 : 0) + Math.ceil((this.comment.bytes() - kaigyou) / 30) + kaigyou;
             return `height: ${lineHeight * lineCount}px`;
+        },
+
+        commentLength() {
+            return this.$store.state.diaryData.commentCount
+        },
+
+        replyLength() {
+            return(replyCF) => {
+                return this.$store.state.diaryData[replyCF] != '' ? this.$store.state.diaryData[replyCF] : 0
+            }
         }
 
     },
@@ -266,7 +409,7 @@ export default {
         left: 0;
         bottom: -2px;/*自由変更*/
         height: 3px;/*自由変更*/
-        background-color: rgb(125, 199, 233);/*自由変更*/
+        background-color: rgb(72, 126, 152);/*自由変更*/
         width: 0;
         transition: width .4s;/*自由変更*/
     }
@@ -276,6 +419,10 @@ export default {
     .underline2:active:after {
         /*ホバーしたら100%の位置まで伸びる*/
         width: 100%;
+    }
+
+    .comment-item {
+
     }
 
 </style>
