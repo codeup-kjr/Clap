@@ -67,7 +67,7 @@ export default {
                                 }
                                 
                                 const uData = vm.$store.state.usersData.filter(data => data.id == target.userId)[0];
-                                const uDataImage = uData.image == '' ? png : uData.image;
+                                const uDataImage = uData.image == null ? png : uData.image;
                                 
                                 // cardはonsenuiのcss
                                 const card = createElement('div', {on: {click: ()=>{vm.clickFunc(target, uData, uDataImage)}}, class: 'card'},[

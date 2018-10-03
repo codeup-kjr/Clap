@@ -35,13 +35,16 @@
                 <div class="qTitle">5. {{questions.q5}}</div>
                 <div class="qAnswer">{{answers.q5}}</div>
         </div>
+
+        <p class="comment-count">{{this.$store.state.diaryData.commentCount}}件のコメント</p>
         <div class="img-comment">
             <img :src="$store.state.myData.image" alt="image" class="list-item__thumbnail my-image">
             <div class="border underline" :class="commentFocus == true ? 'underline2' : ''">
                 <textarea cols="30" :style="commentHeight" class="comment-input" placeholder="コメントを入力" v-model="comment" @focus="focus" @blur="blur"></textarea>
             </div>
         </div>
-        <v-ons-list class="list">
+
+        <v-ons-list class="list list--noborder">
             <v-ons-lazy-repeat
                 :render-item="commentItem"
                 :length="commentLength"
@@ -85,55 +88,10 @@ export default {
             userId: '',
             comment: '',
             commentFocus: false,
-            replyCF: '',
-
-
-                    replyItemHeight:
-                    index => {
-                            return 204;
-                        },
-
-                    replyItem:
-                    index => {
-                        const vm = this
-                        // const diaryData = this.$store.state.diaryData
-
-                        return new Vue({
-                        render: createElement => {
-                            if(diaryData[replyCF] > 0) {
-                            return createElement(
-                                "div",
-                                {class: 'comment-item'},
-                                [
-                                    (()=> {
-                                            vm.replyF = commentF + 'Reply' + (index + 1);
-                                            const replyUserIdF = replyF + 'UserId';
-                                            const replyTimeF = replyF + 'Time';
-
-                                            const replyUData = vm.$store.state.usersData.filter(data => data.id == diaryData[replyUserIdF])[0];
-                                            const replyUDataImage = replyUData.image == '' ? png : replyUData.image;
-                                            
-                                            // cardはonsenuiのcss
-                                            return createElement('div', {style:{display: 'flex', justifyContent: 'flex-start'}},[
-                                                createElement('img', {attrs: { src: replyUDataImage}, style:{height: '6vw', maxHeight: '56px', width: '6vw', maxWidth: '56px', borderRadius: '3vw', marginRight: '2vw'}},),
-                                                createElement('div', {style:{display: 'flex', flexDirection:'column'}},[
-                                                    createElement('div', {style:{display: 'flex'}},[
-                                                        createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, replyUData.name),
-                                                        createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, diaryData[replyTimeF])]),
-                                                    createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, diaryData[replyF]),
-                                                ])
-                                            ]);
-                                    })(),
-
-                                ]
-                            );
-                            } else {
-                                return '';
-                            }
-                        },
-                        
-                    })
-                    },
+            replyShow: {},
+            replyControl: {},
+            replyLength: {},
+            unbindTarget: [],
 
         commentItemHeight:
         i => {
@@ -142,56 +100,61 @@ export default {
 
         commentItem:
         i => {
-            const vm = this
             const diaryData = this.$store.state.diaryData
             const commentF = 'comment' + (i + 1);
             const userIdF = commentF + 'UserId';
             const timeF = commentF + 'Time';
-            const replyCF = commentF + 'ReplyCount';
 
-            const uData = vm.$store.state.usersData.filter(data => data.id == diaryData[userIdF])[0];
-            const uDataImage = uData.image == '' ? png : uData.image;
-            let replyShow = {i: false}
-            
-            const replyItem = vm.replyItem;
-            // const replyLength = vm.replyLength(replyCF);
-            const replyLength = vm.$store.state.diaryData[replyCF]
-            const replyHeight = vm.replyItemHeight;
+            const uData = this.$store.state.usersData.filter(data => data.id == diaryData[userIdF])[0];
+            const uDataImage = uData.image == null ? png : uData.image;
+
+            this.replyShow[i+1] = false;
+            this.replyControl[i+1] = '返信を表示';
 
             return new Vue({
 
                 render: createElement => {
-                    // const ivm = this;
                     if(diaryData.commentCount > 0) {
                     return createElement(
                         "div",
                         {style:{width: '90vw'}},
                         [
                             (()=> {
-                                    const comment = createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: '90vw'}},[
-                                        createElement('img', {attrs: { src: uDataImage}, style:{height: '6vw', maxHeight: '56px', width: '6vw', maxWidth: '56px', borderRadius: '3vw', marginRight: '2vw'}},),
+                                    return createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: '90vw', marginBottom: '8px'}},[
+                                        createElement('img', {attrs: { src: uDataImage}, style:{height: '6vh', maxHeight: '56px', width: '6vh', maxWidth: '56px', borderRadius: '3vh', marginRight: '2vw'}},),
                                         createElement('div', {style:{display: 'flex', flexDirection:'column', width: '60vw'}},[
-                                            createElement('div', {style:{display: 'flex', width: '60vw'}},[
-                                                createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, uData.name),
-                                                createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, diaryData[timeF])]),
-                                            createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, diaryData[commentF]),
-                                            vm.replyLength(replyCF) > 0 ?
-                                            createElement('div', {on: {click: ()=>{replyShow.i = true;}}}, replyShow.i == true ? '返信を非表示' : '返信を表示') : '',
+                                            createElement('div', {style:{display: 'flex'}},[
+                                                createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)', marginRight: '8px'}}, uData.name),
+                                                createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, this.displayTime(diaryData[timeF]))]),
+                                            createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)', marginBottom: '8px'}}, diaryData[commentF]),
+                                            
+                                            this.$store.state.diaryData[`comment${i+1}ReplyCount`] > 0 &&
+                                            createElement('div', {style:{display: 'flex', marginBottom: '8px'}},[
+                                                // createElementは、最後の引数にbindしたstateを指定しないと、dbの変更をリアルタイムに反映することができないため、このように切り替える内容と分離させる。
+                                                this.replyShow[i+1] == false ?
+                                                    createElement('span', {on: {click: ()=>{this.controlReply(i);}}}, this.$store.state.diaryData[`comment${i+1}ReplyCount`] + '件の')
+                                                : '',
+                                                createElement('p', {on: {click: ()=>{this.controlReply(i);}}}, this.replyControl[i+1])
+                                            ]),
+                                                    this.$store.state.diaryCommentReply[i+1] !=null &&
+                                                    this.replyShow[i+1] == true ?
+                                                    //createElementを使用する場合のv-forの代替手段がarray.prototype.map()
+                                                    // bindの後にcommitして作成した多次元配列diaryCommentReplyをmapする。多次元配列とすることで、事前にstateを定義することができ、リアクティブにできる。
+                                                        createElement('div', {style:{display: 'flex', flexDirection:'column'}}, this.$store.state.diaryCommentReply[i+1].map((item, index) => [
+                                                            createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: '70vw', marginBottom: '8px'}},[
+                                                                createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == item.userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == item.userId)[0].image}, style:{height: '4vh', maxHeight: '56px', width: '4vh', maxWidth: '56px', borderRadius: '2vh', marginRight: '2vw'}},),
+                                                                createElement('div', {style:{display: 'flex', flexDirection:'column'}},[
+                                                                    createElement('div', {style:{display: 'flex'}},[
+                                                                        createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)', marginRight: '8px'}}, this.$store.state.usersData.filter(data => data.id == item.userId)[0].name),
+                                                                        createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, this.displayTime(item.time))
+                                                                    ]),
+                                                                    createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, item.text)
+                                                                ])
+                                                            ])
+                                                        ]))
+                                                    : ''
                                         ])
                                     ]);
-                                    let reply = ''
-                                    // replyShow.i == true ?
-                                        reply = createElement('v-ons-list', {}, [ 
-                                                createElement('v-ons-lazy-repeat', {attrs: { renderItem: replyItem, length: replyLength, calculateItemHeight: replyHeight}, style:{}},)])
-                                        reply.bind('render-item', replyItem);
-                                        reply.bind('length', replyLength);
-                                        reply.bind('calculate-item-eight', replyHeight);
-                                    // : ''
-                                    if(reply) {
-                                        return [comment, reply]
-                                    } else {
-                                        return [comment]
-                                    }
                             })(),
 
                         ]
@@ -209,6 +172,11 @@ export default {
     },
 
     destroyed() {
+        const len = this.unbindTarget.length;
+        for(let i=0; i<len; i++) {
+            this.$store.dispatch('unBindDiaryCommentReply', {index: this.unbindTarget[i]});
+        }
+
         this.$store.dispatch('unBindDiaryData');
     },
 
@@ -229,9 +197,28 @@ export default {
             return this.$store.state.diaryData.commentCount
         },
 
-        replyLength() {
-            return(replyCF) => {
-                return this.$store.state.diaryData[replyCF] != '' ? this.$store.state.diaryData[replyCF] : 0
+        displayTime() {
+            return(time) => {
+                let timestamp = time.seconds * 1000;
+                var date = new Date(timestamp)
+                console.log('timestamp: ' + timestamp, 'date: ' + date);
+                var diff = new Date().getTime() - date.getTime()
+                var d = new Date(diff);
+
+                if (d.getUTCFullYear() - 1970) {
+                    return d.getUTCFullYear() - 1970 + '年前'
+                } else if (d.getUTCMonth()) {
+                    return d.getUTCMonth() + 'ヶ月前'
+                } else if (d.getUTCDate() - 1) {
+                    return d.getUTCDate() - 1 + '日前'
+                } else if (d.getUTCHours()) {
+                    return d.getUTCHours() + '時間前'
+                } else if (d.getUTCMinutes()) {
+                    return d.getUTCMinutes() + '分前'
+                } else {
+                    return 'たった今'
+                    // return d.getUTCSeconds() + '秒前'
+                }
             }
         }
 
@@ -263,12 +250,24 @@ export default {
             }
         },
 
+        async controlReply(i) {
+            // bindの後にcommitして多次元配列diaryCommentReplyを作成する。多次元配列とすることで、抽出する際にmapを適用できる。また、事前にstateを定義することができ、リアクティブにできる。
+            await this.$store.dispatch('bindDiaryCommentReply', {index: (i+1), id: this.$store.state.diaryData.id});
+            await this.$store.commit('setDiaryCommentReply', {data: this.$store.state[`diaryComment${i+1}Reply`], index: i+1});
+            this.replyShow[i+1] = !this.replyShow[i+1];
+            //リアクティブにするため、Object.assignを使用。
+            this.replyControl = Object.assign({}, this.replyControl, { [i]: this.replyShow[i+1] == true ? '返信を非表示' : '返信を表示'});
+            //destoryed()時にunbindする`bindDiaryComment${i}Reply`を保持する。
+            this.unbindTarget.push(i+1);
+        },
+
         test() {
             String.prototype.bytes = function () {
                 return(encodeURIComponent(this).replace(/%../g,"x").length);
                 }
             console.log(this.comment.length);
             console.log(this.comment.bytes());
+
         },
 
         close() {
@@ -365,10 +364,17 @@ export default {
         color: #575757;
     }
 
+    .comment-count {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+        margin-left: 16px;
+    }
+
     .img-comment {
         display: flex;
         align-items: flex-start;
-        margin-bottom: 16px;
+        margin-bottom: 24px;
+        margin-left: 16px;
     }
 
     .my-image{
@@ -386,7 +392,7 @@ export default {
         min-height: 17px;
         font-size: 1rem;
         line-height: 16px;
-        width: 290px;
+        width: 264px;
         resize: none;
         margin-top: 2vh;
         padding: 0;
@@ -421,8 +427,9 @@ export default {
         width: 100%;
     }
 
-    .comment-item {
-
+    .list {
+        border: none;
+        background-color: #fcfcfc;
+        margin-left: 16px;
     }
-
 </style>

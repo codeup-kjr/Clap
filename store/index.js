@@ -19,6 +19,9 @@ db.settings(settings)
 
  export const state = () => {
     return {
+        // コメントへの返信をリアクティブにするためには事前に定義する必要があるため、下記のように羅列。ここの数だけ、コメントへの返信をリアクティブにできる。仕様としてよろしくないが、暫定措置。
+        diaryComment1Reply: [], diaryComment2Reply: [], diaryComment3Reply: [], diaryComment4Reply: [], diaryComment5Reply: [], diaryComment6Reply: [], diaryComment7Reply: [], diaryComment8Reply: [], diaryComment9Reply: [], diaryComment10Reply: [], diaryComment11Reply: [], diaryComment12Reply: [], diaryComment13Reply: [], diaryComment14Reply: [], diaryComment15Reply: [],diaryComment16Reply: [], diaryComment17Reply: [], diaryComment18Reply: [], diaryComment19Reply: [], diaryComment20Reply: [], diaryComment21Reply: [], diaryComment22Reply: [], diaryComment23Reply: [], diaryComment24Reply: [], diaryComment25Reply: [], diaryComment26Reply: [], diaryComment27Reply: [], diaryComment28Reply: [], diaryComment29Reply: [],  diaryComment30Reply: [],
+        diaryCommentReply:[],
         diaryData: {},
         diaries: [],
         scheduleAddErr: '',
@@ -149,6 +152,9 @@ export const mutations = {
         state.schTIdErr = text
     },
 
+    setDiaryCommentReply(state, {data, index}) {
+        state.diaryCommentReply[index] = data;
+    }
 
   }
 
@@ -187,6 +193,11 @@ export const actions = {
         await bindFirebaseRef('diaryData', diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)))
     }),
 
+    bindDiaryCommentReply: firebaseAction(async ({bindFirebaseRef, state, commit}, {index, id}) => {
+        await bindFirebaseRef(`diaryComment${index}Reply`, diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).collection('reply').doc(String(`comment${index}`)).collection('reply'));
+    }),
+
+
     unBindTeam: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('team')
     }),
@@ -214,6 +225,11 @@ export const actions = {
     unBindDiaryData: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('diaryData')
     }),
+
+    unBindDiaryCommentReply: firebaseAction(async ({unbindFirebaseRef}, {index}) => {
+        await unbindFirebaseRef(`diaryComment${index}Reply`)
+    }),
+
 
     teamRegist: firebaseAction(({context, state}, {name, type, event}) => {
         teamRef.doc(String(state.teamId)).set({
