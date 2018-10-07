@@ -3,7 +3,7 @@
     <v-ons-page>
       <div class="container">
         <v-calendar :attributes='attrs' :theme-styles='themeStyles' @dayclick="dayClick" class="calendar"/>
-        <v-ons-button modifier="cta" class="addEvent" @click="addPushed">＋</v-ons-button>
+        <!-- <v-ons-button modifier="cta" class="addEvent" @click="addPushed">＋</v-ons-button> -->
         
         <v-ons-modal :visible="addVisible">
           <div class="add-container">
@@ -44,26 +44,64 @@
             </div>
           </div>
         </v-ons-modal>
-        
+
         <div  
           class='selected-day'>
-          <v-ons-list-title class="dateTitle" v-show="isToday&&dayClicked">
+          <!-- <v-ons-list-title class="dateTitle" v-show="isToday&&dayClicked"> -->
+          <v-ons-list-title class="dateTitle" v-show="isToday">
             今日
           </v-ons-list-title>
+
           <v-ons-list-title class="dateTitle" v-show="!isToday&&dayClicked">
-            {{ selectedDay.year }}年{{ selectedDay.month }}月{{ selectedDay.day }}日
+            <!-- {{ selectedDay.year }}年 -->
+            {{ selectedDay.month }}月{{ selectedDay.day }}日({{returnDay(String(selectedDay.date))}})
           </v-ons-list-title>
-          
+
+          <v-ons-list-title class="dateTitle" v-show="!isToday&&!dayClicked">
+            カレンダーの日付をタップ
+          </v-ons-list-title>
+
+          <div class="diary-title" @click="$store.state.diaries.filter(diary => diary.userId == $store.state.uid && diary.date == diaryDate)[0] != null ? showDiary() : ''">
+            <v-ons-icon icon='ion-ios-book' class="book"/>
+              <span class="diary-title-text" :style="$store.state.diaries.filter(diary => diary.userId == $store.state.uid && diary.date == diaryDate)[0] == null ? 'color: #8e8e8e' : ''">
+                {{$store.state.diaries.filter(diary => diary.userId == $store.state.uid && diary.date == diaryDate)[0] != null ?
+                  $store.state.diaries.filter(diary => diary.userId == $store.state.uid && diary.date == diaryDate)[0].title : '提出済みの日誌はありません'}}
+              </span>
+          </div>
+
           <v-ons-list class="eventList" v-show="dayClicked">
             <!-- リストアイテムはstateを直接読むように変更。初期表示は今日を読む。ただし、dayclickイベントを発火することはできないため、firebaseから読む方法しかないと思われる。今はv-showで非表示にしている。 -->
             <!-- 「今日」をハイライトするために、keyをtodayにしてschedule(event)に追加している。空のリストなため、表示しない。 -->
-            <v-ons-list-item tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem" v-if="attr.key!='today'">
-              {{ attr.customData.time_start }}-{{ attr.customData.time_end }}  {{ attr.customData.title }}
+            <v-ons-list-item v-show="ordered!=null" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem" v-if="attr.key!='today'">
+              <div class="time-title">
+                <div class="time-colmn">
+                  <p>{{ attr.customData.time_start }}</p>
+                  <p>{{ attr.customData.time_end }}</p>
+                </div>
+                  <p class="event-title">{{ attr.customData.title }}</p>
+              </div>
+            </v-ons-list-item>
+            <v-ons-list-item v-show="ordered==''" class="eventLItem" style="color: #8e8e8e">
+              イベントはありません
             </v-ons-list-item>
           </v-ons-list>
-          
+
+          <v-ons-list class="eventList" v-show="!dayClicked">
+            <!-- リストアイテムはstateを直接読むように変更。初期表示は今日を読む。ただし、dayclickイベントを発火することはできないため、firebaseから読む方法しかないと思われる。 -->
+            <v-ons-list-item v-show="getScheduleOfToday != null" tappable v-for='attr in getScheduleOfToday' :key="attr.id" @click="eventOfTodayClick(attr)" class="eventLItem">
+              {{ attr.time_start }}-{{ attr.time_end }}  {{ attr.title }}
+            </v-ons-list-item>
+            <v-ons-list-item v-show="getScheduleOfToday == ''" class="eventLItem" style="color: #8e8e8e">
+              イベントはありません
+            </v-ons-list-item>
+          </v-ons-list>
         </div>
+
+        <v-ons-fab class="add-b" @click="addPushed">
+            <v-ons-icon icon="md-plus"></v-ons-icon>
+          </v-ons-fab>
       </div>
+          
     </v-ons-page>
     <!-- </no-ssr> -->
 </template>
@@ -71,10 +109,12 @@
 <script>
 import Vue from 'vue'
 import lodash from 'lodash'//並べ替え用「 ._ 」
+import DiaryDetail from './DiaryDetail';
 
 export default {
     data() {
         return {
+          diaryDate: '',
           editId: '',
           isROnly: false,
           isDetail: false,
@@ -109,14 +149,39 @@ export default {
         }
     },
 
-    created() {
-      
+    mounted() {
+      //起動時に本日の日誌を読み込む。
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const date = today.getDate();
+        const day = [ "日", "月", "火", "水", "木", "金", "土" ][today.getDay()];
+        this.diaryDate = `${year}年${month}月${date}日(${day})`;
     },
 
     computed: {
+      getScheduleOfToday() {
+        //起動時に本日のスケジュールを表示する。ライブラリの仕様で、dayClickイベントをプログラムから発動できないため、DBから読み込む。
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const date = today.getDate();
+        let listS = [];
+        let listE = [];
+        let list = [];
+
+        listS = listS.concat(this.$store.state.schedule.filter(data => data.date_start == date && data.month_start == month && data.year_start == year));
+        listE = listE.concat(this.$store.state.schedule.filter(data => data.date_end == date && data.month_end == month && data.year_end == year));
+        list = listS.concat(listE);
+        const cleanList = list.filter(function(v1,i1,a1){ 
+            return (a1.findIndex(function(v2){ 
+              return (v1.id===v2.id) 
+            }) === i1);
+          });
+        return cleanList;
+      },
 
       ordered(){
-        // return _.orderBy(this.selectedDay.attributes, ['customData.title'], ['desc'])
         return _.sortBy(this.selectedDay.attributes, function(item) {
             return [item.customData.time_start];
         });
@@ -293,17 +358,12 @@ export default {
         }
     },
 
-    components: {
-
-    },
-
     methods: {
       dayClick(data) {
-        this.dayClicked = true
-        this.selectedDay = data
-        this.isToday = data.isToday
-        // イベントリストアイテムを更新する処理を書く。
-
+        this.dayClicked = true;
+        this.selectedDay = data;
+        this.isToday = data.isToday;
+        this.diaryDate = `${data.year}年${data.month}月${data.day}日(${this.returnDay(String(data.date))})`;
       },
 
       addPushed() {
@@ -355,6 +415,18 @@ export default {
         // }
       },
 
+      showDiary() {
+        const myData = this.$store.state.myData;
+        const myDataImage = myData.image == null ? png : myData.image;
+        this.$store.dispatch('showDetail', {
+                                            diaryDiv: '提出済み',
+                                            data: this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.diaryDate)[0],
+                                            uData: myData,
+                                            uDataImage: myDataImage,
+                                            page: DiaryDetail
+                                            });
+      },
+
       eventClick(attr) {
           this.addVisible = true
           this.isDetail = true
@@ -376,6 +448,32 @@ export default {
           this.sTime = attr.customData.time_start
           this.eTime = attr.customData.time_end
           this.exInfo = attr.customData.ex_info
+
+      },
+
+      eventOfTodayClick(attr) {
+          const day = [ "日", "月", "火", "水", "木", "金", "土" ][new Date().getDay()];
+          
+          this.addVisible = true
+          this.isDetail = true
+          this.isROnly = true
+          
+          this.editId = attr.id
+          this.title  = attr.title
+          this.place  = attr.place
+
+          this.sYear  = attr.year_start
+          this.sMonth = attr.month_start
+          this.sDate  = attr.date_start
+          this.sDay   = day
+          this.eYear  = attr.year_end
+          this.eMonth = attr.month_end
+          this.eDate  = attr.date_end
+          this.eDay   = day
+
+          this.sTime = attr.time_start
+          this.eTime = attr.time_end
+          this.exInfo = attr.ex_info
 
       },
 
@@ -460,40 +558,83 @@ export default {
 
 <style scoped>
   .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 92vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: calc(100vh - 49px);
   }
 
   .calendar {
     width: 100vw;
+    height: 274px;
   }
 
   .dateTitle {
     font-size: 1rem;
-    background-color: #e7f9fc;
+    background-color: #dededf;
     width: 100%;
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding: 0;
-    height: 4vh;
+    padding-left: 8px;
+    height: 28px;
   }
+
+  .diary-title {
+    border: solid 1px #f4f4f7;
+    height: 40px;
+    width: 100vw;
+  }
+
+  .book {
+    color: #e98811;
+    border: solid 2px #f0ab57;
+    font-size: 1.5rem;
+    padding: 1px 4px;
+    margin: 3.5px 8px 2px 8px;
+  }
+
+  .diary-title-text {
+    color: #575757;
+    font-size: 0.9rem;
+    position: relative;
+    top: 1px;
+  }
+
   .eventList {
     overflow: auto;
     font-size: 0.85rem;
     width: 100vw;
-    height: 33vh;
+    /* height: 39vh; */
+    height: calc((100vh - 49px) - (274px + 28px + 40px));
   }
 
   .eventLItem {
     overflow: auto;
     white-space: nowrap;
     font-size: 0.8rem;
+    height: 48px;
+    color: #575757;
   }
 
-  .addEvent {
+  .time-title {
+    display: flex;
+  }
+
+  .time-column {
+    display: flex;
+    flex-direction: column;
+    margin-right: 8px;
+  }
+
+  .event-title {
+    margin-left: 16px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  
+  /* .addEvent {
     width: 100vw;
     display: flex;
     justify-content: center;
@@ -501,30 +642,38 @@ export default {
     font-size: 1.6rem;
     padding: 0;
     height: 6vh;
+  } */
+
+  .add-b {
+    background-color: rgb(125, 146, 238);
+    color: #fffefe;
+    position: fixed;
+    bottom: 6%;
+    left: 79%;
   }
 
   .add-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: black;
   }
 
   .add-header {
-      width: 85vw;
-      background-color: #fdfeff;
-      padding: 12px;
-      border-bottom: dotted 1px #6d6d72;
+    width: 85vw;
+    background-color: #fdfeff;
+    padding: 12px;
+    border-bottom: dotted 1px #6d6d72;
   }
 
   .add-under-h {
-      width: 85vw;
-      background-color: #fdfeff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 16px;
-      padding-bottom: 16px;
+    width: 85vw;
+    background-color: #fdfeff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 16px;
+    padding-bottom: 16px;
   }
 
   .add-input {
@@ -558,8 +707,9 @@ export default {
   .ex-info {
     border: dotted 1px #6d6d72;
     width: 67vw;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     resize: none;
+    border: none;
     margin-bottom: 16px;
   }
 
@@ -568,4 +718,6 @@ export default {
     display: flex;
     justify-content: space-between;
   }
+
+
 </style>

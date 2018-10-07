@@ -9,7 +9,7 @@
                 {{userId==$store.state.uid ? '自分の日誌' : 'メンバーの日誌'}}
             </div>
             <div class="right">
-                <div class="save" :style="md ? 'position: relative; top: 3px;' : ''" @click="addDiary(false)">保存</div>
+                <div v-if="diaryDiv=='下書き'" class="save" :style="md ? 'position: relative; top: 3px;' : ''" @click="addDiary(false)">保存</div>
             </div>
         </v-ons-toolbar>
 
@@ -36,12 +36,17 @@
                 <div class="qAnswer">{{answers.q5}}</div>
         </div>
 
-        <p class="comment-count">{{this.$store.state.diaryData.commentCount}}件のコメント</p>
+        <p class="comment-count">{{this.$store.state.commentData.length}}件のコメント</p>
         <div class="img-comment">
             <img :src="$store.state.myData.image" alt="image" class="list-item__thumbnail my-image">
             <div class="border underline" :class="commentFocus == true ? 'underline2' : ''">
-                <textarea cols="30" :style="commentHeight" class="comment-input" placeholder="コメントを入力" v-model="comment" @focus="focus" @blur="blur"></textarea>
+                <textarea cols="30" :style="{height: areaHeight(comment, 'comment')}" class="comment-input" placeholder="コメントを入力" v-model="comment" @focus="focus" @blur="blur"></textarea>
             </div>
+        </div>
+
+        <div class="comment-btns">
+            <v-ons-button modifier="quiet" class="comment-add-c" @click="commentAddC" v-show="this.comment.length > 0">キャンセル</v-ons-button>
+            <v-ons-button modifier="quiet" class="comment-add" @click="commentAdd" v-show="this.comment.length > 0">コメント</v-ons-button>
         </div>
 
         <v-ons-list class="list list--noborder">
@@ -52,8 +57,7 @@
             >
             </v-ons-lazy-repeat>
         </v-ons-list>
-        <v-ons-button modifier="quiet" class="logout-b" @click="test">ログアウト</v-ons-button>
-
+        <footer class="footer"></footer>
     </v-ons-page>
     <!-- </no-ssr> -->
 </template>
@@ -65,6 +69,7 @@ export default {
     
     data() {
         return {
+            diaryDiv: '', 
             questions: {
                 q1: '「ここが良かった！」今日の自分。',
                 q2: 'メンバーの、ココを褒めたい！',
@@ -88,10 +93,19 @@ export default {
             userId: '',
             comment: '',
             commentFocus: false,
+            commentEditFocus: {},
+            commentEditText: {},
             replyShow: {},
             replyControl: {},
             replyLength: {},
             unbindTarget: [],
+            commentEdit: {},
+            replyEdit: {},
+            replyEditFocus: {},
+            replyEditText: {},
+            replyAddFlg: {},
+            replyAddText: {},
+            replyAddFocus: {},
 
         commentItemHeight:
         i => {
@@ -100,67 +114,173 @@ export default {
 
         commentItem:
         i => {
-            const diaryData = this.$store.state.diaryData
-            const commentF = 'comment' + (i + 1);
-            const userIdF = commentF + 'UserId';
-            const timeF = commentF + 'Time';
-
-            const uData = this.$store.state.usersData.filter(data => data.id == diaryData[userIdF])[0];
-            const uDataImage = uData.image == null ? png : uData.image;
-
-            this.replyShow[i+1] = false;
-            this.replyControl[i+1] = '返信を表示';
-
+            this.replyShow[i] = false;
+            this.replyControl[i] = '返信を表示';
+            this.commentEdit[i] = '編集';
+            this.commentEditFocus[i] = false;
+            this.replyAdd[i] = false;
+            this.replyAddText[i] = '';
+            this.replyAddFocus[i] = false;
+            
+            //ページを開く時点で登録されている返信について、編集ボタンとフォーカス判定の初期化。
+            // ページ起動後に追加される返信については、renderの中で初期化している。
+            if(this.$store.state.commentData.length > 0) {
+                                            const len = this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id).length
+                                            if(len > 0) {
+                                                for(let j=0; j<len; j++) {
+                                                    this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id)[j].id] = '編集';
+                                                    this.replyEditFocus[this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id)[j].id] = false;
+                                                }
+                                            }
+                                        }
             return new Vue({
 
                 render: createElement => {
-                    if(diaryData.commentCount > 0) {
+                    if(this.$store.state.commentData.length > 0) {
+
                     return createElement(
                         "div",
                         {style:{width: '90vw'}},
                         [
                             (()=> {
-                                    return createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: '90vw', marginBottom: '8px'}},[
-                                        createElement('img', {attrs: { src: uDataImage}, style:{height: '6vh', maxHeight: '56px', width: '6vh', maxWidth: '56px', borderRadius: '3vh', marginRight: '2vw'}},),
-                                        createElement('div', {style:{display: 'flex', flexDirection:'column', width: '60vw'}},[
-                                            createElement('div', {style:{display: 'flex'}},[
-                                                createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)', marginRight: '8px'}}, uData.name),
-                                                createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, this.displayTime(diaryData[timeF]))]),
-                                            createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)', marginBottom: '8px'}}, diaryData[commentF]),
-                                            
-                                            this.$store.state.diaryData[`comment${i+1}ReplyCount`] > 0 &&
-                                            createElement('div', {style:{display: 'flex', marginBottom: '8px'}},[
-                                                // createElementは、最後の引数にbindしたstateを指定しないと、dbの変更をリアルタイムに反映することができないため、このように切り替える内容と分離させる。
-                                                this.replyShow[i+1] == false ?
-                                                    createElement('span', {on: {click: ()=>{this.controlReply(i);}}}, this.$store.state.diaryData[`comment${i+1}ReplyCount`] + '件の')
-                                                : '',
-                                                createElement('p', {on: {click: ()=>{this.controlReply(i);}}}, this.replyControl[i+1])
+                                    const commentCard = createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: '90vw', marginBottom: '8px'}},[
+                                        createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == this.$store.state.commentData[i].userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == this.$store.state.commentData[i].userId)[0].image}, 
+                                            style:{height: '6vh', maxHeight: '56px', width: '6vh', maxWidth: '56px', borderRadius: '3vh', marginRight: '8px'}},),
+                                        createElement('div', {style:{display: 'flex', flexDirection:'column', width: '80vw'}},[
+                                            createElement('p', {style:{fontSize: '1rem', marginRight: '8px', marginBottom: '4px'}}, this.$store.state.usersData.filter(data => data.id == this.$store.state.commentData[i].userId)[0].name),
+                                            this.commentEdit[i] == '編集' ?
+                                                // createElement('p', {style:{minHeight: '28px', fontSize: '1rem', marginBottom: '4px', paddingLeft: '0px', paddingTop: '1px'}}, this.$store.state.commentData[i].text)
+                                                createElement('textarea', {attrs: {readonly: true}, style:{fontSize: '1rem', marginBottom: '6px',
+                                                    height: this.areaHeight(this.$store.state.commentData[i].text, 'commentEdit')}, 'class': {'comment-inputD': true}
+                                                }, this.$store.state.commentData[i].text)
+                                            : createElement('div', {'class': {borderD: true, underlineDCom: true, underline2DCom: this.commentEditFocus[i]==true ? true : false}, style:{marginBottom: '4px'}},[
+                                                createElement('textarea', {domProps: {value: this.commentEditText[i], cols: '30', placeholder: 'コメントを入力'},
+                                                    on: {input: e => {this.commentEditText = Object.assign({}, this.commentEditText, { [i]: e.target.value });},
+                                                            focus: ()=>{this.commentEditFocus = Object.assign({}, this.commentEditFocus, { [i]: true });},
+                                                            blur: ()=>{this.commentEditFocus = Object.assign({}, this.commentEditFocus, { [i]: false });}},
+                                                    style:{height: this.areaHeight(this.commentEditText[i], 'commentEdit'), fontSize:'1rem', marginBottom: '-2px'}, 'class': {'comment-inputD': true}}, this.commentEditText[i])
+                                                ]),
+                                            createElement('div', {style:{display: 'flex', justifyContent: 'space-between', width: 'calc(90vw - (6vh + 8px)'}},[
+                                                createElement('div', {style:{display: 'flex'}},[
+                                                    createElement('p', {style:{fontSize: '0.9rem', color: '#8e8e8e'}}, this.displayTime(this.$store.state.commentData[i].input_at)),
+                                                    this.$store.state.commentData[i].edited == true ?
+                                                        createElement('p', {style:{fontSize: '0.9rem', color: '#8e8e8e'}}, '（編集済）')
+                                                    : ''
+                                                ]),
+                                                createElement('div', {style:{display: 'flex', color: '#8e8e8e', fontSize: '0.9rem'}},[
+                                                    this.commentEdit[i] == '保存'  && this.$store.state.commentData[i].userId == this.$store.state.uid?
+                                                    createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.commentEditChange(i);}}, style:{paddingTop: '4.5px', marginRight: '24px'}})
+                                                    : '',
+                                                    this.$store.state.commentData[i].userId == this.$store.state.uid?
+                                                    createElement('p', {on: {click: ()=>{this.commentEditChange(i);}}, style:{}}, this.commentEdit[i])
+                                                    : ''
+                                                ])
+                                                
                                             ]),
-                                                    this.$store.state.diaryCommentReply[i+1] !=null &&
-                                                    this.replyShow[i+1] == true ?
-                                                    //createElementを使用する場合のv-forの代替手段がarray.prototype.map()
-                                                    // bindの後にcommitして作成した多次元配列diaryCommentReplyをmapする。多次元配列とすることで、事前にstateを定義することができ、リアクティブにできる。
-                                                        createElement('div', {style:{display: 'flex', flexDirection:'column'}}, this.$store.state.diaryCommentReply[i+1].map((item, index) => [
-                                                            createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: '70vw', marginBottom: '8px'}},[
-                                                                createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == item.userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == item.userId)[0].image}, style:{height: '4vh', maxHeight: '56px', width: '4vh', maxWidth: '56px', borderRadius: '2vh', marginRight: '2vw'}},),
-                                                                createElement('div', {style:{display: 'flex', flexDirection:'column'}},[
+                                            this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id).length > 0 &&
+                                            createElement('div', {style:{display: 'flex', marginBottom: '8px', marginTop: '8px',}},[
+                                                // createElementは、最後の引数にbindしたstateを指定しないと、dbの変更をリアルタイムに反映することができないため、このように切り替える内容と分離させる。
+                                                this.replyShow[i] == false ?
+                                                    createElement('span', {on: {click: ()=>{this.controlReply(i);}}}, this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id).length + '件の')
+                                                : '',
+                                                createElement('p', {on: {click: ()=>{this.controlReply(i);}}}, this.replyControl[i])
+                                            ]),
+                                            ])
+                                            ])
+                                            
+                                    // ページ起動後に追加される返信について、renderの中で初期化。こうすることで、リアクティブにできる。
+                                    // lenの最後だけを確かめているのは、replyDataはinput_atでorderByされていて、最新が最後であることがわかっているため。
+                                    if(this.$store.state.commentData.length > 0) {
+                                        const len = this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id).length
+                                        if(len > 0) {
+                                            this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id)[len-1].id] == null ? this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id)[len-1].id] = '編集' : '';
+                                            this.replyEditFocus[this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id)[len-1].id] = false;
+                                        }
+                                    }
+
+                                    const replyList =    this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id).length > 0 &&
+                                            this.replyShow[i] == true ?
+                                            //createElementを使用する場合のv-forの代替手段がarray.prototype.map()
+                                                createElement('div', {style:{display: 'flex', flexDirection:'column', marginLeft: 'calc(6vh + 8px)'}}, this.$store.state.replyData.filter(data => data.commentId == this.$store.state.commentData[i].id).map((item, index) => [
+                                                    createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', marginBottom: '8px'}},[
+                                                        createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == item.userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == item.userId)[0].image}, style:{height: '4vh', maxHeight: '56px', width: '4vh', maxWidth: '56px', borderRadius: '2vh', marginRight: '8px'}},),
+                                                        createElement('div', {style:{display: 'flex', flexDirection:'column'}},[
+                                                            createElement('p', {style:{fontSize: '1rem', marginRight: '8px'}}, this.$store.state.usersData.filter(data => data.id == item.userId)[0].name),
+                                                            this.replyEdit[item.id] == '編集' ?
+                                                                // createElement('p', {style:{minHeight: '28px', fontSize: '1rem', marginBottom: '4px', paddingLeft: '0px', paddingTop: '1px'}}, item.text)
+                                                                createElement('textarea', {domProps: {value: item.text}, attrs: {readonly: true}, style:{fontSize: '1rem', marginBottom: '6px',
+                                                                    height: this.areaHeight(item.text, 'replyEdit')}, 'class': {'reply-inputD': true}
+                                                                }, )
+                                                                : createElement('div', {'class': {borderD: true, underlineDRep: true, underline2DRep: this.replyEditFocus[item.id]==true ? true : false}, style:{marginBottom: '4px'}},[
+                                                                    createElement('textarea', {domProps: {value: this.replyEditText[item.id], cols: '26', placeholder: 'コメントを入力'},
+                                                                        on: {input: e => {this.replyEditText = Object.assign({}, this.replyEditText, { [item.id]: e.target.value });},
+                                                                                focus: ()=>{this.replyEditFocus = Object.assign({}, this.replyEditFocus, { [item.id]: true });},
+                                                                                blur: ()=>{this.replyEditFocus = Object.assign({}, this.replyEditFocus, { [item.id]: false });}},
+                                                                        style:{height: this.areaHeight(this.replyEditText[item.id], 'replyEdit'), fontSize:'1rem', marginBottom: '-2px'}, 'class': {'reply-inputD': true}}, this.replyEditText[item.id])
+                                                                ]),
+                                                                createElement('div', {style:{display: 'flex', justifyContent: 'space-between', width: 'calc(90vw - ((6vh + 8px) + (4vh + 8px))'}},[
                                                                     createElement('div', {style:{display: 'flex'}},[
-                                                                        createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)', marginRight: '8px'}}, this.$store.state.usersData.filter(data => data.id == item.userId)[0].name),
-                                                                        createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, this.displayTime(item.time))
+                                                                        createElement('p', {style:{fontSize: '0.9rem', color: '#8e8e8e'}}, this.displayTime(item.input_at)),
+                                                                        item.edited == true ?
+                                                                            createElement('p', {style:{fontSize: '0.9rem', color: '#8e8e8e'}}, '（編集済）')
+                                                                        : '',
                                                                     ]),
-                                                                    createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, item.text)
+                                                                    createElement('div', {style:{display: 'flex', marginBottom: '8px',  color: '#8e8e8e', fontSize: '0.9rem'}},[
+                                                                            this.replyEdit[item.id] == '保存' && item.userId == this.$store.state.uid ?
+                                                                                createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.replyEditChange(item.id);}}, style:{paddingTop: '4.5px', marginRight: '24px'}})
+                                                                            : '',
+                                                                            item.userId == this.$store.state.uid ?
+                                                                            createElement('p', {on: {click: ()=>{this.replyEditChange(item.id);}}, style:{}}, this.replyEdit[item.id])
+                                                                            : '',
+                                                                        ])
+                                                                ]),
+                                                        ])
+                                                    ])
+                                                ]))
+                                            : ''
+                                    const replyButton = createElement('div', {style:{marginLeft: 'calc(6vh + 8px)'}},[
+
+                                                        createElement('p', {on: {click: ()=>{this.replyAdd(i)}}, style:{fontSize: '1rem', marginBottom: '8px', color: '#8e8e8e'}}, '返信'),
+                                                        this.replyAddFlg[i] == true ?
+                                                            createElement('div', {style: {display: 'flex', justifyContent: 'flex-start', marginBottom: '8px'}},[
+                                                                createElement('img', {attrs: { src: this.$store.state.myData.image == null ? png : this.$store.state.myData.image}, style:{height: '4vh', maxHeight: '56px', width: '4vh', maxWidth: '56px', borderRadius: '2vh', marginRight: '8px'}},),
+                                                                createElement('div', {style: {display: 'flex', flexDirection: 'column'}},[
+                                                                createElement('div', {'class': {borderD: true, underlineDRep: true, underline2DRep: this.replyAddFocus[i]==true ? true : false}, style:{marginBottom: '4px'}},[
+                                                                    createElement('textarea', {domProps: {value: this.replyAddText[i], cols: '26', placeholder: 'コメントを入力'},
+                                                                        on: {input: e => {this.replyAddText = Object.assign({}, this.replyAddText, { [i]: e.target.value });},
+                                                                                focus: ()=>{this.replyAddFocus = Object.assign({}, this.replyAddFocus, { [i]: true });},
+                                                                                blur: ()=>{this.replyAddFocus = Object.assign({}, this.replyAddFocus, { [i]: false });}},
+                                                                        style:{height: this.areaHeight(this.replyAddText[i], 'replyEdit'), fontSize:'1rem', marginBottom: '-2px'}, 'class': {'reply-inputD': true}}, this.replyAddText[i])
+                                                                ]),
+                                                                    createElement('div', {style:{height: '40px'}},[
+                                                                        this.replyAddText[i] != '' ?
+                                                                            createElement('div', {style:{display: 'flex', justifyContent: 'space-between'}},[
+                                                                                createElement('v-ons-button', {attrs: {modifier: 'quiet'}, on: {click: ()=>{this.replyAddC(i);}}, 
+                                                                                    style:{fontSize: '1rem', color: '#575757'}}, 'キャンセル'),
+                                                                                createElement('v-ons-button', {attrs: {modifier: 'quiet'}, on: {click: ()=>{this.replyAddS(i);}}, 
+                                                                                    style:{fontSize: '1rem'}}, '返信')
+                                                                            ])
+                                                                        : ''
+                                                                    ])
                                                                 ])
                                                             ])
-                                                        ]))
-                                                    : ''
+                                                        : ''
                                         ])
-                                    ]);
+
+                                if(commentCard) {
+                                    if(replyList){
+                                        return [commentCard, replyList, replyButton]
+                                        }
+                                        return [commentCard, replyButton]
+                                        } else {
+                                            return null
+                                        }
                             })(),
 
                         ]
                     );
                     } else {
-                        return '';
+                        return null;
                     }
                 },
             
@@ -172,36 +292,67 @@ export default {
     },
 
     destroyed() {
-        const len = this.unbindTarget.length;
-        for(let i=0; i<len; i++) {
-            this.$store.dispatch('unBindDiaryCommentReply', {index: this.unbindTarget[i]});
-        }
-
         this.$store.dispatch('unBindDiaryData');
+        this.$store.dispatch('unBindCommentData');
+        this.$store.dispatch('unBindReplyData');
     },
 
 
     computed: {
-        commentHeight() {
-            // 半角と全角の規格統一のため、lengthではなく、bytesを用いる。
-            String.prototype.bytes = function () {
-                return(encodeURIComponent(this).replace(/%../g,"x").length);
+        areaHeight() {
+            return(target, type) => {
+                if(!target) {
+                    return '26px';
                 }
-            const lineHeight = 16;
-            const kaigyou = this.comment.split(/\n/).length - 1;
-            const lineCount = ((this.comment.bytes() - kaigyou) == 0 ? 1 : 0) + Math.ceil((this.comment.bytes() - kaigyou) / 30) + kaigyou;
-            return `height: ${lineHeight * lineCount}px`;
+            // 半角と全角の規格統一のため、lengthではなく、bytesを用いる。
+            let cols = 0;
+            switch (type) {
+                case 'comment':
+                    cols = 30;
+                    break;
+                case 'commentEdit':
+                    cols = 30;
+                    break;
+                case 'replyEdit':
+                    cols = 26;
+                    break;
+                default:
+                    break;
+            }
+                String.prototype.bytes = function () {
+                        var length = 0;
+                        for (var i = 0; i < this.length; i++) {
+                            var c = this.charCodeAt(i);
+                            if ((c >= 0x0 && c < 0x81) || (c === 0xf8f0) || (c >= 0xff61 && c < 0xffa0) || (c >= 0xf8f1 && c < 0xf8f4)) {
+                                length += 1;
+                            } else {
+                                length += 2;
+                            }
+                        }
+                        return length;
+                    };
+                    // const lineHeight = 24;
+                    const lineHeight = 26;
+                    const kaigyou = target.split(/\n/).length - 1;
+                    const lineCount = ((target.bytes() - kaigyou) == 0 ? 1 : 0) + Math.ceil((target.bytes() - kaigyou) / cols) + kaigyou;
+                // return `height: ${lineHeight * lineCount}px`;
+                return `${lineHeight * lineCount}px`;
+            }
         },
 
         commentLength() {
-            return this.$store.state.diaryData.commentCount
+            // return this.$store.state.diaryData.commentCount
+            return this.$store.state.commentData.length;
         },
 
         displayTime() {
             return(time) => {
+                if(!time) {
+                    //自身の画面からの登録直後はnullになるため。
+                    return 'たった今';
+                }
                 let timestamp = time.seconds * 1000;
                 var date = new Date(timestamp)
-                console.log('timestamp: ' + timestamp, 'date: ' + date);
                 var diff = new Date().getTime() - date.getTime()
                 var d = new Date(diff);
 
@@ -225,40 +376,101 @@ export default {
     },
 
     methods: {
-        //todo: croppaにfile-size-limitを設定し、limit超過時にtoastメッセージを表示する。
-        editPush() {
-            if(this.edit == '編集する') {
-                this.edit = '保存する'
-            } else {
-                if(this.userName == '') {
-                    this.$ons.notification.alert('ユーザー名を入力ください。', {title:''})
-                    return
-                } else {
-                    if(this.file) {
-                        this.$store.dispatch('updateUser', {name: this.userName, role: this.role, grade: this.grade, img: this.file})
-                    } else {
-                        this.$store.dispatch('updateUser', {name: this.userName, role: this.role, grade: this.grade})
-                    }
-                    if (!navigator.onLine) {
-                        this.$ons.notification.alert({messageHTML:'オンラインになると保存されます。<br>オンラインになる前に画面を更新すると保存されません。', title:''})
-                    } else {
-                        this.$ons.notification.alert('保存しました', {title:''})
-                    }
-                    this.file = ''
-                    this.edit = '編集する'
-                }
-            }
+        commentAddC() {
+            this.comment = '';
         },
 
-        async controlReply(i) {
-            // bindの後にcommitして多次元配列diaryCommentReplyを作成する。多次元配列とすることで、抽出する際にmapを適用できる。また、事前にstateを定義することができ、リアクティブにできる。
-            await this.$store.dispatch('bindDiaryCommentReply', {index: (i+1), id: this.$store.state.diaryData.id});
-            await this.$store.commit('setDiaryCommentReply', {data: this.$store.state[`diaryComment${i+1}Reply`], index: i+1});
-            this.replyShow[i+1] = !this.replyShow[i+1];
+        async commentAdd() {
+            if(this.comment.length > 200) {
+                this.$ons.notification.alert('200字以内に納めてください。', {title:''})
+                return
+            }
+
+            // 生成する文字列の長さ
+            const l = 20;
+            // 生成する文字列に含める文字セット
+            const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const cl = c.length;
+            let id = "";
+            for(var i=0; i<l; i++){
+                id += c[Math.floor(Math.random()*cl)];
+            }
+            
+            await this.$store.dispatch('diaryCommentAdd', {id: id, text: this.comment})
+            if (!navigator.onLine) {
+                this.$ons.notification.alert({messageHTML:'オンラインになるとコメントが追加されます。<br>オンラインになる前に画面を更新すると追加されません。', title:''})
+            } else {
+                this.$ons.notification.alert('コメントを追加しました', {title:''})
+            }
+
+            this.comment = '';
+        },
+
+        controlReply(i) {
+            this.replyShow[i] = !this.replyShow[i];
             //リアクティブにするため、Object.assignを使用。
-            this.replyControl = Object.assign({}, this.replyControl, { [i]: this.replyShow[i+1] == true ? '返信を非表示' : '返信を表示'});
-            //destoryed()時にunbindする`bindDiaryComment${i}Reply`を保持する。
-            this.unbindTarget.push(i+1);
+            this.replyControl = Object.assign({}, this.replyControl, { [i]: this.replyShow[i] == true ? '返信を非表示' : '返信を表示'});
+        },
+
+        commentEditChange(i) {
+            if(this.commentEdit[i] == '保存') {
+                this.$store.dispatch('diaryCommentUpdate', {id: this.$store.state.commentData[i].id, text: this.commentEditText[i]});
+            }
+            //リアクティブにするため、Object.assignを使用。
+            this.commentEdit = Object.assign({}, this.commentEdit, { [i]: this.commentEdit[i] == '編集' ? '保存' : '編集'});
+            // this.commentEditText = Object.assign({}, this.commentEditText, { [i]: this.$store.state.commentData[i].text});
+            this.commentEditText = Object.assign({}, this.commentEditText, { [i]: this.commentEdit[i] == '編集' ? '' : this.$store.state.commentData[i].text});
+        },
+
+        replyEditChange(id) {
+            if(this.replyEdit[id] == '保存') {
+                this.$store.dispatch('diaryReplyUpdate', {id: id, text: this.replyEditText[id]});
+            }
+            //リアクティブにするため、Object.assignを使用。
+            this.replyEdit = Object.assign({}, this.replyEdit, { [id]: this.replyEdit[id] == '編集' | '' ? '保存' : '編集'});
+            // this.commentEditText = Object.assign({}, this.commentEditText, { [i]: this.$store.state.commentData[i].text});
+            this.replyEditText = Object.assign({}, this.replyEditText, { [id]: this.$store.state.replyData.filter(data => data.id == id)[0].text});
+        },
+
+        replyAdd(i) {
+            if(this.replyAdd[i] == true) {
+                return;
+            }
+            this.replyAddFlg = Object.assign({}, this.replyAddFlg, { [i]: true});
+            this.replyAddText = Object.assign({}, this.replyAddFlg, { [i]: ''});
+        },
+
+        async replyAddS(i) {
+            if(this.replyAddText.length > 200) {
+                this.$ons.notification.alert('200字以内に納めてください。', {title:''})
+                return
+            }
+
+            // 生成する文字列の長さ
+            const l = 20;
+            // 生成する文字列に含める文字セット
+            const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const cl = c.length;
+            let id = "";
+            for(let j=0; j<l; j++){
+                id += c[Math.floor(Math.random()*cl)];
+            }
+            
+            await this.$store.dispatch('diaryReplyAdd', {id: id, commentId: this.$store.state.commentData[i].id, text: this.replyAddText[i]})
+            if (!navigator.onLine) {
+                this.$ons.notification.alert({messageHTML:'オンラインになると返信が追加されます。<br>オンラインになる前に画面を更新すると追加されません。', title:''})
+            } else {
+                this.$ons.notification.alert('返信を追加しました', {title:''})
+            }
+
+            this.replyAddFlg = Object.assign({}, this.replyAddFlg, { [i]: false});
+            this.replyAddText = Object.assign({}, this.replyAddFlg, { [i]: ''});
+            this.replyShow = Object.assign({}, this.replyShow, { [i]: true});
+        },
+
+        replyAddC(i) {
+            this.replyAddFlg = Object.assign({}, this.replyAddFlg, { [i]: false});
+            this.replyAddText = Object.assign({}, this.replyAddFlg, { [i]: ''});
         },
 
         test() {
@@ -321,7 +533,7 @@ export default {
     }
 
     .title {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
     }
 
     .date {
@@ -373,7 +585,7 @@ export default {
     .img-comment {
         display: flex;
         align-items: flex-start;
-        margin-bottom: 24px;
+        margin-bottom: 8px;
         margin-left: 16px;
     }
 
@@ -389,16 +601,19 @@ export default {
     }
 
     .comment-input {
-        min-height: 17px;
         font-size: 1rem;
-        line-height: 16px;
-        width: 264px;
+        min-height:24px;
+        line-height: 24px;
+        width: 245px;
         resize: none;
-        margin-top: 2vh;
         padding: 0;
+        margin-top: 2vh;
+        border: none;
+        background-color: #fcfcfc;
     }
 
     .underline {
+        width: 245px;
         position: relative;
     }
 
@@ -424,12 +639,30 @@ export default {
     .underline2:focus:after,
     .underline2:active:after {
         /*ホバーしたら100%の位置まで伸びる*/
-        width: 100%;
+        width: 245px;
+    }
+
+    .comment-btns {
+        display: flex;
+        justify-content: flex-end;
+        height: 40px;
+        width: 245px;
+        margin-left: calc(6vh + 16px + 8px);
+        margin-bottom: 24px;
+    }
+
+    .comment-add-c {
+        margin-right: 24px;
+        color: #575757;
     }
 
     .list {
         border: none;
         background-color: #fcfcfc;
         margin-left: 16px;
+    }
+
+    .footer {
+        padding: 24px;
     }
 </style>

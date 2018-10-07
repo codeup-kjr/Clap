@@ -12,12 +12,17 @@ const db = firebase.firestore()
 const settings = {/* your settings... */ timestampsInSnapshots: true}
 db.settings(settings)
 
+// const teamRef = db.collection('team')
+// teamIdが必要だが、stateのexportの前に定義することはできないので、actions内で定義する。
+// const scheduleRef = teamRef.collection('schedule')
+// const teamURef = teamRef.collection('users')
+
  export const state = () => {
     return {
-        scheduleOfToday: [],
+        // コメントへの返信をリアクティブにするためには事前に定義する必要があるため、下記のように羅列。ここの数だけ、コメントへの返信をリアクティブにできる。仕様としてよろしくないが、暫定措置。
+        diaryComment1Reply: [], diaryComment2Reply: [], diaryComment3Reply: [], diaryComment4Reply: [], diaryComment5Reply: [], diaryComment6Reply: [], diaryComment7Reply: [], diaryComment8Reply: [], diaryComment9Reply: [], diaryComment10Reply: [], diaryComment11Reply: [], diaryComment12Reply: [], diaryComment13Reply: [], diaryComment14Reply: [], diaryComment15Reply: [],diaryComment16Reply: [], diaryComment17Reply: [], diaryComment18Reply: [], diaryComment19Reply: [], diaryComment20Reply: [], diaryComment21Reply: [], diaryComment22Reply: [], diaryComment23Reply: [], diaryComment24Reply: [], diaryComment25Reply: [], diaryComment26Reply: [], diaryComment27Reply: [], diaryComment28Reply: [], diaryComment29Reply: [],  diaryComment30Reply: [],
+        diaryCommentReply:[],
         diaryData: {},
-        commentData: [],
-        replyData: [],
         diaries: [],
         scheduleAddErr: '',
         schTIdErr: '',
@@ -70,6 +75,9 @@ db.settings(settings)
 
 // stateを参照した定義ができないため、action内などで記述する。
 export const teamRef = db.collection('team')
+// export const teamRef = db.collection('team').doc(String(state.teamId))
+// export const scheduleRef = teamRef.doc(String(state.teamId)).collection('schedule')
+// export const teamURef = teamRef.doc(String(state.teamId)).collection('users')
 export const userRef = db.collection('users')
 export const roomRef = db.collection('room')
 export const diaryRef = db.collection('diary')
@@ -144,8 +152,8 @@ export const mutations = {
         state.schTIdErr = text
     },
 
-    setScheduleOfToday(state, data) {
-        state.scheduleOfToday = data;
+    setDiaryCommentReply(state, {data, index}) {
+        state.diaryCommentReply[index] = data;
     }
 
   }
@@ -185,12 +193,8 @@ export const actions = {
         await bindFirebaseRef('diaryData', diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)))
     }),
 
-    bindCommentData: firebaseAction(async ({bindFirebaseRef, state}, {id}) => {
-        await bindFirebaseRef('commentData', diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).collection('comment').orderBy('input_at', 'desc'));
-    }),
-
-    bindReplyData: firebaseAction(async ({bindFirebaseRef, state}, {id}) => {
-        await bindFirebaseRef('replyData', diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).collection('reply').orderBy('commentId').orderBy('input_at'));
+    bindDiaryCommentReply: firebaseAction(async ({bindFirebaseRef, state, commit}, {index, id}) => {
+        await bindFirebaseRef(`diaryComment${index}Reply`, diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).collection('reply').doc(String(`comment${index}`)).collection('reply'));
     }),
 
 
@@ -222,12 +226,8 @@ export const actions = {
         await unbindFirebaseRef('diaryData')
     }),
 
-    unBindCommentData: firebaseAction(async ({unbindFirebaseRef}) => {
-        await unbindFirebaseRef('commentData')
-    }),
-
-    unBindReplyData: firebaseAction(async ({unbindFirebaseRef}) => {
-        await unbindFirebaseRef('replyData')
+    unBindDiaryCommentReply: firebaseAction(async ({unbindFirebaseRef}, {index}) => {
+        await unbindFirebaseRef(`diaryComment${index}Reply`)
     }),
 
 
@@ -353,7 +353,6 @@ export const actions = {
                         await dispatch('bindTeam')
                         await dispatch('bindTeamU')
                         await dispatch('getUser', {ids: state.teamU})
-                        await dispatch('getScheduleOfToday');
                         await dispatch('bindDiaries')
 
                         commit('clear')
@@ -403,40 +402,6 @@ export const actions = {
         }).catch(function(error) {
             console.log("Error writing document: ", error)
         })
-      }),
-
-      getScheduleOfToday: firebaseAction(async ({context, state, commit, dispatch}) => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const date = today.getDate();
-        const list = [];
-        
-        await teamRef.doc(String(state.teamId)).collection('schedule').where("date_start", "==", date).where("month_start", "==", month).where("year_start", "==", year).get().then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-                // commit('setScheduleOfToday', doc.data())
-                list.push(doc.data());
-                console.log(doc.data())
-            })
-        })
-
-        await teamRef.doc(String(state.teamId)).collection('schedule').where("date_end", "==", date).where("month_end", "==", month).where("year_end", "==", year).get().then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-                // commit('setScheduleOfToday', doc.data())
-                list.push(doc.data());
-            })
-        })
-
-        const cleanList = list.filter(function(v1,i1,a1){ 
-            return (a1.findIndex(function(v2){ 
-              return (v1.id===v2.id) 
-            }) === i1);
-          });
-
-          commit('setScheduleOfToday', cleanList)
-        console.log(state.scheduleOfToday);
-        //querySnapshotはerrorを返すことができない。
-
       }),
 
       getUser: firebaseAction(async({context, state, commit, dispatch}, {ids}) => {
@@ -617,8 +582,6 @@ export const actions = {
 
     showDetail : firebaseAction(async({context, state, commit, dispatch}, {data, uData, uDataImage, page}) => {
         await dispatch('bindDiaryData', {id: data.id});
-        await dispatch('bindCommentData', {id: data.id});
-        await dispatch('bindReplyData', {id: data.id});
         commit('push', {extends: page,
             data() {return {
                         answers: {
@@ -639,52 +602,6 @@ export const actions = {
                 animation: 'lift',
                 animationOptions: { duration: 0.5 }
         }});
-      }),
-
-    diaryCommentAdd: firebaseAction(async({context, state}, {id, text}) => {
-        await diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('comment').doc(String(id)).set({
-            id:         id,
-            text:       text,
-            userId:     state.uid,
-            edited:     false,
-            input_at:   firebase.firestore.FieldValue.serverTimestamp(),
-            update_at:  firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(function(error) {
-            console.log("Error writing document: ", error)
-        })
-    }),
-
-    diaryCommentUpdate: firebaseAction(async({context, state}, {id, text}) => {
-        await diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('comment').doc(String(id)).update({
-            text:       text,
-            edited: true,
-            update_at:  firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(function(error) {
-            console.log("Error writing document: ", error)
-        })
-    }),
-
-    diaryReplyAdd: firebaseAction(async({context, state}, {id, commentId, text}) => {
-        await diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('reply').doc(String(id)).set({
-            id:         id,
-            commentId:  commentId,
-            text:       text,
-            userId:     state.uid,
-            edited:     false,
-            input_at:   firebase.firestore.FieldValue.serverTimestamp(),
-            update_at:  firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(function(error) {
-            console.log("Error writing document: ", error)
-        })
-    }),
+      })
     
-    diaryReplyUpdate: firebaseAction(async({context, state}, {id, text}) => {
-        await diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('reply').doc(String(id)).update({
-            text:       text,
-            edited:     true,
-            update_at:  firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(function(error) {
-            console.log("Error writing document: ", error)
-        })
-    }),
   }

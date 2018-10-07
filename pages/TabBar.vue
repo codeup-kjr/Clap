@@ -24,6 +24,7 @@ const lerp = (x0, x1, t) => parseInt((1 - t) * x0 + t * x1, 10);
 // RGB colors
 const gray = [97, 130, 131];
 const green = [84, 175, 38];
+const orange = [233, 136, 17];
 const blue = [30, 136, 229];
 const yerrow = [146, 146, 10];
 
@@ -58,7 +59,7 @@ export default {
           // label: '日誌',
           icon: 'ion-ios-book',
           page: Diary,
-          theme: green
+          theme: orange
         },
         {
           // label: 'マイページ',

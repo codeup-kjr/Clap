@@ -9,10 +9,10 @@
                     </option>
                 </v-ons-select>
             </div>
-            <div class="icon-script">
+            <!-- <div class="icon-script">
                 <v-ons-icon icon='ion-ios-checkmark' class="checked-icon"/>
                 <p class="checked-script">監督確認済み</p>
-            </div>
+            </div> -->
         </div>
         <v-ons-list class="list">
             <v-ons-lazy-repeat
@@ -149,7 +149,7 @@ export default {
                 },
 
     showDetail(data, uData, uDataImage) {
-        this.$store.dispatch('showDetail', {data: data, uData: uData, uDataImage: uDataImage, page: DiaryDetail});
+        this.$store.dispatch('showDetail', {diaryDiv: this.type, data: data, uData: uData, uDataImage: uDataImage, page: DiaryDetail});
     }
 
   },
@@ -284,4 +284,92 @@ export default {
         transition: none;
         background-color: #d9d9d9;
     }
+</style>
+
+<style>
+/* DiaryDetail.vueのcreateElementに適用するclass。事前に定義する必要があるため。 */
+    .comment-inputD {
+        min-height:26px;
+        line-height: 26px;
+        width: 245px;
+        resize: none;
+        padding: 0;
+        border: none;
+        background-color: #fcfcfc;
+    }
+
+    .reply-inputD {
+        min-height:26px;
+        line-height: 26px;
+        width: 215px;
+        resize: none;
+        padding: 0;
+        border: none;
+        background-color: #fcfcfc;
+    }
+
+    .borderD {
+        border-bottom: solid 1px #c5c3c3;
+    }
+
+    .underlineDCom {
+        width: 245px;
+        position: relative;
+    }
+
+    .underlineDCom:hover,
+    .underlineDCom:focus,	
+    .underlineDCom:active {
+        cursor: pointer;
+    }
+
+    .underlineDCom:after {
+        /*疑似要素とアニメーション設定を加えてwidthを0にしておく*/
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -2px;/*自由変更*/
+        height: 3px;/*自由変更*/
+        background-color: rgb(72, 126, 152);/*自由変更*/
+        width: 0;
+        transition: width .4s;/*自由変更*/
+    }
+    
+    .underline2DCom:hover:after,
+    .underline2DCom:focus:after,
+    .underline2DCom:active:after {
+        /*ホバーしたら100%の位置まで伸びる*/
+        width: 245px;
+    }
+
+    .underlineDRep {
+        width: 215px;
+        position: relative;
+    }
+
+    .underlineDRep:hover,
+    .underlineDRep:focus,	
+    .underlineDRep:active {
+        cursor: pointer;
+    }
+
+    .underlineDRep:after {
+        /*疑似要素とアニメーション設定を加えてwidthを0にしておく*/
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -2px;/*自由変更*/
+        height: 3px;/*自由変更*/
+        background-color: rgb(72, 126, 152);/*自由変更*/
+        width: 0;
+        transition: width .4s;/*自由変更*/
+    }
+    
+    .underline2DRep:hover:after,
+    .underline2DRep:focus:after,
+    .underline2DRep:active:after {
+        /*ホバーしたら100%の位置まで伸びる*/
+        width: 215px;
+    }
+
 </style>
