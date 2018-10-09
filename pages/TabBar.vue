@@ -16,8 +16,8 @@
 import MyPage from './MyPage'
 import Calendar from './Calendar'
 import Diary from './Diary'
-import Applaud from './Applaud'
-import Chat from './Chat'
+// import Applaud from './Applaud'
+// import Chat from './Chat'
 
 // Just a linear interpolation formula
 const lerp = (x0, x1, t) => parseInt((1 - t) * x0 + t * x1, 10);

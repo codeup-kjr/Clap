@@ -35,14 +35,6 @@ export default {
     }
   },
 
-  mounted() {
-    // this.$store.dispatch('checkLogin', {page: TabBar})
-  },
-
-  destroyed() {
-
-  },
-
   components: {
     Logo,
   },

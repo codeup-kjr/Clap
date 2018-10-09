@@ -20,7 +20,7 @@
       :index.sync="carouselIndex" class="carousel"
     >
       <v-ons-carousel-item v-for="(value, key) in questions" :key="key" class="crousel-item">
-        <div class="question" @click="test">{{value}}</div>
+        <div class="question">{{value}}</div>
         <p v-if="key!='title'" class="count"><span :style="answers[key].length > 400 ? {color:'red'} : {}">{{answers[key].length}}</span> / 400</p>
         <p v-else class="count"><span :style="answers[key].length > 12 ? {color:'red'} : {}">{{answers[key].length}}</span> / 12</p>
         <textarea cols="30" rows="10" class="answer" placeholder="何でも書こう！" v-model="answers[key]"></textarea>
@@ -29,11 +29,11 @@
     
     <div class="btns">
         <div class="control">
-            
+            <div class="number-carousel">{{ carouselIndex + 1}} / 6</div>
             <div class="dots-arrows">
                 <v-ons-icon icon='ion-ios-arrow-back' :style="carouselIndex == 0 ? 'color: transparent' : ''" class="arrow" @click="left"/>
-                <span class="dots">
-                    <span :index="dotIndex - 1" v-for="dotIndex in Object.keys(questions).length" :key="dotIndex" style="cursor: pointer" @click="carouselIndex = dotIndex - 1" class="dot" :class="carouselIndex === dotIndex - 1 ? 'dot-active' : ''">
+                <span>
+                    <span :index="dotIndex - 1" v-for="dotIndex in Object.keys(questions).length" :key="dotIndex" style="cursor: pointer" @click="carouselIndex = dotIndex - 1">
                         {{ carouselIndex === dotIndex - 1 ? '\u25CF' : '\u25CB' }}
                     </span>
                 </span>
@@ -107,12 +107,13 @@ export default {
             }
         },
 
-        test() {
-            console.log(this.editDate);
-        },
-
         async addDiary(submit) {
             if(submit==true) {
+                if(this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.date && diary.submit == true).length > 0) {
+                    this.$ons.notification.alert({messageHTML:`その日付の日誌は既に提出済みです！`, title:''});
+                    return
+                }
+
                 if(this.answers.q1.length > 400) {
                     this.$ons.notification.alert({messageHTML:`第1項の回答を<br>400字以内に納めてください。`, title:''});
                     this.carouselIndex = 0;
@@ -231,6 +232,10 @@ export default {
         overflow: hidden;
     }
     
+    .crousel-item {
+        background-color: #fefefe;
+    }
+
     .close-icon {
         font-size: 1.3rem;
         padding-left: 12px;
@@ -262,7 +267,7 @@ export default {
         text-align: right;
         margin: 0 8px 4px;
         padding-bottom: 16px;
-        border-bottom: solid 4px #5280a9;
+        border-bottom: solid 1px #f0ab57;
     }
 
     .answer {
@@ -281,13 +286,18 @@ export default {
 
     .control {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         font-size: 24px;
-        color: #929191;
         margin-bottom: 24px;
     }
 
+    .number-carousel {
+        color: #a3a2a2;
+        z-index: 1;
+        font-size: 1.2rem;
+    }
 
     .dots-arrows {
         /* font-size: 30px; */
@@ -297,19 +307,9 @@ export default {
     }
     
     .arrow {
-        padding:  0 8px;
-    }
-
-    .dots {
         position: relative;
-        top: 3px;
-    }
-
-    .dot-active {
-        /* HTMLの丸サイズが異なるため、調整。 */
-        position: relative;
-        top: 1.3px;
-
+        top: -3px;
+        padding: 0 16px;
     }
 
     .upload {

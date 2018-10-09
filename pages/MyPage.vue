@@ -62,13 +62,13 @@
                 </div>
             </div>
             <v-ons-button modifier="quiet" class="edit-b" @click="editPush">{{edit}}</v-ons-button>
-            <v-ons-list class="team-info">
-            <v-ons-list-header>チーム名</v-ons-list-header>
-            <v-ons-list-item>
+            <v-ons-list class="team-info" modifier="material">
+            <v-ons-list-header modifier="material">チーム名</v-ons-list-header>
+            <v-ons-list-item modifier="material">
                 {{$store.state.team.name}}
             </v-ons-list-item>
-            <v-ons-list-header>チームID</v-ons-list-header>
-            <v-ons-list-item>
+            <v-ons-list-header modifier="material">チームID</v-ons-list-header>
+            <v-ons-list-item modifier="material">
                 {{$store.state.teamId}}
             </v-ons-list-item>
             </v-ons-list>

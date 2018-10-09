@@ -3,18 +3,15 @@
     <v-ons-page>
       <div class="container">
         <v-calendar :attributes='attrs' :theme-styles='themeStyles' @dayclick="dayClick" class="calendar"/>
-        <!-- <v-ons-button modifier="cta" class="addEvent" @click="addPushed">＋</v-ons-button> -->
         
         <v-ons-modal :visible="addVisible">
           <div class="add-container">
-            <div class="add-header">イベント{{addHText}}</div>
+            <div class="add-header">イベント{{ addHText }}</div>
             <div class="add-under-h">
-            <div class="add-div" v-show="isROnly">{{title}}</div>
-            <div class="add-div" v-show="isROnly">{{place}}</div>
+            <div class="add-div" v-show="isROnly">{{ title }}</div>
             <v-ons-input type="text" placeholder="タイトル" class="add-input" v-model="title" v-show="!isROnly"/>
-            <v-ons-input type="text" placeholder="場所（任意）" class="add-input" v-model="place" v-show="!isROnly"/>
             
-            <div class="add-div" v-show="isROnly">{{dateRange}}</div>
+            <div class="add-div" v-show="isROnly">{{ dateRange }}</div>
             <v-date-picker
               v-model='selectedValue'
               mode='range'
@@ -36,10 +33,12 @@
               <p class="time-btw"> 〜 </p>
               <v-ons-input type="time" v-model="eTime" :readonly="isROnly" class="time"/>
             </div>
+            <div class="add-div" v-show="isROnly" :style="place != '' ? '' : 'color: #999'">{{ place != '' ? place : '場所（任意）'}}</div>
+            <v-ons-input type="text" placeholder="場所（任意）" class="add-input" v-model="place" v-show="!isROnly"/>
             <textarea cols="30" rows="10" class="ex-info" placeholder="備考（任意、300字以内）" v-model="exInfo" :readonly="isROnly"></textarea>
             <div class="add-btns">
-              <v-ons-button modifier="quiet" @click="addCancel">{{cBText}}</v-ons-button>
-              <v-ons-button @click="addSchedule">{{addBText}}</v-ons-button>
+              <v-ons-button modifier="quiet" @click="addCancel">{{ cBText }}</v-ons-button>
+              <v-ons-button @click="addSchedule">{{ addBText }}</v-ons-button>
             </div>
             </div>
           </div>
@@ -47,51 +46,59 @@
 
         <div  
           class='selected-day'>
-          <!-- <v-ons-list-title class="dateTitle" v-show="isToday&&dayClicked"> -->
           <v-ons-list-title class="dateTitle" v-show="isToday">
             今日
           </v-ons-list-title>
 
           <v-ons-list-title class="dateTitle" v-show="!isToday&&dayClicked">
             <!-- {{ selectedDay.year }}年 -->
-            {{ selectedDay.month }}月{{ selectedDay.day }}日({{returnDay(String(selectedDay.date))}})
+            {{ selectedDay.month }}月{{ selectedDay.day }}日({{ returnDay(String(selectedDay.date)) }})
           </v-ons-list-title>
 
           <v-ons-list-title class="dateTitle" v-show="!isToday&&!dayClicked">
-            カレンダーの日付をタップ
+            {{ eventSMonth }}月{{ eventSDate }}日({{ eventSDay }})
           </v-ons-list-title>
 
-          <div class="diary-title" @click="$store.state.diaries.filter(diary => diary.userId == $store.state.uid && diary.date == diaryDate)[0] != null ? showDiary() : ''">
+          <div class="diary-title" @click="diaryOfOneday != null ? showDiary() : ''">
+            <v-ons-ripple light-gray></v-ons-ripple>
             <v-ons-icon icon='ion-ios-book' class="book"/>
-              <span class="diary-title-text" :style="$store.state.diaries.filter(diary => diary.userId == $store.state.uid && diary.date == diaryDate)[0] == null ? 'color: #8e8e8e' : ''">
-                {{$store.state.diaries.filter(diary => diary.userId == $store.state.uid && diary.date == diaryDate)[0] != null ?
-                  $store.state.diaries.filter(diary => diary.userId == $store.state.uid && diary.date == diaryDate)[0].title : '提出済みの日誌はありません'}}
+              <span class="diary-title-text" :style="diaryOfOneday == null ? 'color: #8e8e8e' : ''">
+                {{diaryOfOneday != null ? diaryOfOneday.title : '提出済みの日誌はありません'}}
               </span>
           </div>
 
-          <v-ons-list class="eventList" v-show="dayClicked">
+          <v-ons-list class="eventList" v-if="dayClicked">
             <!-- リストアイテムはstateを直接読むように変更。初期表示は今日を読む。ただし、dayclickイベントを発火することはできないため、firebaseから読む方法しかないと思われる。今はv-showで非表示にしている。 -->
             <!-- 「今日」をハイライトするために、keyをtodayにしてschedule(event)に追加している。空のリストなため、表示しない。 -->
-            <v-ons-list-item v-show="ordered!=null" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem" v-if="attr.key!='today'">
-              <div class="time-title">
+            <v-ons-list-item v-show="ordered != ''" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem" v-if="attr.key!='today'">
+              <div class="time-title" v-if="attr.customData.time_start!='00:00' && attr.customData.time_end!='00:00'">
                 <div class="time-colmn">
                   <p>{{ attr.customData.time_start }}</p>
                   <p>{{ attr.customData.time_end }}</p>
                 </div>
                   <p class="event-title">{{ attr.customData.title }}</p>
               </div>
+              <p v-else class="event-title-notime">{{ attr.customData.title }}</p>
             </v-ons-list-item>
-            <v-ons-list-item v-show="ordered==''" class="eventLItem" style="color: #8e8e8e">
+            <v-ons-list-item v-show="ordered == ''" class="eventLItem" style="color: #8e8e8e">
               イベントはありません
             </v-ons-list-item>
           </v-ons-list>
 
-          <v-ons-list class="eventList" v-show="!dayClicked">
+          <!-- dayClickedは頻繁に切り替わらないので、v-ifを使用する。 -->
+          <v-ons-list class="eventList" v-if="!dayClicked">
             <!-- リストアイテムはstateを直接読むように変更。初期表示は今日を読む。ただし、dayclickイベントを発火することはできないため、firebaseから読む方法しかないと思われる。 -->
-            <v-ons-list-item v-show="getScheduleOfToday != null" tappable v-for='attr in getScheduleOfToday' :key="attr.id" @click="eventOfTodayClick(attr)" class="eventLItem">
-              {{ attr.time_start }}-{{ attr.time_end }}  {{ attr.title }}
+            <v-ons-list-item v-if="getScheduleOfOneday != ''" tappable v-for='attr in getScheduleOfOneday' :key="attr.id" @click="eventOfOnedayClick(attr)" class="eventLItem">
+              <div class="time-title" v-if="attr.time_start!='00:00' && attr.time_end!='00:00'">
+                <div class="time-colmn">
+                  <p>{{ attr.time_start }}</p>
+                  <p>{{ attr.time_end }}</p>
+                </div>
+                  <p class="event-title">{{ attr.title }}</p>
+              </div>
+              <p v-else class="event-title-notime">{{ attr.title }}</p>
             </v-ons-list-item>
-            <v-ons-list-item v-show="getScheduleOfToday == ''" class="eventLItem" style="color: #8e8e8e">
+            <v-ons-list-item v-if="getScheduleOfOneday == ''" class="eventLItem" style="color: #8e8e8e">
               イベントはありません
             </v-ons-list-item>
           </v-ons-list>
@@ -99,7 +106,7 @@
 
         <v-ons-fab class="add-b" @click="addPushed">
             <v-ons-icon icon="md-plus"></v-ons-icon>
-          </v-ons-fab>
+        </v-ons-fab>
       </div>
           
     </v-ons-page>
@@ -114,6 +121,10 @@ import DiaryDetail from './DiaryDetail';
 export default {
     data() {
         return {
+          eventSYear: '',
+          eventSMonth: '',
+          eventSDate: '',
+          eventSDay: '',
           diaryDate: '',
           editId: '',
           isROnly: false,
@@ -160,12 +171,27 @@ export default {
     },
 
     computed: {
-      getScheduleOfToday() {
+      diaryOfOneday() {
+        return this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.diaryDate && diary.submit == true)[0];
+      },
+
+      getScheduleOfOneday() {
         //起動時に本日のスケジュールを表示する。ライブラリの仕様で、dayClickイベントをプログラムから発動できないため、DBから読み込む。
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const date = today.getDate();
+        let year = '';
+        let month = '';
+        let date = '';
+
+        if(this.isToday) {
+          const today = new Date();
+          year = today.getFullYear();
+          month = today.getMonth() + 1;
+          date = today.getDate();
+        } else {
+          year = this.eventSYear;
+          month = this.eventSMonth;
+          date = this.eventSDate;
+        }
+
         let listS = [];
         let listE = [];
         let list = [];
@@ -178,11 +204,13 @@ export default {
               return (v1.id===v2.id) 
             }) === i1);
           });
-        return cleanList;
+        return _.sortBy(cleanList, item => {
+            return [item.time_start];
+        });
       },
 
       ordered(){
-        return _.sortBy(this.selectedDay.attributes, function(item) {
+        return _.sortBy(this.selectedDay.attributes, item => {
             return [item.customData.time_start];
         });
       },
@@ -451,8 +479,11 @@ export default {
 
       },
 
-      eventOfTodayClick(attr) {
-          const day = [ "日", "月", "火", "水", "木", "金", "土" ][new Date().getDay()];
+      eventOfOnedayClick(attr) {
+          let day = '';
+          if(this.isToday) {
+            day = [ "日", "月", "火", "水", "木", "金", "土" ][new Date().getDay()];
+          }
           
           this.addVisible = true
           this.isDetail = true
@@ -465,11 +496,11 @@ export default {
           this.sYear  = attr.year_start
           this.sMonth = attr.month_start
           this.sDate  = attr.date_start
-          this.sDay   = day
+          this.sDay   = day != '' ? day : this.eventSDay
           this.eYear  = attr.year_end
           this.eMonth = attr.month_end
           this.eDate  = attr.date_end
-          this.eDay   = day
+          this.eDay   = day != '' ? day : this.eventEDay
 
           this.sTime = attr.time_start
           this.eTime = attr.time_end
@@ -536,6 +567,15 @@ export default {
           }
           this.addVisible = false
           this.dayClicked = false
+          this.eventSYear = this.sYear;
+          this.eventSMonth = this.sMonth;
+          this.eventSDate = this.sDate;
+          this.eventSDay = this.sDay;
+          // this.eventEYear = this.eYear;
+          // this.eventEMonth = this.eMonth;
+          // this.eventEDate = this.eDate;
+          // this.eventEDay = this.eDay;
+          this.diaryDate = `${this.eventSYear}年${this.eventSMonth}月${this.eventSDate}日(${this.eventSDay})`;
           this.title = ''
           this.sTime = ''
           this.place = ''
@@ -551,6 +591,16 @@ export default {
           this.exInfo = ''
           this.selectedValue = null
           this.dRPicked = false
+
+          const today = new Date();
+          const todayYear = today.getFullYear();
+          const todayMonth = today.getMonth() + 1;
+          const todayDate = today.getDate();
+          if(this.eventSYear == todayYear && this.eventSMonth == todayMonth && this.eventSDate == todayDate) {
+            this.isToday = true;
+          } else {
+            this.isToday = false;
+          }
       }
 	  }
 }
@@ -633,17 +683,12 @@ export default {
     align-items: center;
   }
   
-  
-  /* .addEvent {
-    width: 100vw;
+  .event-title-notime {
+    font-size: 1rem;
     display: flex;
-    justify-content: center;
     align-items: center;
-    font-size: 1.6rem;
-    padding: 0;
-    height: 6vh;
-  } */
-
+  }
+  
   .add-b {
     background-color: rgb(125, 146, 238);
     color: #fffefe;
@@ -695,7 +740,6 @@ export default {
   }
 
   .time {
-    /* width: 100px; */
     margin-right: 8px;
   }
 
@@ -718,6 +762,5 @@ export default {
     display: flex;
     justify-content: space-between;
   }
-
-
 </style>
+

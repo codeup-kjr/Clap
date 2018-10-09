@@ -278,6 +278,7 @@ export default {
         position: fixed;
         bottom: 6%;
         left: 179%;
+        z-index: 2;
     }
 
     .add-b:active {

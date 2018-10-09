@@ -44,4 +44,11 @@ export default {
 
 <style>
 
+  ::placeholder{
+    color:#999;
+  }
+  ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color:#999;
+  }
+
 </style>

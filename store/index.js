@@ -28,10 +28,10 @@ db.settings(settings)
         uRErr: '',
         myData: {},
             //チャット検証用
-            players: [],
+            // players: [],
             //チャット検証用
-        myRoom: [],
-        groupList: [],
+        // myRoom: [],
+        // groupList: [],
         usersData: [],
         loginErrMsg: '', //ログイン試行時のエラーメッセージ結果格納用
         schTeamId: '', //チームに参加の時のteamIdによるチーム存在調査結果格納用
@@ -64,14 +64,14 @@ db.settings(settings)
             {text: 'スタッフ'},
         ],
         tabBarIndex: 0,
-        chatTabBarIndex: 0
+        // chatTabBarIndex: 0
     }
 };
 
 // stateを参照した定義ができないため、action内などで記述する。
 export const teamRef = db.collection('team')
 export const userRef = db.collection('users')
-export const roomRef = db.collection('room')
+// export const roomRef = db.collection('room')
 export const diaryRef = db.collection('diary')
 
 export const mutations = {
@@ -96,9 +96,9 @@ export const mutations = {
         state.tabBarIndex = index
     },
 
-    chatTabBarSet(state, index) {
-        state.chatTabBarIndex = index
-    },
+    // chatTabBarSet(state, index) {
+    //     state.chatTabBarIndex = index
+    // },
 
     setTeamId(state, teamId) {
         state.teamId = teamId
@@ -120,9 +120,9 @@ export const mutations = {
         state.usersData = data
     },
 
-    setGroupList(state, data) {
-        state.groupList = data
-    },
+    // setGroupList(state, data) {
+    //     state.groupList = data
+    // },
 
     setURErr(state, txt) {
         state.uRErr = txt
@@ -169,9 +169,9 @@ export const actions = {
         await bindFirebaseRef('teamU', teamRef.doc(String(state.teamId)).collection('users'))
     }),
 
-    bindMyRoom: firebaseAction(async ({bindFirebaseRef, state}) => {
-        await bindFirebaseRef('myRoom', userRef.doc(String(state.uid)).collection('rooms'))
-      }),
+    // bindMyRoom: firebaseAction(async ({bindFirebaseRef, state}) => {
+    //     await bindFirebaseRef('myRoom', userRef.doc(String(state.uid)).collection('rooms'))
+    //   }),
 
     bindMyData: firebaseAction(async ({bindFirebaseRef, state}) => {
         await bindFirebaseRef('myData', userRef.doc(String(state.uid)))
@@ -206,9 +206,9 @@ export const actions = {
         await unbindFirebaseRef('teamU')
     }),
 
-    unBindMyRoom: firebaseAction(async ({unbindFirebaseRef}) => {
-        await unbindFirebaseRef('myRoom')
-      }),
+    // unBindMyRoom: firebaseAction(async ({unbindFirebaseRef}) => {
+    //     await unbindFirebaseRef('myRoom')
+    //   }),
 
     unBindMyData: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('myData')
@@ -416,7 +416,6 @@ export const actions = {
             querySnapshot.forEach(function(doc) {
                 // commit('setScheduleOfToday', doc.data())
                 list.push(doc.data());
-                console.log(doc.data())
             })
         })
 
@@ -434,7 +433,6 @@ export const actions = {
           });
 
           commit('setScheduleOfToday', cleanList)
-        console.log(state.scheduleOfToday);
         //querySnapshotはerrorを返すことができない。
 
       }),
@@ -488,26 +486,26 @@ export const actions = {
     //     (flg = true ? commit('setUsersData', usersData) : '')
     //   }),
 
-    getGroup: firebaseAction(async({context, state, commit}, {ids}) => {
-        let flg = false
-        let groups = []
-        const l = ids.length
+    // getGroup: firebaseAction(async({context, state, commit}, {ids}) => {
+    //     let flg = false
+    //     let groups = []
+    //     const l = ids.length
         
-        for(let i=0; i<l; i++) {
-         await roomRef.doc(String(ids[i].roomId)).get().then(function(doc) {
-                if (doc.exists) {
-                    flg = true
-                    groups.push(doc.data())
-                } else {
-                    console.log("No such document!");
-                }
-            }).catch(function(error) {
-                console.log("Error getting document:", error)
-            });
-        }
-        //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
-        (flg = true ? commit('setGroupList', groups) : '')
-      }),
+    //     for(let i=0; i<l; i++) {
+    //      await roomRef.doc(String(ids[i].roomId)).get().then(function(doc) {
+    //             if (doc.exists) {
+    //                 flg = true
+    //                 groups.push(doc.data())
+    //             } else {
+    //                 console.log("No such document!");
+    //             }
+    //         }).catch(function(error) {
+    //             console.log("Error getting document:", error)
+    //         });
+    //     }
+    //     //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
+    //     (flg = true ? commit('setGroupList', groups) : '')
+    //   }),
 
       updateUser: firebaseAction(async ({context, state, commit, dispatch}, {name, role, grade, img}) => {
         if(img) {

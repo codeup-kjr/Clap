@@ -38,7 +38,7 @@
 
         <p class="comment-count">{{this.$store.state.commentData.length}}件のコメント</p>
         <div class="img-comment">
-            <img :src="$store.state.myData.image" alt="image" class="list-item__thumbnail my-image">
+            <img :src="$store.state.myData.image!=null ? $store.state.myData.image : defaultImg" alt="image" class="list-item__thumbnail my-image">
             <div class="border underline" :class="commentFocus == true ? 'underline2' : ''">
                 <textarea cols="30" :style="{height: areaHeight(comment, 'comment')}" class="comment-input" placeholder="コメントを入力" v-model="comment" @focus="focus" @blur="blur"></textarea>
             </div>
@@ -65,10 +65,12 @@
 <script>
 import Vue from 'vue'
 import png from '../assets/dUsrImg.jpg'
+import { Z_NO_FLUSH } from 'zlib';
 export default {
     
     data() {
         return {
+            defaultImg: png,//templateで読み込むため。
             diaryDiv: '', 
             questions: {
                 q1: '「ここが良かった！」今日の自分。',
@@ -149,7 +151,6 @@ export default {
                                         createElement('div', {style:{display: 'flex', flexDirection:'column', width: '80vw'}},[
                                             createElement('p', {style:{fontSize: '1rem', marginRight: '8px', marginBottom: '4px'}}, this.$store.state.usersData.filter(data => data.id == this.$store.state.commentData[i].userId)[0].name),
                                             this.commentEdit[i] == '編集' ?
-                                                // createElement('p', {style:{minHeight: '28px', fontSize: '1rem', marginBottom: '4px', paddingLeft: '0px', paddingTop: '1px'}}, this.$store.state.commentData[i].text)
                                                 createElement('textarea', {attrs: {readonly: true}, style:{fontSize: '1rem', marginBottom: '6px',
                                                     height: this.areaHeight(this.$store.state.commentData[i].text, 'commentEdit')}, 'class': {'comment-inputD': true}
                                                 }, this.$store.state.commentData[i].text)
@@ -169,9 +170,9 @@ export default {
                                                 ]),
                                                 createElement('div', {style:{display: 'flex', color: '#8e8e8e', fontSize: '0.9rem'}},[
                                                     this.commentEdit[i] == '保存'  && this.$store.state.commentData[i].userId == this.$store.state.uid?
-                                                    createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.commentEditChange(i);}}, style:{paddingTop: '4.5px', marginRight: '24px'}})
+                                                    createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.commentEditCancel(i);}}, style:{paddingTop: '2px', marginRight: this.$store.state.commentData[i].userId == this.$store.state.uid && this.$store.state.commentData[i].text != this.commentEditText[i] ? '24px' : '8px'}})
                                                     : '',
-                                                    this.$store.state.commentData[i].userId == this.$store.state.uid?
+                                                    this.$store.state.commentData[i].userId == this.$store.state.uid && this.$store.state.commentData[i].text != this.commentEditText[i] ?
                                                     createElement('p', {on: {click: ()=>{this.commentEditChange(i);}}, style:{}}, this.commentEdit[i])
                                                     : ''
                                                 ])
@@ -227,9 +228,9 @@ export default {
                                                                     ]),
                                                                     createElement('div', {style:{display: 'flex', marginBottom: '8px',  color: '#8e8e8e', fontSize: '0.9rem'}},[
                                                                             this.replyEdit[item.id] == '保存' && item.userId == this.$store.state.uid ?
-                                                                                createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.replyEditChange(item.id);}}, style:{paddingTop: '4.5px', marginRight: '24px'}})
+                                                                                createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.replyEditCancel(item.id);}}, style:{paddingTop: '2px', marginRight: item.userId == this.$store.state.uid && item.text != this.replyEditText[item.id] ? '24px' : '6px'}})
                                                                             : '',
-                                                                            item.userId == this.$store.state.uid ?
+                                                                            item.userId == this.$store.state.uid && item.text != this.replyEditText[item.id] ?
                                                                             createElement('p', {on: {click: ()=>{this.replyEditChange(item.id);}}, style:{}}, this.replyEdit[item.id])
                                                                             : '',
                                                                         ])
@@ -418,8 +419,13 @@ export default {
             }
             //リアクティブにするため、Object.assignを使用。
             this.commentEdit = Object.assign({}, this.commentEdit, { [i]: this.commentEdit[i] == '編集' ? '保存' : '編集'});
-            // this.commentEditText = Object.assign({}, this.commentEditText, { [i]: this.$store.state.commentData[i].text});
             this.commentEditText = Object.assign({}, this.commentEditText, { [i]: this.commentEdit[i] == '編集' ? '' : this.$store.state.commentData[i].text});
+        },
+
+        commentEditCancel(i) {
+            //リアクティブにするため、Object.assignを使用。
+            this.commentEdit = Object.assign({}, this.commentEdit, { [i]: '編集'});
+            this.commentEditText = Object.assign({}, this.commentEditText, { [i]: ''});
         },
 
         replyEditChange(id) {
@@ -428,8 +434,13 @@ export default {
             }
             //リアクティブにするため、Object.assignを使用。
             this.replyEdit = Object.assign({}, this.replyEdit, { [id]: this.replyEdit[id] == '編集' | '' ? '保存' : '編集'});
-            // this.commentEditText = Object.assign({}, this.commentEditText, { [i]: this.$store.state.commentData[i].text});
-            this.replyEditText = Object.assign({}, this.replyEditText, { [id]: this.$store.state.replyData.filter(data => data.id == id)[0].text});
+            this.replyEditText = Object.assign({}, this.replyEditText, { [id]: this.replyEdit[id] == '編集' | '' ? '' : this.$store.state.replyData.filter(data => data.id == id)[0].text});
+        },
+
+        replyEditCancel(id) {
+            //リアクティブにするため、Object.assignを使用。
+            this.replyEdit = Object.assign({}, this.replyEdit, { [id]: '編集'});
+            this.replyEditText = Object.assign({}, this.replyEditText, { [id]: ''});
         },
 
         replyAdd(i) {
@@ -471,15 +482,6 @@ export default {
         replyAddC(i) {
             this.replyAddFlg = Object.assign({}, this.replyAddFlg, { [i]: false});
             this.replyAddText = Object.assign({}, this.replyAddFlg, { [i]: ''});
-        },
-
-        test() {
-            String.prototype.bytes = function () {
-                return(encodeURIComponent(this).replace(/%../g,"x").length);
-                }
-            console.log(this.comment.length);
-            console.log(this.comment.bytes());
-
         },
 
         close() {
