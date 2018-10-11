@@ -1,6 +1,7 @@
 <template>
    <!-- <no-ssr> -->
     <v-ons-page>
+        <div class="container">
         <div class="header">
             <div class="type-center">
                 <v-ons-select class="type" v-model="selectedType">
@@ -22,9 +23,12 @@
             >
             </v-ons-lazy-repeat>
         </v-ons-list>
-        <v-ons-fab class="add-b" @click="add">
-            <v-ons-icon icon="md-plus"></v-ons-icon>
-        </v-ons-fab>
+        <div class="btn-sticky">
+            <v-ons-fab class="add-b" @click="add">
+                <v-ons-icon icon="md-plus"></v-ons-icon>
+            </v-ons-fab>
+        </div>
+        </div>
     </v-ons-page>
     <!-- </no-ssr> -->
 </template>
@@ -270,15 +274,18 @@ export default {
 
     .list {
         overflow: auto;
+        min-height: 69vh;
+    }
+
+    .btn-sticky {
+        position: sticky;
+        bottom: 6vh;
     }
 
     .add-b {
         background-color: rgb(125, 146, 238);
         color: #fffefe;
-        position: fixed;
-        bottom: 6%;
-        left: 179%;
-        z-index: 2;
+        margin-left: 79%;
     }
 
     .add-b:active {
