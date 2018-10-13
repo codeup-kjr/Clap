@@ -355,7 +355,7 @@ export const actions = {
                         await dispatch('getUser', {ids: state.teamU})
                         await dispatch('getScheduleOfToday');
                         await dispatch('bindDiaries')
-
+    
                         commit('clear')
                         commit('push', page)
                         // await dispatch('bindMyRoom')
@@ -371,9 +371,11 @@ export const actions = {
 
     checkLogin: firebaseAction(({context, state, commit, dispatch}, {page1, page2}) => {
         let uid = ''
+        let currentPage = {};
         firebase.auth().onAuthStateChanged(async function(user) {
                 if (user) {
                     uid = user.uid
+
                     await commit('setUid', uid)
                     await dispatch('bindMyData')
                     await dispatch('getTeamByUid', {page: page2})

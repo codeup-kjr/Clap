@@ -141,7 +141,7 @@ export default {
                     if (!navigator.onLine) {
                         this.$ons.notification.alert({messageHTML:'オンラインになると保存されます。<br>オンラインになる前に画面を更新すると保存されません。', title:''})
                     } else {
-                        this.$ons.notification.alert('保存しました', {title:''})
+                        this.$ons.notification.alert('保存しました。', {title:''})
                     }
                     this.file = ''
                     this.edit = '編集する'

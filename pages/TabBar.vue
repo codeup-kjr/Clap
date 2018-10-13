@@ -31,6 +31,7 @@ const yerrow = [146, 146, 10];
 export default {
   data () {
     return {
+      // currentPage: {}, //index.jsのcheckLoginからextendsされる。
       colors: blue,
       animationOptions: {},
       topPosition: 0,
@@ -38,7 +39,10 @@ export default {
         {
           // label: 'カレンダー',
           icon: 'ion-calendar',
-          page: Calendar,
+                    //<v-calendar :attributes='attrs(currentPage)' :theme-styles='themeStyles' :from-page.sync="currentPage" @dayclick="dayClick" class="calendar"/>
+                    // :from-page.sync="currentPage"でカレンダーの月をattributesとシンクロさせる。
+                    //attrs(currentPage)とすることで、その月のスケジュールのみ読み込むことが可能になり、パフォーマンスが上がる。
+          page: {extends: Calendar, data() {return {currentPage: {month: new Date().getMonth() + 1, year: new Date().getFullYear()}}}},
           theme: blue,
         //   style: this.md ? { maxWidth: '60px' } : {}, //小さくする場合
           top: 0 // Toolbarを使用する場合は、-(Toolbar + Tabbar heights)
@@ -86,6 +90,7 @@ export default {
   },
 
   computed: {
+
     index: {
       get() {
         return this.$store.state.tabBarIndex;

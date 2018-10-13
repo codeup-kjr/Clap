@@ -20,7 +20,6 @@ export default {
   mounted() {
       // this.$ons.platform.select('android')//検証用
       Vue.prototype.md = this.$ons.platform.isAndroid()//onsenui.jsで定義すべきか検討。
-      // this.$store.commit('push', TabBar)
   },
 
   destroyed() {

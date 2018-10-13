@@ -1,0 +1,18 @@
+{
+  "indexes": [
+    {
+      "collectionId": "reply",
+      "state": "READY",
+      "fields": [
+        {
+          "fieldPath": "commentId",
+          "mode": "ASCENDING"
+        },
+        {
+          "fieldPath": "input_at",
+          "mode": "ASCENDING"
+        }
+      ]
+    }
+  ]
+}

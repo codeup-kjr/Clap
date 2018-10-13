@@ -2,8 +2,9 @@
    <!-- <no-ssr> -->
     <v-ons-page>
       <div class="container">
-        <v-calendar :attributes='attrs' :theme-styles='themeStyles' @dayclick="dayClick" class="calendar"/>
-        
+        <v-calendar :attributes='attrs(currentPage)' :theme-styles='themeStyles' :from-page.sync="currentPage" @dayclick="dayClick" class="calendar"/>
+          <!-- :from-page.sync="currentPage"でカレンダーの月をattributesとシンクロさせる。 -->
+          <!-- attrs(currentPage)とすることで、その月のスケジュールのみ読み込むことが可能になり、パフォーマンスが上がる。 -->
         <v-ons-modal :visible="addVisible">
           <div class="add-container">
             <div class="add-header">イベント{{ addHText }}</div>
@@ -69,8 +70,8 @@
 
           <v-ons-list class="eventList" v-if="dayClicked">
             <!-- リストアイテムはstateを直接読むように変更。初期表示は今日を読む。ただし、dayclickイベントを発火することはできないため、firebaseから読む方法しかないと思われる。今はv-showで非表示にしている。 -->
-            <!-- 「今日」をハイライトするために、keyをtodayにしてschedule(event)に追加している。空のリストなため、表示しない。 -->
-            <v-ons-list-item v-show="ordered != ''" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem" v-if="attr.key!='today'">
+            <!-- 「今日」をハイライトするために、keyをtodayにしてschedule(event)に追加している。空のリストなので、表示しない。 -->
+            <v-ons-list-item v-show="ordered.filter(data => data.key != 'today') != ''" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem">
               <div class="time-title" v-if="attr.customData.time_start!='00:00' && attr.customData.time_end!='00:00'">
                 <div class="time-colmn">
                   <p>{{ attr.customData.time_start }}</p>
@@ -80,7 +81,7 @@
               </div>
               <p v-else class="event-title-notime">{{ attr.customData.title }}</p>
             </v-ons-list-item>
-            <v-ons-list-item v-show="ordered == ''" class="eventLItem" style="color: #8e8e8e">
+            <v-ons-list-item v-show="ordered.filter(data => data.key != 'today') == ''" class="eventLItem" style="color: #8e8e8e">
               イベントはありません
             </v-ons-list-item>
           </v-ons-list>
@@ -114,13 +115,14 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import lodash from 'lodash'//並べ替え用「 ._ 」
+import lodash from 'lodash';//並べ替え用「 ._ 」
 import DiaryDetail from './DiaryDetail';
+import png from '../assets/dUsrImg.jpg';
 
 export default {
     data() {
         return {
+          currentPage: {}, //currentPageはTabBarからextends
           eventSYear: '',
           eventSMonth: '',
           eventSDate: '',
@@ -216,20 +218,38 @@ export default {
       },
 
       attrs() {
-        const events = this.$store.state.schedule.map(t => ({
-          key: `todo.${t.id}`,
-          bar: {backgroundColor: 'red'},
-          dates: {start: new Date(t.year_start, t.month_start - 1, t.date_start), end: new Date(t.year_end, t.month_end - 1, t.date_end)},
-          customData: t,
-        }));
-        events.push({
-                    key: 'today',
-                    customData: {
-                      },
-                    highlight: {backgroundColor: '#f9e4b8'},
-                    dates: new Date(),
-                  })
-        return events
+        return(currentPage)=> {
+          //
+          let events = [];
+          let listS = [];
+          let listE = [];
+
+          listS = listS.concat(this.$store.state.schedule.filter(schedule => schedule.month_start == currentPage.month && schedule.year_start == currentPage.year));
+          listE = listE.concat(this.$store.state.schedule.filter(schedule => schedule.month_end == currentPage.month && schedule.year_end == currentPage.year));
+          events = listS.concat(listE);
+
+          let cleanList = events.filter(function(v1,i1,a1){ 
+            return (a1.findIndex(function(v2){ 
+              return (v1.id===v2.id) 
+            }) === i1);
+          });
+
+          cleanList = cleanList.map(t => ({
+            key: `todo.${t.id}`,
+            bar: {backgroundColor: 'red'},
+            dates: {start: new Date(t.year_start, t.month_start - 1, t.date_start), end: new Date(t.year_end, t.month_end - 1, t.date_end)},
+            customData: t,
+          }));
+         
+          cleanList.push({
+                      key: 'today',
+                      customData: {
+                        },
+                      highlight: {backgroundColor: '#f9e4b8'},
+                      dates: new Date(),
+                    });
+          return cleanList;
+        }
       },
 
       inputState() {
@@ -448,7 +468,7 @@ export default {
         const myDataImage = myData.image == null ? png : myData.image;
         this.$store.dispatch('showDetail', {
                                             diaryDiv: '提出済み',
-                                            data: this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.diaryDate)[0],
+                                            data: this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.diaryDate && diary.submit == true)[0],
                                             uData: myData,
                                             uDataImage: myDataImage,
                                             page: DiaryDetail

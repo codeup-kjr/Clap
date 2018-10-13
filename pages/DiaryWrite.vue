@@ -244,7 +244,7 @@ export default {
     }
 
     .date {
-        width: 164px;
+        width: 172px;
         padding-top: 4px;
     }
 

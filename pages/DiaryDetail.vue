@@ -148,13 +148,13 @@ export default {
 
                     return createElement(
                         "div",
-                        {style:{width: '90vw'}},
+                        {style:{width: 'calc((6vh + 8px) + 235px'}},
                         [
                             (()=> {
-                                    const commentCard = createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: '90vw', marginBottom: '8px'}},[
+                                    const commentCard = createElement('div', {style:{display: 'flex', justifyContent: 'flex-start', width: 'calc((6vh + 8px) + 235px', marginBottom: '8px'}},[
                                         createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].image}, 
                                             style:{height: '6vh', maxHeight: '56px', width: '6vh', maxWidth: '56px', borderRadius: '3vh', marginRight: '8px'}},),
-                                        createElement('div', {style:{display: 'flex', flexDirection:'column', width: '80vw'}},[
+                                        createElement('div', {style:{display: 'flex', flexDirection:'column'}},[
                                             createElement('p', {style:{fontSize: '1rem', marginRight: '8px', marginBottom: '4px'}}, this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].name),
                                             this.commentEdit[i] == '編集' ?
                                                 createElement('textarea', {attrs: {readonly: true}, style:{fontSize: '1rem', marginBottom: '6px',
@@ -167,7 +167,7 @@ export default {
                                                             blur: ()=>{this.commentEditFocus = Object.assign({}, this.commentEditFocus, { [i]: false });}},
                                                     style:{height: this.areaHeight(this.commentEditText[i], 'commentEdit'), fontSize:'1rem', marginBottom: '-2px'}, 'class': {'comment-inputD': true}}, this.commentEditText[i])
                                                 ]),
-                                            createElement('div', {style:{display: 'flex', justifyContent: 'space-between', width: 'calc(90vw - (6vh + 8px)'}},[
+                                            createElement('div', {style:{display: 'flex', justifyContent: 'space-between', width: '235px'}},[
                                                 createElement('div', {style:{display: 'flex'}},[
                                                     createElement('p', {style:{fontSize: '0.9rem', color: '#8e8e8e'}}, this.displayTime(this.commentSync[i].input_at)),
                                                     this.commentSync[i].edited == true ?
@@ -225,7 +225,7 @@ export default {
                                                                                 blur: ()=>{this.replyEditFocus = Object.assign({}, this.replyEditFocus, { [item.id]: false });}},
                                                                         style:{height: this.areaHeight(this.replyEditText[item.id], 'replyEdit'), fontSize:'1rem', marginBottom: '-2px'}, 'class': {'reply-inputD': true}}, this.replyEditText[item.id])
                                                                 ]),
-                                                                createElement('div', {style:{display: 'flex', justifyContent: 'space-between', width: 'calc(90vw - ((6vh + 8px) + (4vh + 8px))'}},[
+                                                                createElement('div', {style:{display: 'flex', justifyContent: 'space-between', width: '204px'}},[
                                                                     createElement('div', {style:{display: 'flex'}},[
                                                                         createElement('p', {style:{fontSize: '0.9rem', color: '#8e8e8e'}}, this.displayTime(item.input_at)),
                                                                         item.edited == true ?
@@ -313,6 +313,7 @@ export default {
             commentData => {
                 const comEditFlgL = Object.values(this.commentEdit);
                 const repEditFlgL = Object.values(this.replyEdit);
+                
                 if(comEditFlgL.indexOf('保存') == -1 && repEditFlgL.indexOf('保存') == -1) {
                     this.commentSync = [].concat(this.$store.state.commentData);
                     this.toastVisible = false;
@@ -346,13 +347,14 @@ export default {
                     cols = 28;
                     break;
                 case 'replyEdit':
-                    cols = 26;
+                    cols = 24;
                     break;
                 default:
                     break;
             }
                 String.prototype.bytes = function () {
-                        var length = 0;
+                        let length = 0;
+                        let adjust = 0;
                         for (var i = 0; i < this.length; i++) {
                             var c = this.charCodeAt(i);
                             if ((c >= 0x0 && c < 0x81) || (c === 0xf8f0) || (c >= 0xff61 && c < 0xffa0) || (c >= 0xf8f1 && c < 0xf8f4)) {
@@ -360,14 +362,26 @@ export default {
                             } else {
                                 length += 2;
                             }
+                            //句読点が先頭に来ないように自動的に調整されるため、その対応。12289は「、」 12290は「。」
+                            if(adjust == 0) {
+                                if(i % (cols/2) == 0 && ( c == 12289 | c == 12290)) {
+                                    length += 2;
+                                    adjust ++;
+                                }
+                            } else {
+                                if((i + adjust) % (cols/2) == 0 && ( c == 12289 | c == 12290)) {
+                                    length += 2;
+                                    adjust ++;
+                                }
+                            }
                         }
                         return length;
                     };
                     // const lineHeight = 24;
                     const lineHeight = 26;
                     const kaigyou = target.split(/\n/).length - 1;
-                    const lineCount = ((target.bytes() - kaigyou) == 0 ? 1 : 0) + Math.ceil((target.bytes() - kaigyou) / cols) + kaigyou;
-                // return `height: ${lineHeight * lineCount}px`;
+                    let lineCount = ((target.bytes() - kaigyou) == 0 ? 1 : 0) + Math.ceil((target.bytes() - kaigyou) / cols) + kaigyou;
+
                 return `${lineHeight * lineCount}px`;
             }
         },
@@ -471,6 +485,7 @@ export default {
             //リアクティブにするため、Object.assignを使用。
             this.replyEdit = Object.assign({}, this.replyEdit, { [id]: this.replyEdit[id] == '編集' | '' ? '保存' : '編集'});
             this.replyEditText = Object.assign({}, this.replyEditText, { [id]: this.replyEdit[id] == '編集' | '' ? '' : this.$store.state.replyData.filter(data => data.id == id)[0].text});
+            console.log(this.replyEditText[id].charCodeAt(13));
         },
 
         replyEditCancel(id) {
@@ -639,7 +654,7 @@ export default {
         font-size: 1rem;
         min-height:24px;
         line-height: 24px;
-        width: 245px;
+        width: 235px;
         resize: none;
         padding: 0;
         margin-top: 2vh;
@@ -648,7 +663,7 @@ export default {
     }
 
     .underline {
-        width: 245px;
+        width: 235px;
         position: relative;
     }
 
@@ -674,14 +689,14 @@ export default {
     .underline2:focus:after,
     .underline2:active:after {
         /*ホバーしたら100%の位置まで伸びる*/
-        width: 245px;
+        width: 235px;
     }
 
     .comment-btns {
         display: flex;
         justify-content: flex-end;
         height: 40px;
-        width: 245px;
+        width: 235px;
         margin-left: calc(6vh + 16px + 8px);
         margin-bottom: 24px;
     }

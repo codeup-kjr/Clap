@@ -23,11 +23,9 @@
             >
             </v-ons-lazy-repeat>
         </v-ons-list>
-        <div class="btn-sticky">
-            <v-ons-fab class="add-b" @click="add">
+            <v-ons-fab class="add-b btn-sticky" @click="add">
                 <v-ons-icon icon="md-plus"></v-ons-icon>
             </v-ons-fab>
-        </div>
         </div>
     </v-ons-page>
     <!-- </no-ssr> -->
@@ -53,8 +51,6 @@ export default {
 
         renderItem:
         i => {
-            const vm = this
-
             return new Vue({
             render: createElement => {
                 if(this.list) {
@@ -64,17 +60,18 @@ export default {
                     [
                         (()=> {
                                 let date = '';
-                                const target = vm.list[i];
+                                const target = this.list[i];
                                 
-                                if(i==0 || (i>0 && target.date!=vm.list[i-1].date)){
+                                if(i==0 || (i>0 && target.date!=this.list[i-1].date)){
                                     date =  createElement('p', {style:{marginLeft: '16px', fontWeight:'bold', color: '#444444'}}, target.date)
                                 }
                                 
-                                const uData = vm.$store.state.usersData.filter(data => data.id == target.userId)[0];
+                                const uData = target.userId == this.$store.state.uid ? this.$store.state.myData
+                                             : this.$store.state.usersData.filter(data => data.id == target.userId)[0];
                                 const uDataImage = uData.image == null ? png : uData.image;
-                                
+
                                 // cardはonsenuiのcss
-                                const card = createElement('div', {on: {click: ()=>{vm.clickFunc(target, uData, uDataImage)}}, class: 'card'},[
+                                const card = createElement('div', {on: {click: ()=>{this.clickFunc(target, uData, uDataImage)}}, class: 'card'},[
                                     createElement('v-ons-ripple', {attrs: {'light-gray' : true},}),
                                     (target.hcChecked == true ?
                                     createElement('v-ons-icon', {attrs: {icon: 'ion-ios-checkmark'}, style:{fontSize: '2.2rem', float:'right', marginRight:'-8px', marginTop:'-24px', color:'#69ce04'}})
@@ -250,10 +247,6 @@ export default {
         width: 9rem;
     }
 
-    .list-container {
-        border: none;
-    }
-
     .icon-script {
         display: flex;
         justify-content: flex-end;
@@ -275,11 +268,13 @@ export default {
     .list {
         overflow: auto;
         min-height: 69vh;
+        background-size: 100% 0px, 100% 0px;
     }
 
     .btn-sticky {
         position: sticky;
         bottom: 6vh;
+        display: block;
     }
 
     .add-b {
@@ -299,21 +294,23 @@ export default {
     .comment-inputD {
         min-height:26px;
         line-height: 26px;
-        width: 245px;
+        width: 235px;
         resize: none;
         padding: 0;
         border: none;
         background-color: #fcfcfc;
+        /* word-break: break-all; */
     }
 
     .reply-inputD {
         min-height:26px;
         line-height: 26px;
-        width: 215px;
+        width: 204px;
         resize: none;
         padding: 0;
         border: none;
         background-color: #fcfcfc;
+        /* word-break: break-all; */
     }
 
     .borderD {
@@ -321,7 +318,7 @@ export default {
     }
 
     .underlineDCom {
-        width: 245px;
+        width: 235px;
         position: relative;
     }
 
@@ -347,11 +344,11 @@ export default {
     .underline2DCom:focus:after,
     .underline2DCom:active:after {
         /*ホバーしたら100%の位置まで伸びる*/
-        width: 245px;
+        width: 235px;
     }
 
     .underlineDRep {
-        width: 215px;
+        width: 204px;
         position: relative;
     }
 
@@ -377,7 +374,7 @@ export default {
     .underline2DRep:focus:after,
     .underline2DRep:active:after {
         /*ホバーしたら100%の位置まで伸びる*/
-        width: 215px;
+        width: 204px;
     }
 
 </style>
