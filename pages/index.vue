@@ -98,11 +98,16 @@ export default {
     color: #4ABEC8;
   }
 
+  .tabbar--material {
+    background-image: none;
+  }
+
   .toolbar {
     background: #fefefe;
     background-image: linear-gradient(-90deg, #2FF4B9, #0D4B91);
     background-size: 100% 2px;
     background-position: bottom;
+    background-repeat: no-repeat;
   }
 
   @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx) {
@@ -112,6 +117,7 @@ export default {
 
     }
   }
+  
   .toolbar__bg {
     /* background: #a72020; */
     background-image: linear-gradient(-90deg, #2FF4B9, #0D4B91);
@@ -120,6 +126,7 @@ export default {
   .toolbar--material {
     background-image: linear-gradient(-90deg, #2FF4B9, #0D4B91);
     background-size: 100% 2px;
-}
-
+    background-position: bottom;
+    background-repeat: no-repeat;
+  }
 </style>
