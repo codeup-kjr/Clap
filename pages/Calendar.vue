@@ -71,7 +71,7 @@
           <v-ons-list class="eventList" v-if="dayClicked">
             <!-- リストアイテムはstateを直接読むように変更。初期表示は今日を読む。ただし、dayclickイベントを発火することはできないため、firebaseから読む方法しかないと思われる。今はv-showで非表示にしている。 -->
             <!-- 「今日」をハイライトするために、keyをtodayにしてschedule(event)に追加している。空のリストなので、表示しない。 -->
-            <v-ons-list-item v-show="ordered.filter(data => data.key != 'today') != ''" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem">
+            <v-ons-list-item v-show="ordered.filter(data => data.key != 'today') != '' && attr.key != 'today'" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem">
               <div class="time-title" v-if="attr.customData.time_start!='00:00' && attr.customData.time_end!='00:00'">
                 <div class="time-colmn">
                   <p>{{ attr.customData.time_start }}</p>
