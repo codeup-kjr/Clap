@@ -12,7 +12,5 @@ dist
 
 firebase.key.json
 
-firestore.rules
-
 # Service Worker
 sw.*
