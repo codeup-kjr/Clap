@@ -53,9 +53,8 @@
 </template>
 
 <script>
-// import Home from './Home'
-import TabBar from './TabBar'
-import { mapActions } from 'vuex'
+import TabBar from './TabBar';
+import { mapActions } from 'vuex';
 
 export default {
     data() {
@@ -74,13 +73,13 @@ export default {
     mounted() {
         Promise.resolve()
             .then( () => this.bindTeam())
-            .then( () => this.bindTeamU())
+            .then( () => this.bindTeamU());
     },
 
     destroyed() {
         Promise.resolve()
             .then( () => this.unBindTeam())
-            .then( () => this.unBindTeamU())
+            .then( () => this.unBindTeamU());
     },
 
     methods: {
@@ -93,52 +92,52 @@ export default {
 
         async regist() {
             if(this.$store.state.uRErr) {
-                await this.$store.commit('setURErr', '')
+                await this.$store.commit('setURErr', '');
             }
 
             if(this.userName == '') {
-                this.$ons.notification.alert('お名前を入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('お名前を入力ください。', {title:''});
+                return;
             }
             if(this.mail == '') {
-                this.$ons.notification.alert('メールアドレスを入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('メールアドレスを入力ください。', {title:''});
+                return;
             }
             if(this.mail.indexOf('@')==-1 || (this.mail.indexOf('.com')==-1 && this.mail.indexOf('.co.jp')==-1)) {
-                this.$ons.notification.alert('メールアドレスを正しく入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('メールアドレスを正しく入力ください。', {title:''});
+                return;
             }
             if(this.pass == '') {
-                this.$ons.notification.alert('パスワードを入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('パスワードを入力ください。', {title:''});
+                return;
             }
             
             if(this.pass.length < 6) {
-                this.$ons.notification.alert('パスワードは6字以上を入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('パスワードは6字以上を入力ください。', {title:''});
+                return;
             }
 
             if(this.passRe == '') {
-                this.$ons.notification.alert('パスワードの確認を入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('パスワードの確認を入力ください。', {title:''});
+                return;
             }
             if(this.pass != this.passRe) {
-                this.$ons.notification.alert('パスワードとパスワードの確認の入力内容が異なっています。', {title:''})
-                return
+                this.$ons.notification.alert('パスワードとパスワードの確認の入力内容が異なっています。', {title:''});
+                return;
             }
             if(this.role == '役割') {
-                this.$ons.notification.alert('役割を選択ください。', {title:''})
-                return
+                this.$ons.notification.alert('役割を選択ください。', {title:''});
+                return;
             }
             if((this.$store.state.team.type != '社会人' && (this.role=='選手' || this.role=='マネジャー')) && (this.grade == '学年')) {
-                this.$ons.notification.alert('学年を選択ください。', {title:''})
-                return
+                this.$ons.notification.alert('学年を選択ください。', {title:''});
+                return;
             }
 
-            this.request = 'ロード中...'
+            this.request = 'ロード中...';
             if (!navigator.onLine) {
-                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
-                return
+                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''});
+                return;
             }
 
             await this.$store.dispatch('userRegist', {
@@ -147,15 +146,15 @@ export default {
                                                 pass:  this.pass,
                                                 role:  this.role,
                                                 grade: this.grade
-                                })
+                                });
 
             if(!this.$store.state.uRErr) {          
-                this.$ons.notification.alert({messageHTML:'登録しました。<br>チームIDをマイページで確認して、<br>チームメートに共有しよう！', title:''})
+                this.$ons.notification.alert({messageHTML:'登録しました。<br>チームIDをマイページで確認して、<br>チームメートに共有しよう！', title:''});
             }
         },
 
         cancel() {
-            const vm = this
+            const vm = this;
             if(this.teamRegist) {
                 this.$ons.notification.confirm({messageHTML:'ログインページに戻ります。<br>作成したチーム情報は削除されます。',
                                                 title:'',
@@ -163,12 +162,12 @@ export default {
                                                                 if (idx == 0) {
                                                                     return
                                                                 } else {
-                                                                    vm.$store.dispatch('deleteTeam', {teamId: vm.$store.state.teamId})
+                                                                    vm.$store.dispatch('deleteTeam', {teamId: vm.$store.state.teamId});
                                                                     for (let i=1; i<=3; i++) {
-                                                                        vm.$store.commit('pop')
+                                                                        vm.$store.commit('pop');
                                                                     }
                                                                 }
-                                                }})
+                                                }});
             } else {
                 this.$ons.notification.confirm({message:'ログインページに戻ります。',
                                                 title:'',
@@ -181,29 +180,29 @@ export default {
                                                                         vm.$store.commit('pop')
                                                                     }
                                                                 }
-                                                }})
+                                                }});
             }
         }
     },
 
     computed: {
         gradeNum() {
-            let num = 0
-            const type = this.$store.state.team.type
+            let num = 0;
+            const type = this.$store.state.team.type;
             switch (type) {
                 case '高校':
-                    num = 3
-                    break
+                    num = 3;
+                    break;
                 case '大学':
-                    num = 4
-                    break
+                    num = 4;
+                    break;
                 case '中学':
-                    num = 3
-                    break
+                    num = 3;
+                    break;
                 default:
-                    break
+                    break;
             }
-            return num
+            return num;
         }
     }
 }

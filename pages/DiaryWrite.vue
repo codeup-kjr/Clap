@@ -111,38 +111,38 @@ export default {
             if(submit==true) {
                 if(this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.date && diary.submit == true).length > 0) {
                     this.$ons.notification.alert({messageHTML:`その日付の日誌は既に提出済みです！`, title:''});
-                    return
+                    return;
                 }
 
                 if(this.answers.q1.length > 400) {
                     this.$ons.notification.alert({messageHTML:`第1項の回答を<br>400字以内に納めてください。`, title:''});
                     this.carouselIndex = 0;
-                    return
+                    return;
                 }
                 if(this.answers.q2.length > 400) {
                     this.$ons.notification.alert({messageHTML:`第2項の回答を<br>400字以内に納めてください。`, title:''});
                     this.carouselIndex = 1;
-                    return
+                    return;
                 }
                 if(this.answers.q3.length > 400) {
                     this.$ons.notification.alert({messageHTML:`第3項の回答を<br>400字以内に納めてください。`, title:''});
                     this.carouselIndex = 2;
-                    return
+                    return;
                 }
                 if(this.answers.q4.length > 400) {
                     this.$ons.notification.alert({messageHTML:`第4項の回答を<br>400字以内に納めてください。`, title:''});
                     this.carouselIndex = 3;
-                    return
+                    return;
                 }
                 if(this.answers.q5.length > 400) {
                     this.$ons.notification.alert({messageHTML:`第5項の回答を<br>400字以内に納めてください。`, title:''});
                     this.carouselIndex = 4;
-                    return
+                    return;
                 }
                 if(this.answers.title.length > 12) {
                     this.$ons.notification.alert({messageHTML:`タイトルを<br>12字以内に納めてください。`, title:''});
                     this.carouselIndex = 5;
-                    return
+                    return;
                 }
             }
 
@@ -169,8 +169,8 @@ export default {
                                                     content4:   this.answers.q4,
                                                     content5:   this.answers.q5,
                                                     //下書きの編集かどうか
-                                                    edit:       this.id == '' ? false : true});
-          
+                                                    edit:       this.id == '' ? false : true
+                                                });
           let action = '';
           submit == true ? action = '提出' : action = '保存';
 
@@ -204,7 +204,6 @@ export default {
         },
 
         yesterday() {
-            // const today = new Date();
             const yesterday = ( d => new Date(d.setDate(d.getDate()-1)) )(new Date);
             const year = yesterday.getFullYear();
             const month = yesterday.getMonth() + 1;
@@ -216,9 +215,9 @@ export default {
         modify() {
           return(string) => {
             if(string.substr(0, 1)=='0') {
-              return string.substr(1, 1)
+              return string.substr(1, 1);
             } else {
-              return string.substr(0, 2)
+              return string.substr(0, 2);
             }
           }
         },
@@ -300,7 +299,6 @@ export default {
     }
 
     .dots-arrows {
-        /* font-size: 30px; */
         color: #a3a2a2;
         position: relative;
         top: -2px;
@@ -328,5 +326,4 @@ export default {
         margin-left: 4px;
         font-size: 70%;
     }
-
 </style>

@@ -13,28 +13,24 @@ import Vue from 'vue'
 export default {
 
   beforeCreate() {
-    this.$store.commit('clear')
-    this.$store.commit('push', LoginCheck)
+    this.$store.commit('clear');
+    this.$store.commit('push', LoginCheck);
   },
 
   mounted() {
-      // this.$ons.platform.select('android')//検証用
-      Vue.prototype.md = this.$ons.platform.isAndroid()//onsenui.jsで定義すべきか検討。
-  },
-
-  destroyed() {
-
+      // this.$ons.platform.select('android');//検証用
+      Vue.prototype.md = this.$ons.platform.isAndroid();//onsenui.jsで定義すべきか検討。
   },
 
   computed: {
     pageStack() {
-      return this.$store.state.pageStack
+      return this.$store.state.pageStack;
     }
   },
 
   methods: {
     pagePop() {
-      this.$store.commit('pop')
+      this.$store.commit('pop');
     },
   }
 }
@@ -119,8 +115,8 @@ export default {
   }
   
   .toolbar__bg {
-    /* background: #a72020; */
     background-image: linear-gradient(-90deg, #2FF4B9, #0D4B91);
+    /* background-image: rgb(31, 158, 120) */
   }
 
   .toolbar--material {
@@ -128,5 +124,97 @@ export default {
     background-size: 100% 2px;
     background-position: bottom;
     background-repeat: no-repeat;
+  }
+
+  /* Calendar.vue用 */
+ .c-day-content[data-v-3db80f80] {
+    font-size: 1rem;
+  }
+  
+  .c-weekdays[data-v-2083cb72]{
+    margin-bottom: -5px;
+  }
+
+  .c-header{
+    color: rgb(210, 30, 30);
+    width: 296px;
+    margin: 0 auto;
+  }
+
+  .c-week[data-v-28896542] {
+    border-top: solid .5px rgb(206, 206, 206);
+  }
+
+  .c-day[data-v-3db80f80]{
+    min-height:42px;
+    padding: 2px 0;
+  }
+
+  .c-day-backgrounds .c-day-background[data-v-3db80f80] {
+    position: relative;
+    top: -2.7px;
+  }
+
+  .c-day-bars[data-v-3db80f80] {
+    width: 3px;
+    height: 3px;
+    position: relative;
+    top: -3.5px;
+  }
+
+  /* Diary.vueのcreateElement用 */
+  .d-date {
+    margin-left:  16px;
+    font-weight:  bold;
+    color:  #444444;
+  }
+
+  .d-hc-check {
+    font-size: 2.2rem;
+    float:  right;
+    margin-right: -8px;
+    margin-top: -24px;
+  }
+
+  .d-img-div {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .d-img {
+    height: 14vw;
+    max-height: 56px;
+    width: 14vw;
+    max-width: 56px;
+    border-radius: 8vw;
+    margin-right: 3vw;
+  }
+
+  .d-t-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 14vw;
+    max-height: 56px;
+    width: 78%;
+  }
+
+  .d-title {
+    font-size: calc(0.8rem + 0.4vw);
+  }
+
+  .d-n-t {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .d-name {
+    color: #8e8e8e;
+    font-size: calc(0.6rem + 0.5vw);
+  }
+
+  .d-time {
+    color: #8e8e8e;
+    font-size: calc(0.6rem + 0.5vw);
   }
 </style>

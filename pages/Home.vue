@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import Logo from '../components/Logo'
-import TabBar from './TabBar'
-import TypeSelect from './TypeSelect'
-import PasswordReset from './PasswordReset'
+import Logo from '../components/Logo';
+import TabBar from './TabBar';
+import TypeSelect from './TypeSelect';
+import PasswordReset from './PasswordReset';
 
 export default {
   data() {
@@ -41,43 +41,43 @@ export default {
     methods: {
         async login() {
           if(this.mail == '') {
-              this.$ons.notification.alert('メールアドレスを入力ください。', {title:''})
-              return
+              this.$ons.notification.alert('メールアドレスを入力ください。', {title:''});
+              return;
           }
           if(this.pass == '') {
-            this.$ons.notification.alert('パスワードを入力ください。', {title:''})
-            return
+            this.$ons.notification.alert('パスワードを入力ください。', {title:''});
+            return;
           }
 
           if (!navigator.onLine) {
-            this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
-            return
+            this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''});
+            return;
           }
 
-          this.errMsg = 'ロード中...'
-          await this.$store.dispatch('login', {mail: this.mail, pass: this.pass})
-          const loginErrMsg = this.$store.state.loginErrMsg
+          this.errMsg = 'ロード中...';
+          await this.$store.dispatch('login', {mail: this.mail, pass: this.pass});
+          const loginErrMsg = this.$store.state.loginErrMsg;
           if(loginErrMsg) {
               // errMsgの内容によって、表示を変える場合は、switch文を採用する。
               if(loginErrMsg=='We have blocked all requests from this device due to unusual activity. Try again later.') {
-                this.errMsg = 'ネットワークの問題が発生しました。<br>少し時間を置いてから試してください。'  
+                this.errMsg = 'ネットワークの問題が発生しました。<br>少し時間を置いてから試してください。';
               } else if(loginErrMsg=='A network error (such as timeout, interrupted connection or unreachable host) has occurred.'){
-                this.errMsg = 'ネットワークの問題が発生しました。'  
+                this.errMsg = 'ネットワークの問題が発生しました。';
               } else {
-                this.errMsg = 'メールアドレスかパスワードを間違えています。'
+                this.errMsg = 'メールアドレスかパスワードを間違えています。';
               }
-              this.pass = ''
+              this.pass = '';
           } else {
           }
        
         },
 
         regist() {
-          this.$store.commit('push', TypeSelect)
+          this.$store.commit('push', TypeSelect);
         },
 
         forgotPass() {
-          this.$store.commit('push', PasswordReset)
+          this.$store.commit('push', PasswordReset);
         }
   }
 }

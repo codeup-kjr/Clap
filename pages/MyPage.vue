@@ -79,10 +79,8 @@
 </template>
 
 <script>
-// import loadImage from 'blueimp-load-image'
-import png from '../assets/dUsrImg.jpg'
+import png from '../assets/dUsrImg.jpg';
 export default {
-    
     data() {
         return {
             croppaVisible: false,
@@ -93,9 +91,7 @@ export default {
             role: this.$store.state.myData.role,
             grade: this.$store.state.myData.grade,
             androidStyle: {position: 'relative', left: '-4px'},//androidの場合、右に寄ってしまうため、調整。
-            // upImg: this.$store.state.myData.image == null ? "http://placekitten.com/g/40/40" : this.$store.state.myData.image,
             upImg: this.$store.state.myData.image == null ? png : this.$store.state.myData.image,
-            // upImg: this.$store.state.myData.image == null ? png : '',
             addVisible: false,
         }
     },
@@ -107,18 +103,18 @@ export default {
             const type = this.$store.state.team.type
             switch (type) {
                 case '高校':
-                    num = 3
-                    break
+                    num = 3;
+                    break;
                 case '大学':
-                    num = 4
-                    break
+                    num = 4;
+                    break;
                 case '中学':
-                    num = 3
-                    break
+                    num = 3;
+                    break;
                 default:
-                    break
+                    break;
             }
-            return num
+            return num;
         },
 
     },
@@ -127,24 +123,24 @@ export default {
         //todo: croppaにfile-size-limitを設定し、limit超過時にtoastメッセージを表示する。
         editPush() {
             if(this.edit == '編集する') {
-                this.edit = '保存する'
+                this.edit = '保存する';
             } else {
                 if(this.userName == '') {
-                    this.$ons.notification.alert('ユーザー名を入力ください。', {title:''})
+                    this.$ons.notification.alert('ユーザー名を入力ください。', {title:''});
                     return
                 } else {
                     if(this.file) {
-                        this.$store.dispatch('updateUser', {name: this.userName, role: this.role, grade: this.grade, img: this.file})
+                        this.$store.dispatch('updateUser', {name: this.userName, role: this.role, grade: this.grade, img: this.file});
                     } else {
-                        this.$store.dispatch('updateUser', {name: this.userName, role: this.role, grade: this.grade})
+                        this.$store.dispatch('updateUser', {name: this.userName, role: this.role, grade: this.grade});
                     }
                     if (!navigator.onLine) {
-                        this.$ons.notification.alert({messageHTML:'オンラインになると保存されます。<br>オンラインになる前に画面を更新すると保存されません。', title:''})
+                        this.$ons.notification.alert({messageHTML:'オンラインになると保存されます。<br>オンラインになる前に画面を更新すると保存されません。', title:''});
                     } else {
-                        this.$ons.notification.alert('保存しました。', {title:''})
+                        this.$ons.notification.alert('保存しました。', {title:''});
                     }
-                    this.file = ''
-                    this.edit = '編集する'
+                    this.file = '';
+                    this.edit = '編集する';
                 }
             }
         },
@@ -158,57 +154,53 @@ export default {
                 * w: croppa width
                 * h: croppa height
                 */
-                ctx.beginPath()
-                ctx.arc(x + w / 2, y + h / 2, w / 2, 0, 2 * Math.PI, true)
-                ctx.closePath()
+                ctx.beginPath();
+                ctx.arc(x + w / 2, y + h / 2, w / 2, 0, 2 * Math.PI, true);
+                ctx.closePath();
             })
 
         },
 
         rotate() {
-            this.myCroppa.rotate()
+            this.myCroppa.rotate();
         },
 
         choose() {
             this.myCroppa.generateBlob(
                 (blob) => {
-                    this.file =  blob
+                    this.file =  blob;
                 },
-                'image/jpeg', 0.5)
+                'image/jpeg', 0.5);
                 
-            this.upImg = this.myCroppa.generateDataUrl('image/jpeg', 0.5)
-            this.croppaVisible = false
-            this.myCroppa.remove()
+            this.upImg = this.myCroppa.generateDataUrl('image/jpeg', 0.5);
+            this.croppaVisible = false;
+            this.myCroppa.remove();
         },
 
         cancel() {
-            this.croppaVisible = false
-            this.myCroppa.remove()
+            this.croppaVisible = false;
+            this.myCroppa.remove();
         },
 
         upImage() {
             if(this.edit == '保存する') {
-                // document.getElementById('f').click()
-                this.croppaVisible = true
+                this.croppaVisible = true;
             } 
         },
 
         logoutPush() {
-            const vm = this
+            const vm = this;
             this.$ons.notification.confirm({messageHTML:'ログアウトします。<br>よろしいですか。',
                                                 title:'',
                                                 callback: function(idx) {
                                                                 if (idx == 0) {
-                                                                    return
+                                                                    return;
                                                                 } else {
-                                                                    vm.$store.dispatch('logout')
+                                                                    vm.$store.dispatch('logout');
                                                                 }
-                                                }})
+                                                }});
         },
-        
-
     },
-    
 }
 
 </script>

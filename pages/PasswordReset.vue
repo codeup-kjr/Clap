@@ -33,23 +33,23 @@ export default {
 
         async confirm() {
             if(this.email == '') {
-                this.$ons.notification.alert('メールアドレスを入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('メールアドレスを入力ください。', {title:''});
+                return;
             }
 
             if (!navigator.onLine) {
-                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
-                return
+                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''});
+                return;
             }
             
-            this.$store.dispatch('searchEmail', {email: this.email})
-            this.btnTxt = '戻る'
+            this.$store.dispatch('searchEmail', {email: this.email});
+            this.btnTxt = '戻る';
         },
 
         cancel() {
-            this.btnTxt = 'キャンセル'
-            this.$store.commit('setConfirmed', false)
-            this.$store.commit('pop')
+            this.btnTxt = 'キャンセル';
+            this.$store.commit('setConfirmed', false);
+            this.$store.commit('pop');
         }
     },
 

@@ -4,7 +4,6 @@
     <div class="container">
       <Logo class="logo"/>
       <p class="lead">仲間のいいとこ見つけよう</p>
-      <!-- <p class="msg">ロード中...</p> -->
       <div class="spinner"></div>
     </div>
   </v-ons-page>
@@ -12,24 +11,18 @@
 </template>
 
 <script>
-import Logo from '../components/Logo'
-import Home from './Home'
-import TabBar from './TabBar'
+import Logo from '../components/Logo';
+import Home from './Home';
+import TabBar from './TabBar';
 
 
 export default {
-  data() {
-    return {
-
-    }
-  },
-
   mounted() {
-    this.$store.dispatch('checkLogin', {page1: Home, page2: TabBar})
+    this.$store.dispatch('checkLogin', {page1: Home, page2: TabBar});
   },
 
   components: {
-    Logo,
+    Logo
   }
 }
 </script>
@@ -87,6 +80,5 @@ export default {
                 transform: rotate(360deg);
     }
     }
-
 </style>
 

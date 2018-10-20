@@ -21,8 +21,8 @@
 </template>
 
 <script>
-import TeamId from './TeamId'
-import TeamRegist from './TeamRegist'
+import TeamId from './TeamId';
+import TeamRegist from './TeamRegist';
 export default {
     data() {
         return {
@@ -33,14 +33,13 @@ export default {
 
     methods: {
         pushPage(page){
-            this.$store.commit('push', page)
+            this.$store.commit('push', page);
         },
 
         popPage(){
-            this.$store.commit('pop')
+            this.$store.commit('pop');
         },
     }
-
 }
 </script>
 
@@ -72,6 +71,4 @@ export default {
         width: 80px;
         height: 80px;
     }
-
-
 </style>

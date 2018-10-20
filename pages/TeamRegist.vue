@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import UserRegist from './UserRegist'
+import UserRegist from './UserRegist';
 
 export default {
     data() {
@@ -53,21 +53,21 @@ export default {
     methods: {
         regist() {
             if(this.teamName == '') {
-                this.$ons.notification.alert('チーム名を入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('チーム名を入力ください。', {title:''});
+                return;
             }
             if(this.teamType == '種別') {
-                this.$ons.notification.alert('種別を選択ください。', {title:''})
-                return
+                this.$ons.notification.alert('種別を選択ください。', {title:''});
+                return;
             }
             if(this.teamEvent == '競技種目') {
-                this.$ons.notification.alert('競技種目を選択ください。', {title:''})
-                return
+                this.$ons.notification.alert('競技種目を選択ください。', {title:''});
+                return;
             }
 
             if (!navigator.onLine) {
-                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
-                return
+                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''});
+                return;
             }
             
             // 生成する文字列の長さ
@@ -79,18 +79,18 @@ export default {
             for(var i=0; i<l; i++){
                 teamId += c[Math.floor(Math.random()*cl)];
             }
-            this.$store.commit('setTeamId', teamId)
+            this.$store.commit('setTeamId', teamId);
             this.$store.dispatch('teamRegist', {
                                                 name: this.teamName,
                                                 type: this.teamType,
                                                 event: this.teamEvent
-                                })
-            this.$store.commit('push', {extends: UserRegist, data(){return{teamRegist: true}}})
+                                });
+            this.$store.commit('push', {extends: UserRegist, data(){return{teamRegist: true}}});
         },
      
         cancel() {
-            this.$store.commit('pop')
-            this.$store.commit('pop')
+            this.$store.commit('pop');
+            this.$store.commit('pop');
         }
     }
 }
@@ -165,5 +165,4 @@ export default {
         margin: 8px 0 12px;
         width: 200px;
     }
-
 </style>

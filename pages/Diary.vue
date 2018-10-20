@@ -63,7 +63,7 @@ export default {
                                 const target = this.list[i];
                                 
                                 if(i==0 || (i>0 && target.date!=this.list[i-1].date)){
-                                    date =  createElement('p', {style:{marginLeft: '16px', fontWeight:'bold', color: '#444444'}}, target.date)
+                                    date =  createElement('p', {class: 'd-date'}, target.date);
                                 }
                                 
                                 const uData = target.userId == this.$store.state.uid ? this.$store.state.myData
@@ -74,33 +74,33 @@ export default {
                                 const card = createElement('div', {on: {click: ()=>{this.clickFunc(target, uData, uDataImage)}}, class: 'card'},[
                                     createElement('v-ons-ripple', {attrs: {'light-gray' : true},}),
                                     (target.hcChecked == true ?
-                                    createElement('v-ons-icon', {attrs: {icon: 'ion-ios-checkmark'}, style:{fontSize: '2.2rem', float:'right', marginRight:'-8px', marginTop:'-24px', color:'#69ce04'}})
-                                    : createElement('v-ons-icon', {attrs: {icon: 'ion-ios-checkmark'}, style:{fontSize: '2.2rem', float:'right', marginRight:'-8px', marginTop:'-24px', color:'transparent'}})),
-                                    createElement('div', {style:{display: 'flex', justifyContent: 'flex-start'}},[
-                                        createElement('img', {attrs: { src: uDataImage}, style:{height: '14vw', maxHeight: '56px', width: '14vw', maxWidth: '56px', borderRadius: '8vw', marginRight: '3vw'}},),
-                                        createElement('div', {style:{display: 'flex', flexDirection:'column', justifyContent: 'flex-end', height: '14vw', maxHeight: '56px', width:'78%'}},[
-                                            createElement('p', {style:{fontSize: 'calc(0.8rem + 0.4vw)'}}, target.title),
-                                            createElement('div', {style:{display: 'flex', justifyContent: 'space-between'}},[
-                                                createElement('p', {style:{color: '#8e8e8e', fontSize: 'calc(0.6rem + 0.5vw)'}}, uData.name),
+                                    createElement('v-ons-icon', {attrs: {icon: 'ion-ios-checkmark'}, class: 'd-hc-check', style: {color: '#69ce04'}})
+                                    : createElement('v-ons-icon', {attrs: {icon: 'ion-ios-checkmark'}, class: 'd-hc-check', style: {color:'transparent'}})),
+                                    createElement('div', {class: 'd-img-div'},[
+                                        createElement('img', {attrs: { src: uDataImage}, class: 'd-img'},),
+                                        createElement('div', {class: 'd-t-div'},[
+                                            createElement('p', {class: 'd-title'}, target.title),
+                                            createElement('div', {class: 'd-n-t'},[
+                                                createElement('p', {class: 'd-name'}, uData.name),
                                                 (window.innerWidth > 1350 ?
-                                                    createElement('p', {style:{color: '#8e8e8e', marginRight:'-16vw', fontSize: 'calc(0.6rem + 0.5vw)'}}, target.time) 
+                                                    createElement('p', {class: 'd-time', style:{marginRight:'-16vw'}}, target.time) 
                                                     : window.innerWidth > 1000 ?
-                                                        createElement('p', {style:{color: '#8e8e8e', marginRight:'-14.7vw', fontSize: 'calc(0.6rem + 0.5vw)'}}, target.time) 
+                                                        createElement('p', {class: 'd-time', style:{marginRight:'-14.7vw'}}, target.time) 
                                                         : window.innerWidth > 730 ?
-                                                            createElement('p', {style:{color: '#8e8e8e', marginRight:'-13.5vw', fontSize: 'calc(0.6rem + 0.5vw)'}}, target.time) 
+                                                            createElement('p', {class: 'd-time', style:{marginRight:'-13.5vw'}}, target.time) 
                                                             : window.innerWidth > 530 ?
-                                                                createElement('p', {style:{color: '#8e8e8e', marginRight:'-11vw', fontSize: 'calc(0.6rem + 0.5vw)'}}, target.time) 
+                                                                createElement('p', {class: 'd-time', style:{marginRight:'-11vw'}}, target.time) 
                                                                 : window.innerWidth > 430 ?
-                                                                    createElement('p', {style:{color: '#8e8e8e', marginRight:'-10vw', fontSize: 'calc(0.6rem + 0.5vw)'}}, target.time)
-                                                                    : createElement('p', {style:{color: '#8e8e8e', marginRight:'calc(-20px - 2.5vw)', fontSize: 'calc(0.6rem + 0.5vw)'}}, target.time)),
+                                                                    createElement('p', {class: 'd-time', style:{marginRight:'-10vw'}}, target.time)
+                                                                    : createElement('p', {class: 'd-time', style:{marginRight:'calc(-20px - 2.5vw)'}}, target.time)),
                                             ])
                                         ])
                                     ])
-                                ])
+                                ]);
                                 if(date) {
-                                    return [date, card]
+                                    return [date, card];
                                 } else {
-                                    return [card]
+                                    return [card];
                                 }
                         })(),
 
@@ -142,7 +142,8 @@ export default {
                                         },
                                         id: data.id,
                                         editDate: data.date
-                            }},
+                                    };
+                            },
                             onsNavigatorOptions: {
                                 animation: 'lift',
                                 animationOptions: { duration: 0.5 }
@@ -216,13 +217,7 @@ export default {
         }
         }
     }
-  },
-
-  asyncComputed: {//npm installした非同期処理を行えるcomputed
-        // async groups() {
-        //     return this.$store.state.groupList
-        // }
-    }
+  }
 };
 </script>
 
@@ -299,7 +294,7 @@ export default {
         padding: 0;
         border: none;
         background-color: #fcfcfc;
-        /* word-break: break-all; */
+        font-size: 1rem;
     }
 
     .reply-inputD {
@@ -310,7 +305,7 @@ export default {
         padding: 0;
         border: none;
         background-color: #fcfcfc;
-        /* word-break: break-all; */
+        font-size: 1rem;
     }
 
     .borderD {
@@ -375,6 +370,57 @@ export default {
     .underline2DRep:active:after {
         /*ホバーしたら100%の位置まで伸びる*/
         width: 204px;
+    }
+
+    .dd-card {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .dd-cimg {
+        height: 6vh;
+        max-height: 56px;
+        width: 6vh;
+        max-width: 56px;
+        border-radius: 3vh;
+        margin-right: 8px;
+    }
+
+    .dd-column {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .dd-edit-flex {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .dd-gray {
+        font-size: 0.9rem;
+        color: #8e8e8e;
+    }
+
+    .dd-rplyctrl {
+        display: flex;
+        margin-bottom: 8px;
+        margin-top: 8px;
+    }
+
+    .dd-replyb {
+        font-size: 1rem;
+        margin-bottom: 8px;
+        color: #8e8e8e;
+    }
+
+    .dd-rimg {
+        height: 4vh;
+        max-height: 38px;
+        width: 4vh;
+        max-width: 38px;
+        border-radius: 2vh;
+        margin-right: 8px;
     }
 
 </style>

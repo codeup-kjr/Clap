@@ -183,6 +183,8 @@ export default {
 
     .un-confirmed {
         height: 84px;
+        display: flex;
+        flex-direction: column;
         /* confirmed-btnsの高さと同じにする。 */
     }
 

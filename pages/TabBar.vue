@@ -8,16 +8,13 @@
       :tabs="tabs"
       :index.sync="index"
     ></v-ons-tabbar>
-
   </v-ons-page>
 </template>
 
 <script>
-import MyPage from './MyPage'
-import Calendar from './Calendar'
-import Diary from './Diary'
-// import Applaud from './Applaud'
-// import Chat from './Chat'
+import MyPage from './MyPage';
+import Calendar from './Calendar';
+import Diary from './Diary';
 
 // Just a linear interpolation formula
 const lerp = (x0, x1, t) => parseInt((1 - t) * x0 + t * x1, 10);
@@ -76,27 +73,23 @@ export default {
   },
 
   methods: {
-
     onSwipe(index, animationOptions) {
       // Apply the same transition as ons-tabbar
       this.animationOptions = animationOptions;
-
       // Interpolate colors and top position
       const a = Math.floor(index), b = Math.ceil(index), ratio = index % 1;
       this.colors = this.colors.map((c, i) => lerp(this.tabs[a].theme[i], this.tabs[b].theme[i], ratio));
       this.topPosition = lerp(this.tabs[a].top || 0, this.tabs[b].top || 0, ratio);
     },
-    
   },
 
   computed: {
-
     index: {
       get() {
         return this.$store.state.tabBarIndex;
       },
       set(newValue) {
-        this.$store.commit('tabBarSet', newValue)
+        this.$store.commit('tabBarSet', newValue);
       }
     },
     
@@ -104,13 +97,13 @@ export default {
       return this.md && {
         backgroundColor: `rgb(${this.colors.join(',')})`,
         transition: `all ${this.animationOptions.duration || 0}s ${this.animationOptions.timing || ''}`
-      }
+      };
     },
     swipePosition() {
       return this.md && {
         top: this.topPosition + 'px',
         transition: `all ${this.animationOptions.duration || 0}s ${this.animationOptions.timing || ''}`
-      }
+      };
     }
   }
 };
@@ -118,11 +111,10 @@ export default {
 
 <style>
 /* Custom 'white-content' modifier */
-
 .page--material .toolbar--white-content__center,
 .page--material .toolbar-button--white-content,
 .page--material :checked + .tabbar--white-content__button {
-  color: white;
+  color: #fefefe;
 }
 
 .page--material .tabbar--white-content__button {
@@ -130,6 +122,6 @@ export default {
 }
 
 .page--material .tabbar--white-content__border {
-  background-color: white;
+  background-color: #fefefe;
 }
 </style>

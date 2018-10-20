@@ -155,7 +155,7 @@ export default {
           todos: this.$store.state.schedule,
           themeStyles: {
             bars: {
-              width:'30%'
+              // width:'3px',
             }
           },
 
@@ -203,7 +203,7 @@ export default {
         list = listS.concat(listE);
         const cleanList = list.filter(function(v1,i1,a1){ 
             return (a1.findIndex(function(v2){ 
-              return (v1.id===v2.id) 
+              return (v1.id===v2.id);
             }) === i1);
           });
         return _.sortBy(cleanList, item => {
@@ -219,7 +219,6 @@ export default {
 
       attrs() {
         return(currentPage)=> {
-          //
           let events = [];
           let listS = [];
           let listE = [];
@@ -230,178 +229,195 @@ export default {
 
           let cleanList = events.filter(function(v1,i1,a1){ 
             return (a1.findIndex(function(v2){ 
-              return (v1.id===v2.id) 
+              return (v1.id===v2.id);
             }) === i1);
           });
 
           cleanList = cleanList.map(t => ({
             key: `todo.${t.id}`,
-            bar: {backgroundColor: 'red'},
+            bar: {backgroundColor: '#8e8e8e'},
             dates: {start: new Date(t.year_start, t.month_start - 1, t.date_start), end: new Date(t.year_end, t.month_end - 1, t.date_end)},
             customData: t,
           }));
          
           cleanList.push({
                       key: 'today',
-                      customData: {
-                        },
-                      highlight: {backgroundColor: '#f9e4b8'},
+                      contentStyle: {
+                        color: 'rgb(210, 30, 30)'
+                      },
                       dates: new Date(),
+                      customData: {
+                        //orderedにて、customDataを並べ替えのキーにしているため、からのオブジェクトを作成する。
+                      }
                     });
+
+          cleanList.push({
+                      key: 'clicked',
+                      highlight: {backgroundColor: 'rgb(31, 158, 120)'},
+                      contentStyle: {
+                        color: '#fcfcfc',
+                        fontWeight: '700'
+                      },
+                      dates: new Date(this.selectedDay.year, this.selectedDay.month - 1, this.selectedDay.day),
+                      customData: {
+                        //orderedにて、customDataを並べ替えのキーにしているため、からのオブジェクトを作成する。
+                      }
+                    });
+
           return cleanList;
         }
       },
 
-      inputState() {
+    inputState() {
       if (!this.selectedValue) {
         return {
           type: 'is-danger',
           message: 'Date required.',
-        }
+        };
       }
       return {
         type: 'is-primary',
         message: '',
-      }
+      };
     },
 
     dateRange() {
-      if(!this.sYear) return ''
+      if(!this.sYear) return '';
 
       if(this.sYear==this.eYear) {
           if(this.sMonth==this.eMonth) {
             if(this.sDate==this.eDate) {
-              return `${this.sYear}年${this.sMonth}月${this.sDate}日(${this.sDay})`
+              return `${this.sYear}年${this.sMonth}月${this.sDate}日(${this.sDay})`;
             } else {
-              return `${this.sYear}年${this.sMonth}月${this.sDate}日(${this.sDay}) 〜 ${this.eDate}日(${this.eDay})`
+              return `${this.sYear}年${this.sMonth}月${this.sDate}日(${this.sDay}) 〜 ${this.eDate}日(${this.eDay})`;
             }
           } else {
-            return `${this.sYear}年${this.sMonth}月${this.sDate}日(${this.sDay}) 〜 ${this.eMonth}月${this.eDate}日(${this.eDay})`
+            return `${this.sYear}年${this.sMonth}月${this.sDate}日(${this.sDay}) 〜 ${this.eMonth}月${this.eDate}日(${this.eDay})`;
           }
         } else {
-          return `${this.sYear}年${this.sMonth}月${this.sDate}日(${this.sDay}) 〜 ${this.eYear}年${this.eMonth}月${this.eDate}日(${this.eDay})`
+          return `${this.sYear}年${this.sMonth}月${this.sDate}日(${this.sDay}) 〜 ${this.eYear}年${this.eMonth}月${this.eDate}日(${this.eDay})`;
         }
 
     },
 
     returnMonth() {
       return(string) => {
-        const monthT = string.substr(4, 3)
-        let month = ''
+        const monthT = string.substr(4, 3);
+        let month = '';
         switch (monthT) {
               case 'Jan':
-                month = 1
+                month = 1;
                 break;
               case 'Feb':
-                month = 2
+                month = 2;
                 break;
               case 'Mar':
-                month = 3
+                month = 3;
                 break;
               case 'Apr':
-                month = 4
+                month = 4;
                 break;
               case 'May':
-                month = 5
+                month = 5;
                 break;
               case 'Jun':
-                month = 6
+                month = 6;
                 break;
               case 'Jul':
-                month = 7
+                month = 7;
                 break;
               case 'Aug':
-                month = 8
+                month = 8;
                 break;
               case 'Sep':
-                month = 9
+                month = 9;
                 break;
               case 'Oct':
-                month = 10
+                month = 10;
                 break;
               case 'Nov':
-                month = 11
+                month = 11;
                 break;
               case 'Dec':
-                month = 12
+                month = 12;
                 break;
               default:
                 break;
             }
-            return month
+            return month;
           }
         },
 
         dateModify() {
           return(string) => {
             if(string.substr(8, 1)=='0') {
-              return string.substr(9, 1)
+              return string.substr(9, 1);
             } else {
-              return string.substr(8, 2)
+              return string.substr(8, 2);
             }
           }
         },
 
       returnDay() {
         return(string) => {
-          const dayT = string.substr(0, 3)
-          let day = ''
+          const dayT = string.substr(0, 3);
+          let day = '';
           switch (dayT) {
                 case 'Sun':
-                  day = '日'
+                  day = '日';
                   break;
                 case 'Mon':
-                  day = '月'
+                  day = '月';
                   break;
                 case 'Tue':
-                  day = '火'
+                  day = '火';
                   break;
                 case 'Wed':
-                  day = '水'
+                  day = '水';
                   break;
                 case 'Thu':
-                  day = '木'
+                  day = '木';
                   break;
                 case 'Fri':
-                  day = '金'
+                  day = '金';
                   break;
                 case 'Sat':
-                  day = '土'
+                  day = '土';
                   break;
                 default:
                   break;
               }
-            return day
+            return day;
           }
         },
 
         addHText() {
           if (this.isDetail) {
-            return '詳細'
+            return '詳細';
           }
           else if(this.isEdit) {
-            return '編集'
+            return '編集';
           } else {
-            return '登録'
+            return '登録';
           }
         },
 
         addBText() {
           if (this.isDetail) {
-            return '編集する'
+            return '編集する';
           }
           else if(this.isEdit) {
-            return '保存'
+            return '保存';
           } else {
-            return '登録'
+            return '登録';
           }
         },
 
         cBText() {
           if (this.isDetail) {
-            return '閉じる'
+            return '閉じる';
           } else {
-            return 'キャンセル'
+            return 'キャンセル';
           }
         }
     },
@@ -415,51 +431,51 @@ export default {
       },
 
       addPushed() {
-        this.addVisible = true
-        this.isROnly = false
-        this.isDetail = false
-        this.isEdit = false
-        this.sTime = '00:00'
-        this.eTime = '00:00'
+        this.addVisible = true;
+        this.isROnly = false;
+        this.isDetail = false;
+        this.isEdit = false;
+        this.sTime = '00:00';
+        this.eTime = '00:00';
       },
 
       addCancel() {
-        this.addVisible = false
-        this.dRPicked = false
-        this.isROnly = false
-        this.editId = ''
-        this.title = ''
-        this.sTime = ''
-        this.place = ''
-        this.eTime = ''
-        this.sYear = ''
-        this.sMonth = ''
-        this.sDate = ''
-        this.sDay = ''
-        this.eYear = ''
-        this.eMonth = ''
-        this.eDate = ''
-        this.eDay = ''
-        this.exInfo = ''
-        this.selectedValue = null
+        this.addVisible = false;
+        this.dRPicked = false;
+        this.isROnly = false;
+        this.editId = '';
+        this.title = '';
+        this.sTime = '';
+        this.place = '';
+        this.eTime = '';
+        this.sYear = '';
+        this.sMonth = '';
+        this.sDate = '';
+        this.sDay = '';
+        this.eYear = '';
+        this.eMonth = '';
+        this.eDate = '';
+        this.eDay = '';
+        this.exInfo = '';
+        this.selectedValue = null;
       },
 
       datePicked() {
-        this.start = String(this.selectedValue.start)
-        this.end = String(this.selectedValue.end)
+        this.start = String(this.selectedValue.start);
+        this.end = String(this.selectedValue.end);
       
-        this.sYear = this.start.substr(11, 4)
-        this.sMonth = this.returnMonth(this.start)
-        this.sDate = this.dateModify(this.start)
-        this.sDay = this.returnDay(this.start)
+        this.sYear = this.start.substr(11, 4);
+        this.sMonth = this.returnMonth(this.start);
+        this.sDate = this.dateModify(this.start);
+        this.sDay = this.returnDay(this.start);
 
         // if(this.start!=this.end) {
-          this.eYear = this.end.substr(11, 4)
-          this.eMonth = this.returnMonth(this.end)
-          this.eDate = this.dateModify(this.end)
-          this.eDay = this.returnDay(this.end)
+          this.eYear = this.end.substr(11, 4);
+          this.eMonth = this.returnMonth(this.end);
+          this.eDate = this.dateModify(this.end);
+          this.eDay = this.returnDay(this.end);
 
-          this.dRPicked = true
+          this.dRPicked = true;
         // }
       },
 
@@ -476,26 +492,26 @@ export default {
       },
 
       eventClick(attr) {
-          this.addVisible = true
-          this.isDetail = true
-          this.isROnly = true
+          this.addVisible = true;
+          this.isDetail = true;
+          this.isROnly = true;
           
-          this.editId = attr.customData.id
-          this.title  = attr.customData.title
-          this.place  = attr.customData.place
+          this.editId = attr.customData.id;
+          this.title  = attr.customData.title;
+          this.place  = attr.customData.place;
 
-          this.sYear  = attr.customData.year_start
-          this.sMonth = attr.customData.month_start
-          this.sDate  = attr.customData.date_start
-          this.sDay   = this.returnDay(String(attr.dates[0].start))
-          this.eYear  = attr.customData.year_end
-          this.eMonth = attr.customData.month_end
-          this.eDate  = attr.customData.date_end
-          this.eDay   = this.returnDay(String(attr.dates[0].end))
+          this.sYear  = attr.customData.year_start;
+          this.sMonth = attr.customData.month_start;
+          this.sDate  = attr.customData.date_start;
+          this.sDay   = this.returnDay(String(attr.dates[0].start));
+          this.eYear  = attr.customData.year_end;
+          this.eMonth = attr.customData.month_end;
+          this.eDate  = attr.customData.date_end;
+          this.eDay   = this.returnDay(String(attr.dates[0].end));
 
-          this.sTime = attr.customData.time_start
-          this.eTime = attr.customData.time_end
-          this.exInfo = attr.customData.ex_info
+          this.sTime = attr.customData.time_start;
+          this.eTime = attr.customData.time_end;
+          this.exInfo = attr.customData.ex_info;
 
       },
 
@@ -505,44 +521,44 @@ export default {
             day = [ "日", "月", "火", "水", "木", "金", "土" ][new Date().getDay()];
           }
           
-          this.addVisible = true
-          this.isDetail = true
-          this.isROnly = true
+          this.addVisible = true;
+          this.isDetail = true;
+          this.isROnly = true;
           
-          this.editId = attr.id
-          this.title  = attr.title
-          this.place  = attr.place
+          this.editId = attr.id;
+          this.title  = attr.title;
+          this.place  = attr.place;
 
-          this.sYear  = attr.year_start
-          this.sMonth = attr.month_start
-          this.sDate  = attr.date_start
-          this.sDay   = day != '' ? day : this.eventSDay
-          this.eYear  = attr.year_end
-          this.eMonth = attr.month_end
-          this.eDate  = attr.date_end
-          this.eDay   = day != '' ? day : this.eventEDay
+          this.sYear  = attr.year_start;
+          this.sMonth = attr.month_start;
+          this.sDate  = attr.date_start;
+          this.sDay   = day != '' ? day : this.eventSDay;
+          this.eYear  = attr.year_end;
+          this.eMonth = attr.month_end;
+          this.eDate  = attr.date_end;
+          this.eDay   = day != '' ? day : this.eventEDay;
 
-          this.sTime = attr.time_start
-          this.eTime = attr.time_end
-          this.exInfo = attr.ex_info
+          this.sTime = attr.time_start;
+          this.eTime = attr.time_end;
+          this.exInfo = attr.ex_info;
 
       },
 
     async addSchedule() {
           if(this.addBText=='編集する') {
-            this.isDetail = false
-            this.isEdit = true
-            this.isROnly = false
-            return
+            this.isDetail = false;
+            this.isEdit = true;
+            this.isROnly = false;
+            return;
           }
 
           if(!this.title) {
-            this.$ons.notification.alert('タイトルを入力ください。', {title:''})
-            return
+            this.$ons.notification.alert('タイトルを入力ください。', {title:''});
+            return;
           }
           if(!this.sYear) {
             this.$ons.notification.alert('日付を入力ください。', {title:''})
-            return
+            return;
           }
 
           let id = "";
@@ -568,25 +584,25 @@ export default {
                                                 eDate: Number(this.eDate),
                                                 sTime: this.sTime,
                                                 eTime: this.eTime,
-                                                exInfo: this.exInfo})
+                                                exInfo: this.exInfo});
           
           if (!navigator.onLine) {
               if(this.addBText=='登録') {
-                this.$ons.notification.alert({messageHTML:'オンラインになると登録されます。<br>オンラインになる前に画面を更新すると登録されません。', title:''})
+                this.$ons.notification.alert({messageHTML:'オンラインになると登録されます。<br>オンラインになる前に画面を更新すると登録されません。', title:''});
               } else if(this.addBText=='保存') {
-                this.$ons.notification.alert({messageHTML:'オンラインになると保存されます。<br>オンラインになる前に画面を更新すると保存されません。', title:''})
-                this.editId = ''
+                this.$ons.notification.alert({messageHTML:'オンラインになると保存されます。<br>オンラインになる前に画面を更新すると保存されません。', title:''});
+                this.editId = '';
               }
           } else {
             if(this.addBText=='登録') {
-              this.$ons.notification.alert('登録しました。', {title:''})
+              this.$ons.notification.alert('登録しました。', {title:''});
             } else if(this.addBText=='保存') {
-              this.$ons.notification.alert('保存しました。', {title:''})
-              this.editId = ''
+              this.$ons.notification.alert('保存しました。', {title:''});
+              this.editId = '';
             }
           }
-          this.addVisible = false
-          this.dayClicked = false
+          this.addVisible = false;
+          this.dayClicked = false;
           this.eventSYear = this.sYear;
           this.eventSMonth = this.sMonth;
           this.eventSDate = this.sDate;
@@ -596,21 +612,21 @@ export default {
           // this.eventEDate = this.eDate;
           // this.eventEDay = this.eDay;
           this.diaryDate = `${this.eventSYear}年${this.eventSMonth}月${this.eventSDate}日(${this.eventSDay})`;
-          this.title = ''
-          this.sTime = ''
-          this.place = ''
-          this.eTime = ''
-          this.sYear = ''
-          this.sMonth = ''
-          this.sDate = ''
-          this.sDay = ''
-          this.eYear = ''
-          this.eMonth = ''
-          this.eDate = ''
-          this.eDay = ''
-          this.exInfo = ''
-          this.selectedValue = null
-          this.dRPicked = false
+          this.title = '';
+          this.sTime = '';
+          this.place = '';
+          this.eTime = '';
+          this.sYear = '';
+          this.sMonth = '';
+          this.sDate = '';
+          this.sDay = '';
+          this.eYear = '';
+          this.eMonth = '';
+          this.eDate = '';
+          this.eDay = '';
+          this.exInfo = '';
+          this.selectedValue = null;
+          this.dRPicked = false;
 
           const today = new Date();
           const todayYear = today.getFullYear();
@@ -636,7 +652,7 @@ export default {
 
   .calendar {
     width: 100vw;
-    height: 274px;
+    height: 332px;
   }
 
   .dateTitle {
@@ -675,7 +691,7 @@ export default {
     font-size: 0.85rem;
     width: 100vw;
     /* height: 39vh; */
-    height: calc((100vh - 49px) - (274px + 28px + 40px));
+    height: calc((100vh - 49px) - (332px + 28px + 40px));
   }
 
   .eventLItem {
@@ -684,6 +700,10 @@ export default {
     font-size: 0.8rem;
     height: 48px;
     color: #575757;
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-image: linear-gradient(0deg, #ccc, #ccc 50%, transparent 50%);
   }
 
   .time-title {
@@ -765,7 +785,6 @@ export default {
 
   .time-btw {
     margin-right: 16px;
-    /* padding-top: 7px; */
   }
 
   .ex-info {
