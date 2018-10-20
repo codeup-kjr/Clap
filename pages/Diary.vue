@@ -402,8 +402,7 @@ export default {
         color: #8e8e8e;
     }
 
-    .dd-rplyctrl {
-        display: flex;
+    .dd-replyctrl {
         margin-bottom: 8px;
         margin-top: 8px;
     }
