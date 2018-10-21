@@ -92,7 +92,7 @@ export default {
 
         async regist() {
             if(this.$store.state.uRErr) {
-                await this.$store.commit('setURErr', '');
+                this.$store.commit('setURErr', '');
             }
 
             if(this.userName == '') {

@@ -40,7 +40,7 @@
         <div class="img-comment">
             <img :src="$store.state.myData.image!=null ? $store.state.myData.image : defaultImg" alt="image" class="list-item__thumbnail my-image">
             <div class="border underline" :class="commentFocus == true ? 'underline2' : ''">
-                <textarea cols="30" :style="{height: areaHeight(comment, 'comment')}" class="comment-input" placeholder="コメントを入力" v-model="comment" @focus="focus" @blur="blur"></textarea>
+                <textarea cols="30" :style="{height: areaHeight(comment, 'commentEdit')}" class="comment-input" placeholder="コメントを入力" v-model="comment" @focus="focus" @blur="blur"></textarea>
             </div>
         </div>
 
@@ -338,9 +338,6 @@ export default {
             // 半角と全角の規格統一のため、lengthではなく、bytesを用いる。
             let cols = 0;
             switch (type) {
-                case 'comment':
-                    cols = 28;
-                    break;
                 case 'commentEdit':
                     cols = 28;
                     break;
@@ -385,7 +382,6 @@ export default {
         },
 
         commentLength() {
-            // return this.$store.state.diaryData.commentCount
             return this.commentSync.length;
         },
 
@@ -416,7 +412,6 @@ export default {
                 }
             }
         }
-
     },
 
     methods: {
@@ -429,7 +424,7 @@ export default {
             this.comment = '';
         },
 
-        async commentAdd() {
+        commentAdd() {
             if(this.comment.length > 200) {
                 this.$ons.notification.alert('200字以内に納めてください。', {title:''});
                 return
@@ -445,7 +440,7 @@ export default {
                 id += c[Math.floor(Math.random()*cl)];
             }
             
-            await this.$store.dispatch('diaryCommentAdd', {id: id, text: this.comment});
+            this.$store.dispatch('diaryCommentAdd', {id: id, text: this.comment});
             if (!navigator.onLine) {
                 this.$ons.notification.alert({messageHTML:'オンラインになるとコメントが追加されます。<br>オンラインになる前に画面を更新すると追加されません。', title:''});
             } else {
@@ -496,7 +491,7 @@ export default {
             this.replyAddText = Object.assign({}, this.replyAddText, { [i]: ''});
         },
 
-        async replyAddS(i) {
+        replyAddS(i) {
             if(this.replyAddText.length > 200) {
                 this.$ons.notification.alert('200字以内に納めてください。', {title:''});
                 return
@@ -512,7 +507,7 @@ export default {
                 id += c[Math.floor(Math.random()*cl)];
             }
             
-            await this.$store.dispatch('diaryReplyAdd', {id: id, commentId: this.commentSync[i].id, text: this.replyAddText[i]});
+            this.$store.dispatch('diaryReplyAdd', {id: id, commentId: this.commentSync[i].id, text: this.replyAddText[i]});
             if (!navigator.onLine) {
                 this.$ons.notification.alert({messageHTML:'オンラインになると返信が追加されます。<br>オンラインになる前に画面を更新すると追加されません。', title:''});
             } else {

@@ -21,6 +21,7 @@ db.settings(settings);
         diaries: [],
         scheduleAddErr: '',
         schTIdErr: '',
+        schTIdConfirmed: false,
         confirmed: false,
         sentFlg: false,
         //エラーメッセージ(未登録メール警告)表示調整のため、初期値をtrueに。
@@ -54,7 +55,6 @@ db.settings(settings);
             {text: 'バレーボール'},
             {text: 'バスケットボール'},
             {text: '水泳'},
-
         ],
         role: [
             {text: '選手'},
@@ -142,6 +142,10 @@ export const mutations = {
 
     setSchTIdErr(state, text) {
         state.schTIdErr = text;
+    },
+
+    setSchTIdConfirmed(state, bool) {
+        state.schTIdConfirmed = bool;
     },
 
     setScheduleOfToday(state, data) {
@@ -279,65 +283,61 @@ export const actions = {
             //batchはオフラインでも実行でき、オンラインになった瞬間にDB操作されるため、エラーが起きない。
             await batch.commit();
 
-            await dispatch('bindMyData');
+            dispatch('bindMyData');
       }),
 
-      searchTeamId: firebaseAction(async({context, state, commit}, {teamId}) => {
-        let flg = false;
-        let docData = '';
-        await teamRef.doc(String(teamId)).get().then(function(doc) {
+    searchTeamId: firebaseAction(({context, commit}, {teamId}) => {
+        teamRef.doc(String(teamId)).get().then(function(doc) {
             if (doc.exists) {
-                flg = true;
-                docData = doc.data();
+                commit('setSchTeamId', doc.data());
+                commit('setSchTIdConfirmed', true);
+                commit('setSchTIdErr', '');
             } else {
                 console.log("No such document!");
+                commit('setSchTIdErr', 'そのIDは登録されていません。<br>正しいチームIDを入力ください。');
+                commit('setSchTIdConfirmed', false);
             }
         }).catch(function(error) {
             console.log("Error getting document:", error);
-            commit('setSchTIdErr', error.message);
+            commit('setSchTIdErr', 'ネットワークの問題が発生しました。');
         });
-        //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
-        (flg = true ? commit('setSchTeamId', docData) : '');
-      }),
+    }),
 
-      deleteTeam: firebaseAction(async({context, state, commit}, {teamId}) => {
-        let flg = false;
-        await teamRef.doc(String(teamId)).delete().then(function() {
+    deleteTeam: firebaseAction(({context, commit}, {teamId}) => {
+        teamRef.doc(String(teamId)).delete().then(function() {
             console.log("Document successfully deleted!");
-            flg = true;
+            commit('setTeamId', '');
         }).catch(function(error) {
             console.error("Error removing document: ", error);
         });
-        flg = true ? commit('setTeamId', '') : '';
-      }),
+    }),
 
 
-      login: firebaseAction(async({context, state, commit}, {mail, pass}) => {
-        await commit('setLoginErrMsg', '')
+    login: firebaseAction(async({context, commit}, {mail, pass}) => {
+        commit('setLoginErrMsg', '');
         await firebase.auth().signInWithEmailAndPassword(mail, pass).catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
+            const errorCode = error.code;
+            const errorMessage = error.message;
             console.log(errorMessage);
             commit('setLoginErrMsg', errorMessage);
             return;
-          })
+          });
         
-        await firebase.auth().onAuthStateChanged(function(user) {
+        firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
                 commit('setUid', user.uid);
             }
-          })
+          });
     }),
 
     logout: firebaseAction(({context}) => {       
         firebase.auth().signOut().then(function(){
             location.reload();
-        }).catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            console.log(errorMessage);
-          })
-          
+            }).catch(function(error) {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                console.log(errorMessage);
+            });   
     }),
 
     getTeamByUid: firebaseAction(({context, state, commit, dispatch}, {page}) => {
@@ -345,16 +345,14 @@ export const actions = {
             .get().then(function(querySnapshot) {
                 querySnapshot.forEach(async function(doc) {
                     if (doc.exists) {
-                        await commit('setTeamId', doc.data().teamId);
-                        dispatch('bindSchedule');
-                        await dispatch('bindTeam');
-                        await dispatch('bindTeamU');
-                        await dispatch('getUser', {ids: state.teamU});
-                        await dispatch('getScheduleOfToday');
-                        await dispatch('bindDiaries');
-    
-                        commit('clear');
-                        commit('push', page);
+                            await commit('setTeamId', doc.data().teamId);
+                            dispatch('bindSchedule');
+                            dispatch('bindTeam');
+                            dispatch('bindDiaries');
+                            // dispatch('getScheduleOfToday');
+                            await dispatch('getUser');
+                            commit('clear');
+                            commit('push', page);
                         // await dispatch('bindMyRoom')
                         // dispatch('getGroup', {ids: state.myRoom})
                     } else {
@@ -366,17 +364,15 @@ export const actions = {
         })
     }),
 
-    checkLogin: firebaseAction(({context, state, commit, dispatch}, {page1, page2}) => {
+    checkLogin: firebaseAction(({context, commit, dispatch}, {page1, page2}) => {
         let uid = '';
         let currentPage = {};
         firebase.auth().onAuthStateChanged(async function(user) {
                 if (user) {
                     uid = user.uid;
                     await commit('setUid', uid);
-                    await dispatch('bindMyData');
-                    await dispatch('getTeamByUid', {page: page2});
-                    // commit('clear')
-                    // commit('push', page2)
+                    dispatch('bindMyData');
+                    dispatch('getTeamByUid', {page: page2});
                 } else {
                     commit('clear');
                     commit('push', page1);
@@ -384,7 +380,7 @@ export const actions = {
         })
     }),
 
-    scheduleAdd: firebaseAction(async({context, state, commit}, {id, title, place, sYear, sMonth, sDate, eYear, eMonth, eDate, sTime, eTime, exInfo}) => {
+    scheduleAdd: firebaseAction(({context, state}, {id, title, place, sYear, sMonth, sDate, eYear, eMonth, eDate, sTime, eTime, exInfo}) => {
         teamRef.doc(String(state.teamId)).collection('schedule').doc(String(id)).set({
             id: id,
             title: title,
@@ -403,42 +399,15 @@ export const actions = {
         })
       }),
 
-      getScheduleOfToday: firebaseAction(async ({context, state, commit, dispatch}) => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const date = today.getDate();
-        const list = [];
-        
-        await teamRef.doc(String(state.teamId)).collection('schedule').where("date_start", "==", date).where("month_start", "==", month).where("year_start", "==", year).get().then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-                list.push(doc.data());
-            })
-        })
-
-        await teamRef.doc(String(state.teamId)).collection('schedule').where("date_end", "==", date).where("month_end", "==", month).where("year_end", "==", year).get().then(function(querySnapshot) {
-            querySnapshot.forEach(function(doc) {
-                list.push(doc.data());
-            })
-        })
-
-        const cleanList = list.filter(function(v1,i1,a1){ 
-            return (a1.findIndex(function(v2){ 
-              return (v1.id===v2.id);
-            }) === i1);
-          });
-        commit('setScheduleOfToday', cleanList);
-        //querySnapshotはerrorを返すことができない。
-      }),
-
-      getUser: firebaseAction(async({context, state, commit, dispatch}, {ids}) => {
+    getUser: firebaseAction(async({context, state, commit, dispatch}) => {
+        await dispatch('bindTeamU');
         let flg = false;
         let usersData = [];
-        const l = ids.length;
+        const l = state.teamU.length;
         
         for(let i=0; i<l; i++) {
 
-         await userRef.doc(String(ids[i].id)).get().then(function(doc) {
+         await userRef.doc(String(state.teamU[i].id)).get().then(function(doc) {
                 if (doc.exists) {
                     flg = true;
                     usersData.push(doc.data());
@@ -449,59 +418,11 @@ export const actions = {
                 console.log("Error getting document:", error);
             })
         }
-        //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
+        //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとusersDataを定義した。
         flg = true ? commit('setUsersData', usersData) : '';
       }),
 
-    //Applaud.vueにて、学年で絞って表示している状態でも最新の情報を取得したい場合は下記を使用する。
-    // ただし、今の所影響がありそうなのは名前と写真くらいなので、学年で絞るたびに最新化するコストは無駄と考え、stateの全メンバー情報から絞り込む方式をとっている。
-    //   getUserByGrade: firebaseAction(async({context, state, commit}, {ids, grade}) => {
-    //     let flg = false
-    //     let usersData = []
-    //     const l = ids.length
-        
-    //     for(let i=0; i<l; i++) {
-            
-    //      await userRef.where("grade", "==", grade)
-    //                     .get().then(function(querySnapshot) {
-    //         querySnapshot.forEach(function(doc) {
-    //                 if (doc.exists) {
-    //                     flg = true
-    //                     usersData.push(doc.data())
-    //                 } else {
-    //                     console.log("No such document!");
-    //                 }
-    //             })
-    //         }).catch(function(error) {
-    //             console.log("Error getting document:", error);
-    //         });
-    //     }
-    //     //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
-    //     (flg = true ? commit('setUsersData', usersData) : '')
-    //   }),
-
-    // getGroup: firebaseAction(async({context, state, commit}, {ids}) => {
-    //     let flg = false
-    //     let groups = []
-    //     const l = ids.length
-        
-    //     for(let i=0; i<l; i++) {
-    //      await roomRef.doc(String(ids[i].roomId)).get().then(function(doc) {
-    //             if (doc.exists) {
-    //                 flg = true
-    //                 groups.push(doc.data())
-    //             } else {
-    //                 console.log("No such document!");
-    //             }
-    //         }).catch(function(error) {
-    //             console.log("Error getting document:", error)
-    //         });
-    //     }
-    //     //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとdocDataを定義した。
-    //     (flg = true ? commit('setGroupList', groups) : '')
-    //   }),
-
-      updateUser: firebaseAction(async ({context, state, commit, dispatch}, {name, role, grade, img}) => {
+    updateUser: firebaseAction(async ({context, state}, {name, role, grade, img}) => {
         if(img) {
             let imgSrc = '';
             const ref = firebase.storage().ref(state.uid);
@@ -526,12 +447,12 @@ export const actions = {
                 console.error("Error updating document: ", error)
             });
         }
-      }),
+    }),
 
-      searchEmail: firebaseAction(async ({context, state, commit, dispatch}, {email}) => {
+    searchEmail: firebaseAction(async ({context, state, commit, dispatch}, {email}) => {
         //エラーメッセージ(未登録メール警告)表示調整用
         let flg = false;
-        await commit('setSentFlg', false);
+        commit('setSentFlg', false);
         await userRef.where("email", "==", email).get().then(function(querySnapshot) {
             querySnapshot.forEach(function(doc) {
                 flg = true;
@@ -544,9 +465,9 @@ export const actions = {
                 commit('setEmailFlg', false);
             }
             commit('setConfirmed', true);
-      }),
+    }),
 
-      sendPasswordReset: firebaseAction(({context, commit}, {email}) => {
+    sendPasswordReset: firebaseAction(({context, commit}, {email}) => {
         firebase.auth().sendPasswordResetEmail(email).then(function() {
             commit('setSentFlg', true);
             console.log('Successfully Sent.');
@@ -556,60 +477,60 @@ export const actions = {
                 const errorMessage = error.message;
                 console.log(errorMessage);
             })
-        }),
-    
+    }),
     
     diaryAdd: firebaseAction(async({context, state}, {id, submit, date, title, content1, content2, content3, content4, content5, edit}) => {
-        const now = new Date();
-        const h = String(now.getHours());
-        let m = String(now.getMinutes());
-        if(m.length==1) {
-            m = String('0' + m);
-        }
+            const now = new Date();
+            const h = String(now.getHours());
+            let m = String(now.getMinutes());
+            if(m.length==1) {
+                m = String('0' + m);
+            }
 
-        if(edit) {
-            diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).update({
-                submit:         submit,
-                hcChecked:      false,
-                commentCount:   0,
-                date:           date,
-                time:           `${h}:${m}`,
-                title:          title,
-                content1:       content1,
-                content2:       content2,
-                content3:       content3,
-                content4:       content4,
-                content5:       content5,
-                update_at:      firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(function(error) {
-                console.log("Error writing document: ", error);
-            });
-        } else {
-            diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).set({
-                id:             id,
-                userId:         state.uid,
-                submit:         submit,
-                hcChecked:      false,
-                commentCount:   0,
-                date:           date,
-                time:           `${h}:${m}`,
-                title:          title,
-                content1:       content1,
-                content2:       content2,
-                content3:       content3,
-                content4:       content4,
-                content5:       content5,
-                input_at:       firebase.firestore.FieldValue.serverTimestamp(),
-                update_at:      firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(function(error) {
-                console.log("Error writing document: ", error);
-            });
-        }
+            if(edit) {
+                diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).update({
+                    submit:         submit,
+                    hcChecked:      false,
+                    commentCount:   0,
+                    date:           date,
+                    time:           `${h}:${m}`,
+                    title:          title,
+                    content1:       content1,
+                    content2:       content2,
+                    content3:       content3,
+                    content4:       content4,
+                    content5:       content5,
+                    update_at:      firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(function(error) {
+                    console.log("Error writing document: ", error);
+                });
+            } else {
+                diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).set({
+                    id:             id,
+                    userId:         state.uid,
+                    submit:         submit,
+                    hcChecked:      false,
+                    commentCount:   0,
+                    date:           date,
+                    time:           `${h}:${m}`,
+                    title:          title,
+                    content1:       content1,
+                    content2:       content2,
+                    content3:       content3,
+                    content4:       content4,
+                    content5:       content5,
+                    input_at:       firebase.firestore.FieldValue.serverTimestamp(),
+                    update_at:      firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(function(error) {
+                    console.log("Error writing document: ", error);
+                });
+            }
     }),
 
-    showDetail : firebaseAction(async({context, state, commit, dispatch}, {data, uData, uDataImage, page}) => {
-        await dispatch('bindDiaryData', {id: data.id});
-        await dispatch('bindCommentData', {id: data.id});
+    showDetail : firebaseAction(async({context, commit, dispatch}, {data, uData, uDataImage, page}) => {
+        dispatch('bindDiaryData', {id: data.id});
+        dispatch('bindCommentData', {id: data.id});
+        // replyはコメントと異なり、lazyrepeat内のmapで処理しているため、awaitする必要がある。
         await dispatch('bindReplyData', {id: data.id});
         commit('push', {extends: page,
             data() {return {
@@ -631,10 +552,10 @@ export const actions = {
                 animation: 'lift',
                 animationOptions: { duration: 0.5 }
         }});
-      }),
+    }),
 
-    diaryCommentAdd: firebaseAction(async({context, state}, {id, text}) => {
-        await diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('comment').doc(String(id)).set({
+    diaryCommentAdd: firebaseAction(({context, state}, {id, text}) => {
+        diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('comment').doc(String(id)).set({
             id:         id,
             text:       text,
             userId:     state.uid,
@@ -646,8 +567,8 @@ export const actions = {
         });
     }),
 
-    diaryCommentUpdate: firebaseAction(async({context, state}, {id, text}) => {
-        await diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('comment').doc(String(id)).update({
+    diaryCommentUpdate: firebaseAction(({context, state}, {id, text}) => {
+        diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('comment').doc(String(id)).update({
             text:       text,
             edited: true,
             update_at:  firebase.firestore.FieldValue.serverTimestamp()
@@ -656,8 +577,8 @@ export const actions = {
         });
     }),
 
-    diaryReplyAdd: firebaseAction(async({context, state}, {id, commentId, text}) => {
-        await diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('reply').doc(String(id)).set({
+    diaryReplyAdd: firebaseAction(({context, state}, {id, commentId, text}) => {
+        diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('reply').doc(String(id)).set({
             id:         id,
             commentId:  commentId,
             text:       text,
@@ -670,8 +591,8 @@ export const actions = {
         });
     }),
     
-    diaryReplyUpdate: firebaseAction(async({context, state}, {id, text}) => {
-        await diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('reply').doc(String(id)).update({
+    diaryReplyUpdate: firebaseAction(({context, state}, {id, text}) => {
+        diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(state.diaryData.id)).collection('reply').doc(String(id)).update({
             text:       text,
             edited:     true,
             update_at:  firebase.firestore.FieldValue.serverTimestamp()

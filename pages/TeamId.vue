@@ -13,24 +13,24 @@
                     チーム情報
                 </div>
             </div>
-            <div v-show="!confirmed&&!err">
+            <div v-show="!$store.state.schTIdConfirmed&&!$store.state.schTIdErr">
                 <p class="description">チームIDを入力ください。
                 <br>わからない場合は、<br>使用中のチームメンバーに
                 <br>MyPageを確認してもらおう。</p>
             </div>
 
-            <div v-show="confirmed&&!err">
+            <div v-show="$store.state.schTIdConfirmed&&!$store.state.schTIdErr">
                 <p class="description">あなたのチームはこちらですか？
-                <br><span class="name-emp">{{teamName}}</span></p>
+                <br><span class="name-emp">{{$store.state.schTeamId.name}}</span></p>
             </div>
 
-            <div v-show="err" v-html="err" class="description"></div>
+            <div v-show="$store.state.schTIdErr" v-html="$store.state.schTIdErr" class="description"></div>
             <div class="height-container">
-                <div class="un-confirmed" v-show="!confirmed">
+                <div class="un-confirmed" v-show="!$store.state.schTIdConfirmed">
                     <v-ons-input modifier="material" type="text" placeholder="チームID" v-model="teamId" class="input"/>
                     <v-ons-button class="confirm-b" @click.prevent="confirm">確定</v-ons-button>
                 </div>
-                <div class="confirmed-btns" v-show="confirmed">
+                <div class="confirmed-btns" v-show="$store.state.schTIdConfirmed">
                     <v-ons-button class="confirmed-b" @click.prevent="yes">はい</v-ons-button>
                     <v-ons-button class="confirmed-b" modifier="quiet" @click.prevent="no">いいえ</v-ons-button>
                 </div>
@@ -49,64 +49,40 @@ export default {
     data() {
         return {
             teamId: '',
-            teamName: '',
-            confirmed: false,
-            err: ''
-            
         }
     },
 
     methods: {
 
-        async confirm() {
-            this.$store.commit('setSchTIdErr', '')
+        confirm() {
             if(this.teamId == '') {
-                this.$ons.notification.alert('チームIDを入力ください。', {title:''})
-                return
+                this.$ons.notification.alert('チームIDを入力ください。', {title:''});
+                return;
             }
 
             if (!navigator.onLine) {
-                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''})
-                return
+                this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''});
+                return;
             }
-            
-            let teamName = ''
             //store/index.jsで引数を複数指定しているため、呼び出し元では引数をオブジェクトで指定する。
-            await this.$store.dispatch('searchTeamId', {teamId: this.teamId})
-            teamName = this.$store.state.schTeamId.name
-            if(teamName) {
-                            this.err = ''
-                            this.teamName = teamName
-                            this.confirmed = true
-
-                            } else {
-                                if(this.$store.state.schTIdErr) {
-                                    console.log(this.$store.state.schTIdErr)
-                                    this.err = 'ネットワークの問題が発生しました。'
-                                } else {
-                                    this.err = 'そのIDは登録されていません。<br>正しいチームIDを入力ください。'
-                                }
-                            }
+            this.$store.dispatch('searchTeamId', {teamId: this.teamId});
         },
 
         yes() {
-            this.$store.commit('setTeamId', this.teamId)
-            this.$store.commit('push', {extends: UserRegist, data(){return{teamRegist: false}}})
+            this.$store.commit('setTeamId', this.teamId);
+            this.$store.commit('push', {extends: UserRegist, data(){return{teamRegist: false}}});
         },
 
         no() {
-            this.teamId = ''
-            this.confirmed = false 
+            this.teamId = '';
+            this.$store.commit('setSchTIdConfirmed', false);
         },
 
         cancel() {
-            this.$store.commit('pop')
-            this.$store.commit('pop')
+            this.$store.commit('pop');
+            this.$store.commit('pop');
+            this.$store.commit('setSchTIdConfirmed', false);
         }
-    },
-
-    computed: {
-        
     }
 }
 </script>

@@ -107,7 +107,7 @@ export default {
             }
         },
 
-        async addDiary(submit) {
+        addDiary(submit) {
             if(submit==true) {
                 if(this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.date && diary.submit == true).length > 0) {
                     this.$ons.notification.alert({messageHTML:`その日付の日誌は既に提出済みです！`, title:''});
@@ -159,7 +159,7 @@ export default {
                 }
             }
 
-          await this.$store.dispatch('diaryAdd', {  id:         this.id == '' ? id : this.id,
+          this.$store.dispatch('diaryAdd', {  id:         this.id == '' ? id : this.id,
                                                     submit:     submit,
                                                     date:       this.date,
                                                     title:      this.answers.title,

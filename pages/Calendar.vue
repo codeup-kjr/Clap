@@ -544,7 +544,7 @@ export default {
 
       },
 
-    async addSchedule() {
+    addSchedule() {
           if(this.addBText=='編集する') {
             this.isDetail = false;
             this.isEdit = true;
@@ -573,7 +573,7 @@ export default {
               }
           }
           
-          await this.$store.dispatch('scheduleAdd', { id: this.addBText == '登録' ? id : this.editId,
+          this.$store.dispatch('scheduleAdd', { id: this.addBText == '登録' ? id : this.editId,
                                                 title: this.title,
                                                 place: this.place,
                                                 sYear: Number(this.sYear),
