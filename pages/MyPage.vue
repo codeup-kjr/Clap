@@ -280,6 +280,7 @@ export default {
     }
 
     .spinner {
+        will-change: rotate;
         position: absolute;
         top: 50%;
         left: 50%;

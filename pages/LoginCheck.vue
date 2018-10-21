@@ -56,6 +56,7 @@ export default {
   }
 
   .spinner {
+        will-change: rotate;
         height: 60px;
         width: 60px;
         -webkit-animation: spin 1s linear infinite;

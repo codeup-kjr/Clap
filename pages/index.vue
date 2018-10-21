@@ -217,4 +217,25 @@ export default {
     color: #8e8e8e;
     font-size: calc(0.6rem + 0.5vw);
   }
+
+/* onsenui animationパフォーマンス用 */
+  .text-input--material {
+    will-change: background-image, background-size;
+  }
+
+  .text-input--material__label {
+    will-change: transform;
+  }
+
+  .button--material {
+    will-change: box-shadow, opacity;
+  }
+
+  .select-input--material {
+    will-change: background-size;
+  }
+
+  .select-input--material__label {
+    will-change: transform;
+  }
 </style>
