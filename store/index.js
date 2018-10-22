@@ -404,20 +404,20 @@ export const actions = {
         let flg = false;
         let usersData = [];
         const l = state.teamU.length;
-        
+        let getUd;
         for(let i=0; i<l; i++) {
-
-         await userRef.doc(String(state.teamU[i].id)).get().then(function(doc) {
-                if (doc.exists) {
-                    flg = true;
-                    usersData.push(doc.data());
-                } else {
-                    console.log("No such document!");
-                }
-            }).catch(function(error) {
-                console.log("Error getting document:", error);
-            })
+            getUd = userRef.doc(String(state.teamU[i].id)).get().then(function(doc) {
+                    if (doc.exists) {
+                        flg = true;
+                        usersData.push(doc.data());
+                    } else {
+                        console.log("No such document!");
+                    }
+                }).catch(function(error) {
+                    console.log("Error getting document:", error);
+                })
         }
+        await Promise.all([getUd]);
         //async awaitを使用して、この関数内の処理を同期的に処理する。そのためにflgとusersDataを定義した。
         flg = true ? commit('setUsersData', usersData) : '';
       }),
