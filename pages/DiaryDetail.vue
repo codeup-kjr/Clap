@@ -109,192 +109,181 @@ export default {
             unbindTarget: [],
             commentEdit: {},
             replyEdit: {},
-            replyEditFocus: {},
             replyEditText: {},
             replyAddFlg: {},
             replyAddText: {},
             replyAddFocus: {},
 
-        commentItemHeight:
-        i => {
-                return 204;
-             },
+            commentItemHeight:
+            i => {
+                    return 204;
+                },
 
-        commentItem:
-        i => {
-            this.replyShow[i] = false;
-            this.replyControl[i] = '返信を表示';
-            this.commentEdit[i] = '編集';
-            this.commentEditFocus[i] = false;
-            this.replyAddFlg[i] = false;
-            this.replyAddText[i] = '';
-            this.replyAddFocus[i] = false;
-            
-            //ページを開く時点で登録されている返信について、編集ボタンとフォーカス判定の初期化。
-            // ページ起動後に追加される返信については、renderの中で初期化している。
-            if(this.commentSync.length > 0) {
-                                            const len = this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length;
-                                            if(len > 0) {
-                                                for(let j=0; j<len; j++) {
-                                                    this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id)[j].id] = '編集';
-                                                    this.replyEditFocus[this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id)[j].id] = false;
+            commentItem:
+            i => {
+                this.replyShow[i] = false;
+                this.replyControl[i] = '返信を表示';
+                this.commentEdit[i] = '編集';
+                this.commentEditFocus[i] = false;
+                this.replyAddFlg[i] = false;
+                this.replyAddText[i] = '';
+                this.replyAddFocus[i] = false;
+                
+                //ページを開く時点で登録されている返信について、編集ボタンとフォーカス判定の初期化。
+                // ページ起動後に追加される返信については、renderの中で初期化している。
+                if(this.commentSync.length > 0) {
+                    const len = this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length;
+                    if(len > 0) {
+                        for(let j=0; j<len; j++) {
+                            this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id)[j].id] = '編集';
+                        }
+                    }
+                }
+                return new Vue({
+                    render: createElement => {
+                        if(this.commentSync.length > 0) {
+                            return createElement(
+                                "div",
+                                [
+                                    (()=> {
+                                            const commentCard = createElement('div', {class: 'dd-card'},[
+                                                createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].image}, 
+                                                    class: 'dd-cimg'}),
+                                                createElement('div', {class: 'dd-column'},[
+                                                    createElement('p', {style:{marginBottom: '4px'}}, this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].name),
+                                                    this.commentEdit[i] == '編集' ?
+                                                        createElement('textarea', {attrs: {readonly: true}, style:{marginBottom: '6px',
+                                                            height: this.areaHeight(this.commentSync[i].text, 'commentEdit')}, 'class': {'comment-inputD': true}
+                                                        }, this.commentSync[i].text)
+                                                    : createElement('div', {'class': {borderD: true, underlineDCom: true, underline2DCom: this.commentEditFocus[i]==true ? true : false}, style:{marginBottom: '4px'}},[
+                                                        createElement('textarea', {domProps: {value: this.commentEditText[i], cols: '28', placeholder: 'コメントを入力'},
+                                                            on: {input: e => {this.commentEditText = Object.assign({}, this.commentEditText, { [i]: e.target.value });},
+                                                                    focus: ()=>{this.commentEditFocus = Object.assign({}, this.commentEditFocus, { [i]: true });},
+                                                                    blur: ()=>{this.commentEditFocus = Object.assign({}, this.commentEditFocus, { [i]: false });}},
+                                                            style:{height: this.areaHeight(this.commentEditText[i], 'commentEdit'), marginBottom: '-2px'}, 'class': {'comment-inputD': true}}, this.commentEditText[i])
+                                                        ]),
+                                                    createElement('div', {class: 'dd-edit-flex', style:{width: '235px'}},[
+                                                        createElement('div', {style:{display: 'flex'}},[
+                                                            createElement('p', {class: 'dd-gray'}, this.displayTime(this.commentSync[i].input_at)),
+                                                            this.commentSync[i].edited == true ?
+                                                                createElement('p', {class: 'dd-gray'}, '（編集済）')
+                                                            : ''
+                                                        ]),
+                                                        createElement('div', {class: 'dd-gray', style:{display: 'flex'}},[
+                                                            this.commentEdit[i] == '保存'  && this.commentSync[i].userId == this.$store.state.uid?
+                                                            createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.commentEditCancel(i);}}, style:{paddingTop: '2px', marginRight: this.commentSync[i].userId == this.$store.state.uid && this.commentSync[i].text != this.commentEditText[i] ? '24px' : '8px'}})
+                                                            : '',
+                                                            this.commentSync[i].userId == this.$store.state.uid && this.commentSync[i].text != this.commentEditText[i] ?
+                                                            createElement('p', {on: {click: ()=>{this.commentEditChange(i);}}}, this.commentEdit[i])
+                                                            : ''
+                                                        ])  
+                                                    ]),
+                                                    this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length > 0 &&
+                                                    createElement('div', {class: 'dd-replyctrl'},[
+                                                        // createElementは、最後の引数にbindしたstateを指定しないと、dbの変更をリアルタイムに反映することができないため、このように切り替える内容と分離させる。
+                                                        this.replyShow[i] == false ?
+                                                            createElement('span', {on: {click: ()=>{this.controlReply(i);}}}, this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length + '件の')
+                                                        : '',
+                                                        createElement('span', {on: {click: ()=>{this.controlReply(i);}}}, this.replyControl[i])
+                                                    ])
+                                                ])
+                                            ]); 
+                                            // ページ起動後に追加される返信について、renderの中で初期化。こうすることで、リアクティブにできる。
+                                            // lenの最後だけを確かめているのは、replyDataはinput_atでorderByされていて、最新は最後であることがわかっているため。
+                                            if(this.commentSync.length > 0) {
+                                                const len = this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length;
+                                                if(len > 0) {
+                                                    this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id)[len-1].id] == null ? this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id)[len-1].id] = '編集' : '';
                                                 }
                                             }
-                                        }
-            return new Vue({
-
-                render: createElement => {
-                    if(this.commentSync.length > 0) {
-
-                    return createElement(
-                        "div",
-                        [
-                            (()=> {
-                                    const commentCard = createElement('div', {class: 'dd-card'},[
-                                        createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].image}, 
-                                            class: 'dd-cimg'}),
-                                        createElement('div', {class: 'dd-column'},[
-                                            createElement('p', {style:{marginBottom: '4px'}}, this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].name),
-                                            this.commentEdit[i] == '編集' ?
-                                                createElement('textarea', {attrs: {readonly: true}, style:{marginBottom: '6px',
-                                                    height: this.areaHeight(this.commentSync[i].text, 'commentEdit')}, 'class': {'comment-inputD': true}
-                                                }, this.commentSync[i].text)
-                                            : createElement('div', {'class': {borderD: true, underlineDCom: true, underline2DCom: this.commentEditFocus[i]==true ? true : false}, style:{marginBottom: '4px'}},[
-                                                createElement('textarea', {domProps: {value: this.commentEditText[i], cols: '28', placeholder: 'コメントを入力'},
-                                                    on: {input: e => {this.commentEditText = Object.assign({}, this.commentEditText, { [i]: e.target.value });},
-                                                            focus: ()=>{this.commentEditFocus = Object.assign({}, this.commentEditFocus, { [i]: true });},
-                                                            blur: ()=>{this.commentEditFocus = Object.assign({}, this.commentEditFocus, { [i]: false });}},
-                                                    style:{height: this.areaHeight(this.commentEditText[i], 'commentEdit'), marginBottom: '-2px'}, 'class': {'comment-inputD': true}}, this.commentEditText[i])
-                                                ]),
-                                            createElement('div', {class: 'dd-edit-flex', style:{width: '235px'}},[
-                                                createElement('div', {style:{display: 'flex'}},[
-                                                    createElement('p', {class: 'dd-gray'}, this.displayTime(this.commentSync[i].input_at)),
-                                                    this.commentSync[i].edited == true ?
-                                                        createElement('p', {class: 'dd-gray'}, '（編集済）')
-                                                    : ''
-                                                ]),
-                                                createElement('div', {class: 'dd-gray', style:{display: 'flex'}},[
-                                                    this.commentEdit[i] == '保存'  && this.commentSync[i].userId == this.$store.state.uid?
-                                                    createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.commentEditCancel(i);}}, style:{paddingTop: '2px', marginRight: this.commentSync[i].userId == this.$store.state.uid && this.commentSync[i].text != this.commentEditText[i] ? '24px' : '8px'}})
-                                                    : '',
-                                                    this.commentSync[i].userId == this.$store.state.uid && this.commentSync[i].text != this.commentEditText[i] ?
-                                                    createElement('p', {on: {click: ()=>{this.commentEditChange(i);}}}, this.commentEdit[i])
-                                                    : ''
-                                                ])
-                                                
-                                            ]),
-                                            this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length > 0 &&
-                                            createElement('div', {class: 'dd-replyctrl'},[
-                                                // createElementは、最後の引数にbindしたstateを指定しないと、dbの変更をリアルタイムに反映することができないため、このように切り替える内容と分離させる。
-                                                this.replyShow[i] == false ?
-                                                    createElement('span', {on: {click: ()=>{this.controlReply(i);}}}, this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length + '件の')
-                                                : '',
-                                                createElement('span', {on: {click: ()=>{this.controlReply(i);}}}, this.replyControl[i])
-                                            ]),
-                                        ])
-                                    ]);
-                                            
-                                    // ページ起動後に追加される返信について、renderの中で初期化。こうすることで、リアクティブにできる。
-                                    // lenの最後だけを確かめているのは、replyDataはinput_atでorderByされていて、最新が最後であることがわかっているため。
-                                    if(this.commentSync.length > 0) {
-                                        const len = this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length;
-                                        if(len > 0) {
-                                            this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id)[len-1].id] == null ? this.replyEdit[this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id)[len-1].id] = '編集' : '';
-                                            this.replyEditFocus[this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id)[len-1].id] = false;
-                                        }
-                                    }
-
-                                    const replyList = this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length > 0 &&
-                                            this.replyShow[i] == true ?
-                                            //createElementを使用する場合のv-forの代替手段がarray.prototype.map()
-                                                createElement('div', {class: 'dd-column', style:{marginLeft: 'calc(6vh + 8px)'}}, this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).map((item, index) => [
-                                                    createElement('div', {class: 'dd-card'},[
-                                                        createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == item.userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == item.userId)[0].image}, class: 'dd-rimg'},),
-                                                        createElement('div', {class: 'dd-column'},[
-                                                            createElement('p', {}, this.$store.state.usersData.filter(data => data.id == item.userId)[0].name),
-                                                            this.replyEdit[item.id] == '編集' ?
-                                                                createElement('textarea', {domProps: {value: item.text}, attrs: {readonly: true}, style:{marginBottom: '6px',
-                                                                    height: this.areaHeight(item.text, 'replyEdit')}, 'class': {'reply-inputD': true}
-                                                                }, )
-                                                                : createElement('div', {'class': {borderD: true, underlineDRep: true, underline2DRep: this.replyEditFocus[item.id]==true ? true : false}, style:{marginBottom: '4px'}},[
-                                                                    createElement('textarea', {domProps: {value: this.replyEditText[item.id], cols: '26', placeholder: 'コメントを入力'},
-                                                                        on: {input: e => {this.replyEditText = Object.assign({}, this.replyEditText, { [item.id]: e.target.value });},
-                                                                                focus: ()=>{this.replyEditFocus = Object.assign({}, this.replyEditFocus, { [item.id]: true });},
-                                                                                blur: ()=>{this.replyEditFocus = Object.assign({}, this.replyEditFocus, { [item.id]: false });}},
-                                                                        style:{height: this.areaHeight(this.replyEditText[item.id], 'replyEdit'), marginBottom: '-2px'}, 'class': {'reply-inputD': true}}, this.replyEditText[item.id])
-                                                                ]),
-                                                                createElement('div', {class: 'dd-edit-flex', style:{width: '204px'}},[
-                                                                    createElement('div', {style:{display: 'flex'}},[
-                                                                        createElement('p', {class: 'dd-gray'}, this.displayTime(item.input_at)),
-                                                                        item.edited == true ?
-                                                                            createElement('p', {class: 'dd-gray'}, '（編集済）')
-                                                                        : '',
-                                                                    ]),
-                                                                    createElement('div', {class: 'dd-gray', style:{display: 'flex', marginBottom: '8px'}},[
-                                                                            this.replyEdit[item.id] == '保存' && item.userId == this.$store.state.uid ?
-                                                                                createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.replyEditCancel(item.id);}}, style:{paddingTop: '2px', marginRight: item.userId == this.$store.state.uid && item.text != this.replyEditText[item.id] ? '24px' : '6px'}})
-                                                                            : '',
-                                                                            item.userId == this.$store.state.uid && item.text != this.replyEditText[item.id] ?
-                                                                            createElement('p', {on: {click: ()=>{this.replyEditChange(item.id);}}}, this.replyEdit[item.id])
-                                                                            : '',
-                                                                        ])
-                                                                ]),
-                                                        ])
-                                                    ])
-                                                ]))
-                                            : '';
-                                    const replyButton = createElement('div', {style:{marginLeft: 'calc(6vh + 8px)'}},[
-                                                        this.replyAddFlg[i] == false ?
-                                                            createElement('p', {on: {click: ()=>{this.replyAdd(i)}}, class: 'dd-replyb'}, '返信')
-                                                            : createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.replyAdd(i);}}, class: 'dd-replyb', style:{marginLeft: '10px'}}),
-                                                        this.replyAddFlg[i] == true ?
+                                            const replyList = this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length > 0 &&
+                                                    this.replyShow[i] == true ?
+                                                    //createElementを使用する場合のv-forの代替手段がarray.prototype.map()
+                                                        createElement('div', {class: 'dd-column', style:{marginLeft: 'calc(6vh + 8px)'}}, this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).map((item, index) => [
                                                             createElement('div', {class: 'dd-card'},[
-                                                                createElement('img', {attrs: { src: this.$store.state.myData.image == null ? png : this.$store.state.myData.image}, class: 'dd-rimg'},),
+                                                                createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == item.userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == item.userId)[0].image}, class: 'dd-rimg'},),
                                                                 createElement('div', {class: 'dd-column'},[
-                                                                createElement('div', {'class': {borderD: true, underlineDRep: true, underline2DRep: this.replyAddFocus[i]==true ? true : false}, style:{marginBottom: '4px'}},[
-                                                                    createElement('textarea', {domProps: {value: this.replyAddText[i], cols: '26', placeholder: 'コメントを入力'},
-                                                                        on: {input: e => {this.replyAddText = Object.assign({}, this.replyAddText, { [i]: e.target.value });},
-                                                                                focus: ()=>{this.replyAddFocus = Object.assign({}, this.replyAddFocus, { [i]: true });},
-                                                                                blur: ()=>{this.replyAddFocus = Object.assign({}, this.replyAddFocus, { [i]: false });}},
-                                                                        style:{height: this.areaHeight(this.replyAddText[i], 'replyEdit'), marginBottom: '-2px'}, 'class': {'reply-inputD': true}}, this.replyAddText[i])
-                                                                ]),
-                                                                    createElement('div', {style:{height: '40px'}},[
-                                                                        this.replyAddText[i] != '' ?
-                                                                            createElement('div', {class: 'dd-edit-flex'},[
-                                                                                createElement('v-ons-button', {attrs: {modifier: 'quiet'}, on: {click: ()=>{this.replyAddC(i);}}, 
-                                                                                    style:{color: '#575757'}}, 'キャンセル'),
-                                                                                createElement('v-ons-button', {attrs: {modifier: 'quiet'}, on: {click: ()=>{this.replyAddS(i);}}, 
-                                                                                    }, '返信')
-                                                                            ])
-                                                                        : ''
-                                                                    ])
+                                                                    createElement('p', {}, this.$store.state.usersData.filter(data => data.id == item.userId)[0].name),
+                                                                    this.replyEdit[item.id] == '編集' ?
+                                                                        createElement('textarea', {domProps: {value: item.text}, attrs: {readonly: true}, style:{marginBottom: '6px',
+                                                                            height: this.areaHeight(item.text, 'replyEdit')}, 'class': {'reply-inputD': true}
+                                                                        })
+                                                                        : createElement('div', {attrs:{id: item.id}, 'class': {borderD: true, underlineDRep: true}, style:{marginBottom: '4px'}},[
+                                                                            createElement('textarea', {domProps: {value: this.replyEditText[item.id], cols: '26', placeholder: 'コメントを入力'},
+                                                                                on: {input: e => {this.replyEditText = Object.assign({}, this.replyEditText, { [item.id]: e.target.value });},
+                                                                                    //replyListはmapにより作成されているため、booleanによるclassの動的な切り替えができない。
+                                                                                        focus: ()=>{document.getElementById(item.id).classList.add("underline2DRep");},
+                                                                                        blur: ()=>{document.getElementById(item.id).classList.remove("underline2DRep");}},
+                                                                                style:{height: this.areaHeight(this.replyEditText[item.id], 'replyEdit'), marginBottom: '-2px'}, 'class': {'reply-inputD': true}}, this.replyEditText[item.id])
+                                                                        ]),
+                                                                        createElement('div', {class: 'dd-edit-flex', style:{width: '204px'}},[
+                                                                            createElement('div', {style:{display: 'flex'}},[
+                                                                                createElement('p', {class: 'dd-gray'}, this.displayTime(item.input_at)),
+                                                                                item.edited == true ?
+                                                                                    createElement('p', {class: 'dd-gray'}, '（編集済）')
+                                                                                : ''
+                                                                            ]),
+                                                                            createElement('div', {class: 'dd-gray', style:{display: 'flex', marginBottom: '8px'}},[
+                                                                                    this.replyEdit[item.id] == '保存' && item.userId == this.$store.state.uid ?
+                                                                                        createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.replyEditCancel(item.id);}}, style:{paddingTop: '2px', marginRight: item.userId == this.$store.state.uid && item.text != this.replyEditText[item.id] ? '24px' : '6px'}})
+                                                                                    : '',
+                                                                                    item.userId == this.$store.state.uid && item.text != this.replyEditText[item.id] ?
+                                                                                    createElement('p', {on: {click: ()=>{this.replyEditChange(item.id);}}}, this.replyEdit[item.id])
+                                                                                    : ''
+                                                                                ])
+                                                                        ])
                                                                 ])
                                                             ])
-                                                        : ''
-                                        ]);
+                                                        ]))
+                                                    : '';
+                                            const replyButton = createElement('div', {style:{marginLeft: 'calc(6vh + 8px)'}},[
+                                                                this.replyAddFlg[i] == false ?
+                                                                    createElement('p', {on: {click: ()=>{this.replyAdd(i)}}, class: 'dd-replyb'}, '返信')
+                                                                    : createElement('v-ons-icon', {attrs: {icon: 'ion-android-close'}, on: {click: ()=>{this.replyAdd(i);}}, class: 'dd-replyb', style:{marginLeft: '10px'}}),
+                                                                this.replyAddFlg[i] == true ?
+                                                                    createElement('div', {class: 'dd-card'},[
+                                                                        createElement('img', {attrs: { src: this.$store.state.myData.image == null ? png : this.$store.state.myData.image}, class: 'dd-rimg'},),
+                                                                        createElement('div', {class: 'dd-column'},[
+                                                                        createElement('div', {'class': {borderD: true, underlineDRep: true, underline2DRep: this.replyAddFocus[i]==true ? true : false}, style:{marginBottom: '4px'}},[
+                                                                            createElement('textarea', {domProps: {value: this.replyAddText[i], cols: '26', placeholder: 'コメントを入力'},
+                                                                                on: {input: e => {this.replyAddText = Object.assign({}, this.replyAddText, { [i]: e.target.value });},
+                                                                                        focus: ()=>{this.replyAddFocus = Object.assign({}, this.replyAddFocus, { [i]: true });},
+                                                                                        blur: ()=>{this.replyAddFocus = Object.assign({}, this.replyAddFocus, { [i]: false });}},
+                                                                                style:{height: this.areaHeight(this.replyAddText[i], 'replyEdit'), marginBottom: '-2px'}, 'class': {'reply-inputD': true}}, this.replyAddText[i])
+                                                                        ]),
+                                                                            createElement('div', {style:{height: '40px'}},[
+                                                                                this.replyAddText[i] != '' ?
+                                                                                    createElement('div', {class: 'dd-edit-flex'},[
+                                                                                        createElement('v-ons-button', {attrs: {modifier: 'quiet'}, on: {click: ()=>{this.replyAddC(i);}}, 
+                                                                                            style:{color: '#575757'}}, 'キャンセル'),
+                                                                                        createElement('v-ons-button', {attrs: {modifier: 'quiet'}, on: {click: ()=>{this.replyAddS(i);}}, 
+                                                                                            }, '返信')
+                                                                                    ])
+                                                                                : ''
+                                                                            ])
+                                                                        ])
+                                                                    ])
+                                                                : ''
+                                                ]);
 
-                                if(commentCard) {
-                                    if(replyList){
-                                        return [commentCard, replyList, replyButton];
-                                    }
-                                        return [commentCard, replyButton];
-                                } else {
-                                    return null;
-                                }
-                            })(),
-
-                        ]
-                    );
-                    } else {
-                        return null;
+                                        if(commentCard) {
+                                            if(replyList){
+                                                return [commentCard, replyList, replyButton];
+                                            }
+                                                return [commentCard, replyButton];
+                                        } else {
+                                            return null;
+                                        }
+                                    })()
+                                ]
+                            );
+                        } else {
+                            return null;
+                        }
                     }
-                },
-            
-        })
-        },
-
+                })
+            }
         }
-
     },
 
     beforeMount() {
