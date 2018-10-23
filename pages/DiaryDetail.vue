@@ -19,7 +19,7 @@
                 <div class="date">{{date}}</div>
             </div>
             <div class="img-name" :style="writerName.length > 4 ? {alignItems: 'flex-end'} : {alignItems: 'center'}">
-                <img :src="userId==$store.state.uid ? myImage : onesImage" alt="image" class="list-item__thumbnail writer-image">
+                <img :src="writerImage" alt="image" class="list-item__thumbnail writer-image">
                 <div class="name">{{writerName}}</div>
             </div>
         </div>
@@ -320,14 +320,13 @@ export default {
 
 
     computed: {
-        myImage() {
-            const image = this.$store.state.myData.image;
-            return image == null ? png : image;
-        },
-
-        onesImage() {
-            const image = this.$store.state.usersData.filter(data => data.id == this.userId)[0].image;
-            return image == null ? png : image;
+        writerImage() {
+            const myImage   = this.$store.state.myData.image;
+            const onesImage = this.$store.state.usersData.filter(data => data.id == this.userId)[0].image;
+            
+            return this.userId == this.$store.state.uid ?
+                                    myImage == null ? png : myImage
+                                    : onesImage == null ? png : onesImage;
         },
 
         writerName() {
