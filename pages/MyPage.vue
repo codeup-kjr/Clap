@@ -35,7 +35,7 @@
             <div class="imgInp">
                 <img class="list-item__thumbnail" :src="upImg" id="upImg" @click="upImage">
                 <div class="name-rg">
-                    <input v-if="edit=='保存する'" type="text" v-model="userName" placeholder="ユーザー名" class="user-name">
+                    <v-ons-input v-if="edit=='保存する'" modifier="material" v-model="userName" placeholder="ユーザー名" class="user-name unedit"></v-ons-input>
                     <div v-else class="user-name">{{$store.state.myData.name}}</div>
                     <div class="role-grade">
                         <v-ons-select v-if="edit=='保存する'" v-model="role" class="role">
@@ -214,7 +214,6 @@ export default {
         background-color: #fdfeff;
     }
 
-
     .name-rg {
         margin-left: 8px;
         display: flex;
@@ -228,6 +227,11 @@ export default {
         width: 40vw;
         overflow: auto;
         height: 32px;
+    }
+
+    .unedit {
+        padding-left: 0px;
+        padding-top: 6px;
     }
 
     .imgInp {
@@ -264,7 +268,6 @@ export default {
         font-size: 1.2rem;
         margin-bottom: 16px;
     }
- 
 
     .logout-b {
         display: flex;

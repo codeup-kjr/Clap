@@ -527,7 +527,7 @@ export const actions = {
             }
     }),
 
-    showDetail : firebaseAction(async({context, commit, dispatch}, {data, uData, uDataImage, page}) => {
+    showDetail : firebaseAction(async({context, commit, dispatch}, {data, page}) => {
         dispatch('bindDiaryData', {id: data.id});
         dispatch('bindCommentData', {id: data.id});
         // replyはコメントと異なり、lazyrepeat内のmapで処理しているため、awaitする必要がある。
@@ -542,8 +542,6 @@ export const actions = {
                             q5:     data.content5,
                             title:  data.title
                         },
-                        name:   uData.name,
-                        image:  uDataImage,
                         id: data.id,
                         date: data.date,
                         userId: data.userId

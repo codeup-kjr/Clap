@@ -71,7 +71,7 @@ export default {
                                 const uDataImage = uData.image == null ? png : uData.image;
 
                                 // cardはonsenuiのcss
-                                const card = createElement('div', {on: {click: ()=>{this.clickFunc(target, uData, uDataImage)}}, class: 'card'},[
+                                const card = createElement('div', {on: {click: ()=>{this.clickFunc(target)}}, class: 'card'},[
                                     createElement('v-ons-ripple', {attrs: {'light-gray' : true},}),
                                     (target.hcChecked == true ?
                                     createElement('v-ons-icon', {attrs: {icon: 'ion-ios-checkmark'}, class: 'd-hc-check', style: {color: '#69ce04'}})
@@ -150,8 +150,8 @@ export default {
                     }});
                 },
 
-    showDetail(data, uData, uDataImage) {
-        this.$store.dispatch('showDetail', {diaryDiv: this.type, data: data, uData: uData, uDataImage: uDataImage, page: DiaryDetail});
+    showDetail(data) {
+        this.$store.dispatch('showDetail', {data: data, page: DiaryDetail});
     }
 
   },
@@ -201,20 +201,20 @@ export default {
     },
 
     clickFunc() {
-        return(data, uData, uDataImage) => {
-        switch (this.selectedType) {
-            case 'タイムライン':
-                return this.showDetail(data, uData, uDataImage);
-                break;
-            case '下書き':
-                return this.edit(data);
-                break;
-            case '提出済み':
-                return this.showDetail(data, uData, uDataImage);
-                break;
-            default:
-                break;
-        }
+        return(data) => {
+            switch (this.selectedType) {
+                case 'タイムライン':
+                    return this.showDetail(data);
+                    break;
+                case '下書き':
+                    return this.edit(data);
+                    break;
+                case '提出済み':
+                    return this.showDetail(data);
+                    break;
+                default:
+                    break;
+            }
         }
     }
   }

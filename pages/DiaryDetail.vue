@@ -18,9 +18,9 @@
                 <div class="title">{{answers.title}}</div>
                 <div class="date">{{date}}</div>
             </div>
-            <div class="img-name">
-                <img :src="image" alt="image" class="list-item__thumbnail writer-image">
-                <div class="name">{{name}}</div>
+            <div class="img-name" :style="writerName.length > 4 ? {alignItems: 'flex-end'} : {alignItems: 'center'}">
+                <img :src="userId==$store.state.uid ? myImage : onesImage" alt="image" class="list-item__thumbnail writer-image">
+                <div class="name">{{writerName}}</div>
             </div>
         </div>
         <div class="contents">
@@ -94,8 +94,6 @@ export default {
                 q5: '',
                 title: ''
             },
-            name:   '',
-            image:  '',
             id:     '',
             date:   '',
             userId: '',
@@ -131,6 +129,8 @@ export default {
                 
                 //ページを開く時点で登録されている返信について、編集ボタンとフォーカス判定の初期化。
                 // ページ起動後に追加される返信については、renderの中で初期化している。
+
+                // 【注意】eplyData.filterは頻出するが、変数化してはならない。replyに関してはrenderの中でmapをしているため、変数化してしまうと、変更を検知できずリアクティブにならないため。
                 if(this.commentSync.length > 0) {
                     const len = this.$store.state.replyData.filter(data => data.commentId == this.commentSync[i].id).length;
                     if(len > 0) {
@@ -146,11 +146,12 @@ export default {
                                 "div",
                                 [
                                     (()=> {
+                                            const userD = this.commentSync[i].userId == this.$store.state.uid ? this.$store.state.myData : this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0];
                                             const commentCard = createElement('div', {class: 'dd-card'},[
-                                                createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].image}, 
+                                                createElement('img', {attrs: { src: userD.image == null ? png : userD.image}, 
                                                     class: 'dd-cimg'}),
                                                 createElement('div', {class: 'dd-column'},[
-                                                    createElement('p', {style:{marginBottom: '4px'}}, this.$store.state.usersData.filter(data => data.id == this.commentSync[i].userId)[0].name),
+                                                    createElement('p', {style:{marginBottom: '4px'}}, userD.name),
                                                     this.commentEdit[i] == '編集' ?
                                                         createElement('textarea', {attrs: {readonly: true}, style:{marginBottom: '6px',
                                                             height: this.areaHeight(this.commentSync[i].text, 'commentEdit')}, 'class': {'comment-inputD': true}
@@ -319,6 +320,21 @@ export default {
 
 
     computed: {
+        myImage() {
+            const image = this.$store.state.myData.image;
+            return image == null ? png : image;
+        },
+
+        onesImage() {
+            const image = this.$store.state.usersData.filter(data => data.id == this.userId)[0].image;
+            return image == null ? png : image;
+        },
+
+        writerName() {
+            return this.userId == this.$store.state.uid ? this.$store.state.myData.name
+                                                        : this.$store.state.usersData.filter(data => data.id == this.userId)[0].name;
+        },
+
         areaHeight() {
             return(target, type) => {
                 if(!target) {
@@ -572,7 +588,7 @@ export default {
     .img-name {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        /* align-items: flex-end; */
     }
 
     .writer-image{

@@ -20,6 +20,7 @@
               @input="datePicked"
               is-expanded
               v-show="!isROnly"
+              :attributes='dPAttr'
               >
                 <v-ons-input
                   type='text'
@@ -158,7 +159,6 @@ export default {
               // width:'3px',
             }
           },
-
         }
     },
 
@@ -173,6 +173,15 @@ export default {
     },
 
     computed: {
+      dPAttr() {
+        return [{
+            contentStyle: {
+              color: 'rgb(210, 30, 30)'
+            },
+            dates: new Date()
+        }]
+      },
+
       diaryOfOneday() {
         return this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.diaryDate && diary.submit == true)[0];
       },
@@ -480,13 +489,8 @@ export default {
       },
 
       showDiary() {
-        const myData = this.$store.state.myData;
-        const myDataImage = myData.image == null ? png : myData.image;
         this.$store.dispatch('showDetail', {
-                                            diaryDiv: '提出済み',
                                             data: this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.diaryDate && diary.submit == true)[0],
-                                            uData: myData,
-                                            uDataImage: myDataImage,
                                             page: DiaryDetail
                                             });
       },
