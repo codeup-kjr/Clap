@@ -50,7 +50,7 @@ module.exports = {
     'onsenui/css/onsen-css-components.css'
   ],
 
-  plugins: [{src: '~/plugins/onsenui', ssr: true}],
+  plugins: [{src: '~/plugins/plugins', ssr: true}],
 
   modules: [
     '@nuxtjs/pwa'

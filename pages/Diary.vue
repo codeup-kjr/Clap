@@ -287,8 +287,8 @@ export default {
 <style>
 /* DiaryDetail.vueのcreateElementに適用するclass。事前に定義する必要があるため。 */
     .comment-inputD {
-        min-height:26px;
-        line-height: 26px;
+        min-height:25.7px;
+        line-height: 25.7px;
         width: 235px;
         resize: none;
         padding: 0;
@@ -298,8 +298,8 @@ export default {
     }
 
     .reply-inputD {
-        min-height:26px;
-        line-height: 26px;
+        min-height:25.7px;
+        line-height: 25.7px;
         width: 204px;
         resize: none;
         padding: 0;

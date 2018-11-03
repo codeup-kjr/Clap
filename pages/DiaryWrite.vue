@@ -7,8 +7,8 @@
         <div class="center">
         <v-ons-select class="date" v-model="date" :style="md ? 'position: relative; top: 10px; left: 32px;' : ''">
             <option v-if="editDate!=''" :selected="editDate=='' ? false : true">{{ editDate }}</option>
-            <option v-if="editDate!=today" :selected="editDate=='' ? true : false">{{ today }}</option>
-            <option v-if="editDate!=yesterday">{{ yesterday }}</option>
+            <option v-if="editDate!=today" :selected="date==today ? true : false">{{ today }}</option>
+            <option v-if="editDate!=yesterday" :selected="date==yesterday">{{ yesterday }}</option>
         </v-ons-select>
         </div>
         <div class="right">
@@ -16,7 +16,7 @@
         </div>
     </v-ons-toolbar>
 
-    <v-ons-carousel fullscreen swipeable auto-scroll overscrollable
+    <v-ons-carousel fullscreen auto-scroll overscrollable
       :index.sync="carouselIndex" class="carousel"
     >
       <v-ons-carousel-item v-for="(value, key) in questions" :key="key" class="crousel-item">
@@ -69,11 +69,11 @@ export default {
             date: this.today,
             carouselIndex: 0,
             questions: {
-                q1: '「ここが良かった！」今日の自分。',
-                q2: 'メンバーの、ココを褒めたい！',
-                q3: '考えました、明日の課題',
-                q4: 'こんな練習やってみたい！',
-                q5: '監督へのメッセージ',
+                q1: '今日やったこと',
+                q2: '明日やること',
+                q3: '詰まってることor課題',
+                q4: 'やりたいことor提案',
+                q5: '今日の発見',
                 title: '今日のタイトルは？'
             },
             answers: {

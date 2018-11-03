@@ -348,13 +348,11 @@ export const actions = {
                             await commit('setTeamId', doc.data().teamId);
                             dispatch('bindSchedule');
                             dispatch('bindTeam');
-                            dispatch('bindDiaries');
-                            // dispatch('getScheduleOfToday');
-                            await dispatch('getUser');
+                            const getU = dispatch('getUser');
+                            const bindD = dispatch('bindDiaries');
+                            await Promise.all([getU, bindD]);
                             commit('clear');
                             commit('push', page);
-                        // await dispatch('bindMyRoom')
-                        // dispatch('getGroup', {ids: state.myRoom})
                     } else {
                         console.log("No such document!");
                     }

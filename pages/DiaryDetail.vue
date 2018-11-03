@@ -24,23 +24,24 @@
             </div>
         </div>
         <div class="contents">
-                <div class="qTitle">1. {{questions.q1}}</div>
-                <div class="qAnswer">{{answers.q1}}</div>
-                <div class="qTitle">2. {{questions.q2}}</div>
-                <div class="qAnswer">{{answers.q2}}</div>
-                <div class="qTitle">3. {{questions.q3}}</div>
-                <div class="qAnswer">{{answers.q3}}</div>
-                <div class="qTitle">4. {{questions.q4}}</div>
-                <div class="qAnswer">{{answers.q4}}</div>
-                <div class="qTitle">5. {{questions.q5}}</div>
-                <div class="qAnswer">{{answers.q5}}</div>
+                <div class="qTitle" v-html="'1. ' + questions.q1" @click="show()"></div>
+                <div class="qAnswer" v-html="answers.q1"></div>
+                <div class="qTitle" v-html="'2. ' + questions.q2"></div>
+                <div class="qAnswer" v-html="answers.q2"></div>
+                <div class="qTitle" v-html="'3. ' + questions.q3"></div>
+                <div class="qAnswer" v-html="answers.q3"></div>
+                <div class="qTitle" v-html="'4. ' + questions.q4"></div>
+                <div class="qAnswer" v-html="answers.q4"></div>
+                <div class="qTitle" v-html="'5. ' + questions.q5"></div>
+                <div class="qAnswer" v-html="answers.q5"></div>
         </div>
 
         <p class="comment-count">{{this.commentSync.length}}件のコメント</p>
         <div class="img-comment">
             <img :src="$store.state.myData.image!=null ? $store.state.myData.image : defaultImg" alt="image" class="list-item__thumbnail my-image">
             <div class="border underline" :class="commentFocus == true ? 'underline2' : ''">
-                <textarea cols="30" :style="{height: areaHeight(comment, 'commentEdit')}" class="comment-input" placeholder="コメントを入力" v-model="comment" @focus="focus" @blur="blur"></textarea>
+                <!-- v-composition-modelはカスタムディレクティブ。plugins/plugins.jsに記載。 -->
+                <textarea cols="30" :style="{height: areaHeight(comment, 'commentEdit')}" class="comment-input" placeholder="コメントを入力" v-composition-model="comment" @focus="focus" @blur="blur"></textarea>
             </div>
         </div>
 
@@ -79,11 +80,11 @@ export default {
             defaultImg: png,//templateで読み込むため。
             diaryDiv: '', 
             questions: {
-                q1: '「ここが良かった！」今日の自分。',
-                q2: 'メンバーの、ココを褒めたい！',
-                q3: '考えました、明日の課題',
-                q4: 'こんな練習やってみたい！',
-                q5: '監督へのメッセージ',
+                q1: '今日やったこと',
+                q2: '明日やること',
+                q3: '詰まってることor課題',
+                q4: 'やりたいことor提案',
+                q5: '今日の発見',
                 title: '今日のタイトルは？'
             },
             answers: {
@@ -351,36 +352,69 @@ export default {
                 default:
                     break;
             }
+            let kaigyou = 0;
                 String.prototype.bytes = function () {
-                        let length = 0;
-                        let adjust = 0;
+                        let nl = false;
+                        let zenkaku = 0;
+                        let hankaku = 0;
+                        console.log(this)
                         for (var i = 0; i < this.length; i++) {
+                            if(nl) {
+                                kaigyou ++;
+                                zenkaku = 0;
+                                hankaku = 0;
+                                nl = false;
+                            }
+
                             var c = this.charCodeAt(i);
                             if ((c >= 0x0 && c < 0x81) || (c === 0xf8f0) || (c >= 0xff61 && c < 0xffa0) || (c >= 0xf8f1 && c < 0xf8f4)) {
-                                length += 1;
-                            } else {
-                                length += 2;
-                            }
-                            //句読点が先頭に来ないように自動的に調整されるため、その対応。12289は「、」 12290は「。」
-                            if(adjust == 0) {
-                                if(i % (cols/2) == 0 && ( c == 12289 | c == 12290)) {
-                                    length += 2;
-                                    adjust ++;
-                                }
-                            } else {
-                                if((i + adjust) % (cols/2) == 0 && ( c == 12289 | c == 12290)) {
-                                    length += 2;
-                                    adjust ++;
-                                }
-                            }
-                        }
-                        return length;
-                    };
-                    // const lineHeight = 24;
-                    const lineHeight = 26;
-                    const kaigyou = target.split(/\n/).length - 1;
-                    let lineCount = ((target.bytes() - kaigyou) == 0 ? 1 : 0) + Math.ceil((target.bytes() - kaigyou) / cols) + kaigyou;
+                                // '半角'
+                                if(c == 0x0a) {
+                                    // 改行のカウント
+                                    kaigyou ++;
+                                    zenkaku = 0;
+                                    hankaku = 0;
+                                } else {
+                                    hankaku ++;
 
+                                    if(zenkaku == 0 ? 
+                                        hankaku != 0 && (hankaku) % (cols + 4) == 0
+                                        : hankaku % 2 == 0 ?
+                                            (zenkaku * 2 + hankaku) % (cols + 2) == 0
+                                            : (zenkaku * 2 + hankaku - 1) % (cols) == 0) {
+                                                nl = true;
+                                    }
+                                }
+                            } else {
+                                // '全角'
+                                zenkaku ++;
+                                console.log(zenkaku)
+                                if(hankaku == 0 ? 
+                                    zenkaku * 2 != 0 && (zenkaku * 2) % (cols) == 0
+                                    : hankaku % 2 == 0 ?
+                                        (zenkaku * 2 + hankaku) % (cols) == 0
+                                        : hankaku == 1 ? //式で描く場合、||を使用してはいけない。
+                                            (zenkaku * 2 + hankaku) % (cols - 2) == 0
+                                            : (zenkaku * 2 + hankaku) % (cols - 1) == 0) {
+                                    //句読点が先頭に来ないように自動的に調整されるため、その対応。12289は「、」 12290は「。」
+                                    if(c == 12289 | c == 12290) {
+                                        console.log('in2')
+                                        zenkaku ++;
+                                    }
+                                    if(hankaku != 1) {
+                                        console.log('予約')
+                                        // 改行を次の文字が始まるときに予約する
+                                        nl = true;
+                                    }
+                                }
+                            }    
+                        }
+                        // kaigyou = nl;
+                        // return zenkaku * 2 + hankaku;
+                    };
+                    const lineHeight = 26;
+                    target.bytes();
+                    let lineCount = 1 + kaigyou;
                 return `${lineHeight * lineCount}px`;
             }
         },
@@ -419,6 +453,9 @@ export default {
     },
 
     methods: {
+        show() {
+            console.log(this.answers.q1);
+        },
         load() {
             this.commentSync = [].concat(this.$store.state.commentData);
             this.toastVisible = false;
@@ -617,6 +654,7 @@ export default {
         margin-bottom: 8px;
         border-bottom: solid 1px #e2e1e1;
         color: #575757;
+        white-space: pre-wrap;
     }
 
     .comment-count {
@@ -645,8 +683,8 @@ export default {
 
     .comment-input {
         font-size: 1rem;
-        min-height:24px;
-        line-height: 24px;
+        min-height:25.7px;
+        line-height: 25.7px;
         width: 235px;
         resize: none;
         padding: 0;
