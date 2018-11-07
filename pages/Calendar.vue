@@ -2,7 +2,27 @@
    <!-- <no-ssr> -->
     <v-ons-page>
       <div class="container">
-        <v-calendar :attributes='attrs(currentPage)' :theme-styles='themeStyles' :from-page.sync="currentPage" @dayclick="dayClick" class="calendar"/>
+        <v-calendar :attributes='attrs(currentPage)' :theme-styles='themeStyles' :from-page.sync="currentPage" @dayclick="dayClick" class="calendar">
+          <div
+            slot='header-title'
+            slot-scope='{ page }'
+            >
+            {{currentPage.year + '年 ' + currentPage.month + '月'}}
+          </div>
+            <!-- <v-ons-toolbar
+            slot='header-title'
+            slot-scope='{ page }'>
+            <div class="left">
+                
+            </div>
+            <div class="center">
+                {{currentPage.year + '年' + currentPage.month + '月'}}
+            </div>
+            <div class="right">
+                
+            </div>
+        </v-ons-toolbar> -->
+        </v-calendar>
           <!-- :from-page.sync="currentPage"でカレンダーの月をattributesとシンクロさせる。 -->
           <!-- attrs(currentPage)とすることで、その月のスケジュールのみ読み込むことが可能になり、パフォーマンスが上がる。 -->
         <v-ons-modal :visible="addVisible">
@@ -106,11 +126,11 @@
           </v-ons-list>
         </div>
 
+
+      </div>
         <v-ons-fab class="add-b" @click="addPushed">
             <v-ons-icon icon="md-plus"></v-ons-icon>
         </v-ons-fab>
-      </div>
-          
     </v-ons-page>
     <!-- </no-ssr> -->
 </template>
@@ -155,6 +175,20 @@ export default {
           isExpanded: false,
           todos: this.$store.state.schedule,
           themeStyles: {
+            header: {
+              backgroundColor: '#1251c4',
+              height: '44px',
+              color: '#ffff',
+              margin: '-0.8px -0.8px 8px -0.8px ', //余白調整。子要素であるcalendarを親要素であるpageからはみ出させる。
+              padding: '0.8px 0.8px 0 0.8px'//余白調整。
+            },
+            headerTitle: {
+              fontSize: '1.2rem'
+            },
+            headerArrows: {
+              hight: '0',
+              width: '0'
+            },
             bars: {
               // width:'3px',
             }
@@ -647,6 +681,7 @@ export default {
 </script>
 
 <style scoped>
+
   .container {
     display: flex;
     flex-direction: column;
@@ -656,7 +691,7 @@ export default {
 
   .calendar {
     width: 100vw;
-    height: 332px;
+    height: 340px;
   }
 
   .dateTitle {
@@ -695,7 +730,7 @@ export default {
     font-size: 0.85rem;
     width: 100vw;
     /* height: 39vh; */
-    height: calc((100vh - 49px) - (332px + 28px + 40px));
+    height: calc((100vh - 49px) - (340px + 28px + 40px));
   }
 
   .eventLItem {
@@ -734,11 +769,13 @@ export default {
   }
   
   .add-b {
-    background-color: rgb(125, 146, 238);
+    background-color: #ffbd00;
     color: #fffefe;
+    margin-left: 79%;
     position: fixed;
     bottom: 6%;
-    left: 79%;
+    /* left: 79%; */
+    /* z-index: 100; */
   }
 
   .add-container {

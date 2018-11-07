@@ -32,6 +32,7 @@
     "eslint-loader": "^1.7.1",
     "eslint-plugin-vue": "^4.0.0",
     "onsenui": "^2.10.4",
+    "vue-lazyload": "^1.2.6",
     "vue-onsenui": "^2.6.1"
   }
 }

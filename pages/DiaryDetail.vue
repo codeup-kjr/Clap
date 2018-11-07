@@ -6,25 +6,25 @@
                 <v-ons-icon icon='ion-android-close' class="close-icon"/>
             </div>
             <div class="center">
-                {{userId==$store.state.uid ? '自分の日誌' : 'メンバーの日誌'}}
+                {{writerName}}
             </div>
             <div class="right">
-                <div v-if="diaryDiv=='下書き'" class="save" :style="md ? 'position: relative; top: 3px;' : ''" @click="addDiary(false)">保存</div>
+                <div v-if="$store.state.diaryData.userId == $store.state.uid" class="control">
+                    <v-ons-icon icon="fa-pencil" class="pen" @click="editDiary()"></v-ons-icon>
+                    <v-ons-icon icon="ion-ios-trash-outline" class="trash" @click="deleteDiary()"></v-ons-icon>
+                </div>
             </div>
         </v-ons-toolbar>
 
-        <div class="header">
+        <div class="diary-header">
+            <img :src="writerImage" alt="image" class="list-item__thumbnail writer-image">
             <div class="title-date">
-                <div class="title">{{answers.title}}</div>
-                <div class="date">{{date}}</div>
-            </div>
-            <div class="img-name" :style="writerName.length > 4 ? {alignItems: 'flex-end'} : {alignItems: 'center'}">
-                <img :src="writerImage" alt="image" class="list-item__thumbnail writer-image">
-                <div class="name">{{writerName}}</div>
+                <div class="diary-title">{{answers.title}}</div>
+                <div class="diary-date">{{date}}</div>
             </div>
         </div>
-        <div class="contents">
-                <div class="qTitle" v-html="'1. ' + questions.q1" @click="show()"></div>
+        <div class="diary-contents">
+                <div class="qTitle" v-html="'1. ' + questions.q1"></div>
                 <div class="qAnswer" v-html="answers.q1"></div>
                 <div class="qTitle" v-html="'2. ' + questions.q2"></div>
                 <div class="qAnswer" v-html="answers.q2"></div>
@@ -69,8 +69,11 @@
 </template>
 
 <script>
+let unwatch;
 import Vue from 'vue';
 import png from '../assets/dUsrImg.jpg';
+import DiaryWrite from './DiaryWrite';
+
 export default {
     
     data() {
@@ -79,14 +82,7 @@ export default {
             commentSync: [],
             defaultImg: png,//templateで読み込むため。
             diaryDiv: '', 
-            questions: {
-                q1: '今日やったこと',
-                q2: '明日やること',
-                q3: '詰まってることor課題',
-                q4: 'やりたいことor提案',
-                q5: '今日の発見',
-                title: '今日のタイトルは？'
-            },
+            questions: this.$store.state.questions,
             answers: {
                 q1: '',
                 q2: '',
@@ -297,23 +293,29 @@ export default {
     mounted() {
         //コメント・返信内容の編集中に、新しいコメントが投稿されても、編集内容が失われないようにするため、commentSyncをまたぐ。
         // concatではなく、=やdataに直接commentDataを指定すると、その時点から同期されてしまいコントロールできない。
-        this.$store.watch(
-            state => state.commentData,
-            commentData => {
-                const comEditFlgL = Object.values(this.commentEdit);
-                const repEditFlgL = Object.values(this.replyEdit);
-                
-                if(comEditFlgL.indexOf('保存') == -1 && repEditFlgL.indexOf('保存') == -1) {
-                    this.commentSync = [].concat(this.$store.state.commentData);
-                    this.toastVisible = false;
-                } else {
-                    //コメント・返信内容の編集中に、新しいコメントが投稿された場合、自動ロードはせず、toastでヒアリングする。
-                    this.toastVisible = true;
-                }
-            })
+        unwatch = this.$store.watch(
+        state => state.commentData,
+        commentData => {
+            const comEditFlgL = Object.values(this.commentEdit);
+            const repEditFlgL = Object.values(this.replyEdit);
+            
+            if(comEditFlgL.indexOf('保存') == -1 && repEditFlgL.indexOf('保存') == -1) {
+                this.commentSync = [].concat(this.$store.state.commentData);
+                this.toastVisible = false;
+            } else {
+                //コメント・返信内容の編集中に、新しいコメントが投稿された場合、自動ロードはせず、toastでヒアリングする。
+                this.toastVisible = true;
+            }
+        });
+
+        const latestId = this.$store.state.diaries.filter(diary => diary.userId == this.userId && diary.submit == true)[0].id;
+        if(this.id == latestId) {
+            this.$store.dispatch('updateOpenTime', {userId: this.userId});
+        }
     },
 
     destroyed() {
+        unwatch();
         this.$store.dispatch('unBindDiaryData');
         this.$store.dispatch('unBindCommentData');
         this.$store.dispatch('unBindReplyData');
@@ -357,62 +359,91 @@ export default {
                         let nl = false;
                         let zenkaku = 0;
                         let hankaku = 0;
-                        console.log(this)
-                        for (var i = 0; i < this.length; i++) {
-                            if(nl) {
-                                kaigyou ++;
-                                zenkaku = 0;
-                                hankaku = 0;
-                                nl = false;
-                            }
+                        let special = false;
+                        let special2 = false;
 
-                            var c = this.charCodeAt(i);
-                            if ((c >= 0x0 && c < 0x81) || (c === 0xf8f0) || (c >= 0xff61 && c < 0xffa0) || (c >= 0xf8f1 && c < 0xf8f4)) {
-                                // '半角'
-                                if(c == 0x0a) {
-                                    // 改行のカウント
+                        for (let i = 0; i < this.length; i++) {
+                            const c = this.charCodeAt(i);
+                            if(nl) {
+                                //全角でcols分埋められて、かつhankakuが1文字入ってきたときには改行しない。
+                                if(c != 0x0a && !(hankaku == 0 && zenkaku != 0 && zenkaku*2 == cols &&
+                                    (c >= 0x0 && c < 0x81) || (c === 0xf8f0) || (c >= 0xff61 && c < 0xffa0) || (c >= 0xf8f1 && c < 0xf8f4))) {
+                                    nl = true;
                                     kaigyou ++;
                                     zenkaku = 0;
                                     hankaku = 0;
-                                } else {
-                                    hankaku ++;
+                                    nl = false;
+                                }   
+                            }
 
-                                    if(zenkaku == 0 ? 
-                                        hankaku != 0 && (hankaku) % (cols + 4) == 0
-                                        : hankaku % 2 == 0 ?
-                                            (zenkaku * 2 + hankaku) % (cols + 2) == 0
-                                            : (zenkaku * 2 + hankaku - 1) % (cols) == 0) {
-                                                nl = true;
+                            if ((c >= 0x0 && c < 0x81) || (c === 0xf8f0) || (c >= 0xff61 && c < 0xffa0) || (c >= 0xf8f1 && c < 0xf8f4)) {
+                                // '半角'
+                                if(hankaku == 0 && zenkaku != 0 && zenkaku*2 == cols) {
+                                    //全角でcols分埋められて、かつhankakuが1文字入ってきたとき。次の文字で改行するようにする。
+                                    hankaku ++;
+                                    nl = true;
+                                    special2 = true;
+                                } else {
+                                    if(c == 0x0a) {
+                                        // 改行のカウント
+                                        kaigyou ++;
+                                        zenkaku = 0;
+                                        hankaku = 0;
+                                        nl = false;
+                                    } else {
+                                        hankaku ++;
+
+                                        if(zenkaku == 0 ?
+                                            special2 == false ?
+                                                hankaku != 0 && (hankaku) % (cols + 4) == 0
+                                                : hankaku != 0 && (hankaku) % (cols + 3) == 0
+                                            : hankaku % 2 == 0 ?
+                                                (zenkaku * 2 + hankaku) % (cols + 4) == 0
+                                                : hankaku != 5 && (zenkaku * 2 + hankaku) % (cols + 1) == 0) {
+                                                    nl = true;
+                                        }
                                     }
-                                }
+                                }  
                             } else {
+                                // 全角が入力されたら、解除する。
+                                special2 = false;
                                 // '全角'
-                                zenkaku ++;
-                                console.log(zenkaku)
-                                if(hankaku == 0 ? 
-                                    zenkaku * 2 != 0 && (zenkaku * 2) % (cols) == 0
-                                    : hankaku % 2 == 0 ?
-                                        (zenkaku * 2 + hankaku) % (cols) == 0
-                                        : hankaku == 1 ? //式で描く場合、||を使用してはいけない。
-                                            (zenkaku * 2 + hankaku) % (cols - 2) == 0
-                                            : (zenkaku * 2 + hankaku) % (cols - 1) == 0) {
-                                    //句読点が先頭に来ないように自動的に調整されるため、その対応。12289は「、」 12290は「。」
-                                    if(c == 12289 | c == 12290) {
-                                        console.log('in2')
-                                        zenkaku ++;
-                                    }
-                                    if(hankaku != 1) {
-                                        console.log('予約')
-                                        // 改行を次の文字が始まるときに予約する
-                                        nl = true;
+                                if (hankaku == 31) {
+                                    // hankakuで1行全ての文字が埋められた場合、次の全角文字で即改行する。
+                                    kaigyou ++;
+                                    zenkaku = 0;
+                                    hankaku = 0;
+                                    nl = false;
+                                    special = true;
+                                } else {
+                                if(special) {
+                                    zenkaku += 2;
+                                    special = false;
+                                } else {
+                                    zenkaku ++;
+                                }
+
+                                    if(hankaku == 0 ?
+                                        zenkaku * 2 != 0 && (zenkaku * 2) % (cols) == 0
+                                        : hankaku % 2 == 0 ?
+                                            hankaku == 30 ?
+                                                (zenkaku * 2 + hankaku) % (cols + 4) == 0
+                                                : (zenkaku * 2 + hankaku) % (cols) == 0
+                                            : hankaku == 1 ? //式で描く場合、||を使用してはいけない。
+                                                (zenkaku * 2 + hankaku) % (cols + 1) == 0:
+                                                (zenkaku * 2 + hankaku) % (cols + 1) == 0) {
+                                        //句読点が先頭に来ないように自動的に調整されるため、その対応。12289は「、」 12290は「。」
+                                        if(c == 12289 | c == 12290) {
+                                            zenkaku ++;
+                                        }
+                                            // 改行を次の文字が始まるときに予約する
+                                            nl = true;
                                     }
                                 }
                             }    
                         }
-                        // kaigyou = nl;
-                        // return zenkaku * 2 + hankaku;
                     };
-                    const lineHeight = 26;
+                    const lineHeight = 25.7;
                     target.bytes();
                     let lineCount = 1 + kaigyou;
                 return `${lineHeight * lineCount}px`;
@@ -453,9 +484,46 @@ export default {
     },
 
     methods: {
-        show() {
-            console.log(this.answers.q1);
+        editDiary() {
+            const data = this.$store.state.diaryData;
+            this.$store.commit('pop');
+            this.$store.commit('push', {extends: DiaryWrite,
+                    data() {return {
+                                answers: {
+                                    q1: data.content1,
+                                    q2: data.content2,
+                                    q3: data.content3,
+                                    q4: data.content4,
+                                    q5: data.content5,
+                                    title: data.title
+                                },
+                                id: data.id,
+                                editDate: data.date,
+                                submitted: data.submit
+                            };
+                    },
+                    onsNavigatorOptions: {
+                        animation: 'lift',
+                        animationOptions: { duration: 0.5 }
+                        }
+            });
         },
+
+        deleteDiary() {
+            const vm = this;
+            this.$ons.notification.confirm({messageHTML:'削除します。よろしいですか。',
+                                                title:'',
+                                                callback: function(idx) {
+                                                                if (idx == 0) {
+                                                                    return
+                                                                } else {
+                                                                    vm.$store.commit('pop');
+                                                                    vm.$store.dispatch('deleteDiary', {id: vm.$store.state.diaryData.id});
+                                                                    vm.$ons.notification.alert('削除しました。', {title:''});
+                                                                }
+                                                }});
+        },
+
         load() {
             this.commentSync = [].concat(this.$store.state.commentData);
             this.toastVisible = false;
@@ -583,84 +651,48 @@ export default {
 </script>
 
 <style scoped>
-    .close-icon {
-        font-size: 1.3rem;
-        padding-left: 12px;
-        position: relative;
-        top: -2px;
-    }
-
     .save {
         font-size: 1rem;
         padding-right: 12px;
-        position: relative;
-        top: -2px;
+        transform: translateY(-2px);
     }
 
-    .header {
+    .pen {
+        font-size: 1.2rem;
+        margin-right: 24px;
+        transform: translateY(-2px);
+    }
+
+    .trash {
+        font-size: 1.7rem;
+        margin-right: 16px;
+        transform: translateY(-2px);
+    }
+
+    .diary-header {
         width: 100vw;
         padding: 16px 16px;
         margin-bottom: 8px;
         border-bottom: solid 1px #e2e1e1;
         display: flex;
-        justify-content: space-between;
         align-items: center;
     }
 
-    .title-date {
-        display: flex;
-        flex-direction: column;
-    }
+    /* index.vueに記載。Mypage.vue、DiaryDrafts.vueと共同利用のため。 */
 
-    .title {
-        font-size: 1.2rem;
-    }
-
-    .date {
-        padding-left: 8px;
-        color: #575757;
-    }
-
-    .img-name {
-        display: flex;
-        flex-direction: column;
-        /* align-items: flex-end; */
-    }
 
     .writer-image{
         height: 8vh;
         width: 8vh;
         border-radius: 4vh;
-        margin-bottom: 4px;
-    }
-
-    .name {
-        font-size: 0.8rem;
-        color: #575757;
-    }
-
-    .contents {
-        width: 96vw;
-        word-wrap: break-word;
-    }
-
-    .qTitle {
-        padding: 0 16px;
-        margin-bottom: 8px;
-    }
-
-    .qAnswer {
-        padding: 0 16px 16px;
-        margin-bottom: 8px;
-        border-bottom: solid 1px #e2e1e1;
-        color: #575757;
-        white-space: pre-wrap;
+        margin-right: 12px;
     }
 
     .comment-count {
         font-size: 1.1rem;
         margin-bottom: 16px;
         margin-left: 16px;
+        padding-top: 16px;
     }
 
     .img-comment {

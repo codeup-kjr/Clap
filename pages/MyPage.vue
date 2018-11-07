@@ -1,103 +1,203 @@
 <template>
    <!-- <no-ssr> -->
     <v-ons-page>
-        <div class="container">
-            <v-ons-modal :visible="croppaVisible">
-            <croppa
-                v-model="myCroppa"
-                :width="250"
-                :height="250"
-                :accept="'image/*'"
-                :file-size-limit="0"
-                :placeholder="'タップして写真を選択'"
-                :placeholder-font-size="20"
-                :placeholder-color="'white'"
-                :quality="1"
-                :zoom-speed="9"
-                :prevent-white-space="true"
-                :show-loading="true"
-                @init="onInit"
-                class="croppa"
-                >
-            <div class="spinner" v-if="myCroppa && myCroppa.loading"></div>
-            </croppa>
+        <v-ons-toolbar>
+            <div class="left" :style="pColor" @click="pTap()">
+                プロフィール
+            </div>
+            <div class="center" :style="tColor" @click="tTap()">
+                提出履歴
+            </div>
+            <div class="right">
+            </div>
+        </v-ons-toolbar>
 
-            <div class="croppa-btns">
-                <v-ons-icon icon="ion-android-refresh" class="rotate-b" v-show="myCroppa.imageSet" @click="rotate"></v-ons-icon>
-                <div class="rotate-b dummy" v-show="!myCroppa.imageSet">dummy</div>
-            </div>
-            <div class="croppa-btns">
-                <v-ons-button class="cancel-b" @click="cancel" modifier="quiet">キャンセル</v-ons-button>
-                <v-ons-button class="choose-b" @click="choose" v-show="myCroppa.imageSet">決定</v-ons-button>
-            </div>
-            </v-ons-modal>
-            <!-- <input type="file" accept="image/*" id="f" @change="changeImg" :style="{display: 'none'}"> -->
-            <div class="imgInp">
-                <img class="list-item__thumbnail" :src="upImg" id="upImg" @click="upImage">
-                <div class="name-rg">
-                    <v-ons-input v-if="edit=='保存する'" modifier="material" v-model="userName" placeholder="ユーザー名" class="user-name unedit"></v-ons-input>
-                    <div v-else class="user-name">{{$store.state.myData.name}}</div>
-                    <div class="role-grade">
-                        <v-ons-select v-if="edit=='保存する'" v-model="role" class="role">
-                            <option disabled selected>役割</option>
-                            <option v-for="item in $store.state.role" :key="item.id">
-                                {{ item.text }}
-                            </option>
-                        </v-ons-select>
-                        <div v-else class="role">
-                            {{$store.state.myData.role}}
-                        </div>
-                        <div v-if="edit=='保存する'">
-                            <v-ons-select v-model="grade" class="grade" v-if="$store.state.team.type!='社会人' && (role=='選手' || role=='マネジャー')">
-                                <option disabled selected>学年</option>
-                                <option v-for="item in gradeNum" :key="item.id">
-                                    {{ item }}
+        <div class="container">
+            <div v-show="pIsTapped">
+                <v-ons-modal :visible="croppaVisible">
+                <croppa
+                    v-model="myCroppa"
+                    :width="250"
+                    :height="250"
+                    :accept="'image/*'"
+                    :file-size-limit="0"
+                    :placeholder="'タップして写真を選択'"
+                    :placeholder-font-size="20"
+                    :placeholder-color="'white'"
+                    :quality="1"
+                    :zoom-speed="9"
+                    :prevent-white-space="true"
+                    :show-loading="true"
+                    @init="onInit"
+                    class="croppa"
+                    >
+                <div class="spinner" v-if="myCroppa && myCroppa.loading"></div>
+                </croppa>
+
+                <div class="croppa-btns">
+                    <v-ons-icon icon="ion-android-refresh" class="rotate-b" v-show="myCroppa.imageSet" @click="rotate"></v-ons-icon>
+                    <div class="rotate-b dummy" v-show="!myCroppa.imageSet">dummy</div>
+                </div>
+                <div class="croppa-btns">
+                    <v-ons-button class="cancel-b" @click="cancel" modifier="quiet">キャンセル</v-ons-button>
+                    <v-ons-button class="choose-b" @click="choose" v-show="myCroppa.imageSet">決定</v-ons-button>
+                </div>
+                </v-ons-modal>
+                <div class="imgInp">
+                    <img class="list-item__thumbnail" :src="upImg" id="upImg" @click="upImage">
+                    <div class="name-rg">
+                        <input type="text" v-if="edit=='保存'" v-model="userName" placeholder="ユーザー名" class="user-name unedit"/>
+                        <div v-else class="user-name">{{$store.state.myData.name}}</div>
+                        <div class="role-grade" :style="edit=='保存' ? {marginBottom: '0px'} : ''">
+                            <v-ons-select v-if="edit=='保存'" v-model="role" class="role-slct">
+                                <option disabled selected>役割</option>
+                                <option v-for="item in $store.state.role" :key="item.id">
+                                    {{ item.text }}
                                 </option>
                             </v-ons-select>
+                            <div v-else class="role">
+                                {{$store.state.myData.role}}
+                            </div>
+                            <div v-if="edit=='保存'">
+                                <v-ons-select v-model="grade" class="grade-slct" v-if="$store.state.team.type!='社会人' && (role=='選手' || role=='マネジャー')">
+                                    <option disabled selected>学年</option>
+                                    <option v-for="item in gradeNum" :key="item.id">
+                                        {{ item }}
+                                    </option>
+                                </v-ons-select>
+                            </div>
+                            <div v-else-if="$store.state.team.type!='社会人' && ($store.state.myData.role=='選手' || $store.state.myData.role=='マネジャー')" class="grade">
+                                {{$store.state.myData.grade}}年生
+                            </div>
                         </div>
-                        <div v-else-if="$store.state.team.type!='社会人' && ($store.state.myData.role=='選手' || $store.state.myData.role=='マネジャー')" class="grade">
-                            {{$store.state.myData.grade}}年生
+                        <div class="edit-b" @click="editPush">
+                            <v-ons-icon icon='fa-cog' class="cog"/>
+                            <span class="edit-b-t">{{edit}}</span>
                         </div>
                     </div>
                 </div>
+            
+                    <div class="row">
+                        <div class="r-title">チーム名</div>
+                        <div class="r-contetent">{{$store.state.team.name}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="r-title">チームID</div>
+                        <div class="r-contetent">{{$store.state.teamId}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="r-title">メール</div>
+                        <div class="r-contetent">{{$store.state.myData.email}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="r-title">日誌カテゴリ</div>
+                        <div class="r-contetent">Comming Soon</div>
+                    </div>
+                <v-ons-button modifier="quiet" class="logout-b" @click="logoutPush">ログアウト</v-ons-button>
             </div>
-            <v-ons-button modifier="quiet" class="edit-b" @click="editPush">{{edit}}</v-ons-button>
-            <v-ons-list class="team-info" modifier="material">
-            <v-ons-list-header modifier="material">チーム名</v-ons-list-header>
-            <v-ons-list-item modifier="material">
-                {{$store.state.team.name}}
-            </v-ons-list-item>
-            <v-ons-list-header modifier="material">チームID</v-ons-list-header>
-            <v-ons-list-item modifier="material">
-                {{$store.state.teamId}}
-            </v-ons-list-item>
-            </v-ons-list>
-            <v-ons-button modifier="quiet" class="logout-b" @click="logoutPush">ログアウト</v-ons-button>
+
+            <v-ons-list class="list" v-show="!pIsTapped">
+                <v-ons-lazy-repeat
+                    :render-item="renderItem"
+                    :length="renderLength"
+                    :calculate-item-height="calculateItemHeight"
+                >
+                </v-ons-lazy-repeat>
+        </v-ons-list> 
         </div>
     </v-ons-page>
     <!-- </no-ssr> -->
 </template>
 
 <script>
+import Vue from 'vue';
+import DiaryWrite from './DiaryWrite';
 import png from '../assets/dUsrImg.jpg';
+
 export default {
     data() {
         return {
+            questions: this.$store.state.questions,
+            pIsTapped: true,
             croppaVisible: false,
             myCroppa: {},
             file: '',
-            edit: '編集する',
+            edit: '編集',
             userName: this.$store.state.myData.name,
             role: this.$store.state.myData.role,
             grade: this.$store.state.myData.grade,
             androidStyle: {position: 'relative', left: '-4px'},//androidの場合、右に寄ってしまうため、調整。
             upImg: this.$store.state.myData.image == null ? png : this.$store.state.myData.image,
             addVisible: false,
+            calculateItemHeight:
+                i=> {
+                        return 300;
+                    },
+
+                renderItem:
+                i => {
+                    return new Vue({
+                    render: createElement => {
+                        if(this.$store.state.myData) {
+                        return createElement(
+                            "div",
+                            {},
+                            [
+                                (()=> {
+                                        const target = this.$store.state.diaries.filter(diary => diary.submit == true && diary.userId == this.$store.state.uid)[i];
+
+                                        return createElement('div', {class: 'diary-wrap'},[
+                                                createElement('div', {class: 'header'},[
+                                                    createElement('div', {class: 'title-date'},[
+                                                        createElement('p', {class: 'diary-title'}, target.title),
+                                                        createElement('p', {class: 'diary-date'}, target.date + ' ' + target.time),
+                                                    ]),
+                                                    createElement('div', {class: 'actions'},[
+                                                        createElement('div', {on: {click: ()=>{this.editDiary(target)}}, class: 'icon-text edit'},[
+                                                            createElement('v-ons-icon', {attrs: {icon: 'fa-pencil'}, class: 'pen'}),
+                                                            createElement('p', {class: 'text'}, '編集'),
+                                                        ]),
+                                                        createElement('div', {on: {click: ()=>{this.deleteDiary(target.id)}}, class: 'icon-text'},[
+                                                            createElement('v-ons-icon', {attrs: {icon: 'ion-ios-trash-outline'}, class: 'trash'}),
+                                                            createElement('p', {class: 'text'}, '削除'),
+                                                        ])
+                                                    ])
+                                                ]),
+                                                createElement('div', {class: 'diary-contents'},[
+                                                    createElement('div', {domProps: {innerHTML: '1. ' + this.questions.q1}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: target.content1}, class: 'qAnswer'},[]),
+                                                    createElement('div', {domProps: {innerHTML: '2. ' + this.questions.q2}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: target.content2}, class: 'qAnswer'},[]),
+                                                    createElement('div', {domProps: {innerHTML: '3. ' + this.questions.q3}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: target.content3}, class: 'qAnswer'},[]),
+                                                    createElement('div', {domProps: {innerHTML: '4. ' + this.questions.q4}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: target.content4}, class: 'qAnswer'},[]),
+                                                    createElement('div', {domProps: {innerHTML: '5. ' + this.questions.q5}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: target.content5}, class: 'qAnswer'},[])
+                                                ])        
+                                            ]);
+                                })(),
+                            ]
+                        );
+                        } else {
+                            return '';
+                        }
+                    },  
+                })
+                }
         }
     },
 
 
     computed: {
+        pColor() {
+            return this.pIsTapped==true ? {color: '#f0be42', borderBottom: 'solid 3px #ffbd00', paddingBottom: '3px'} : {color: '#dbd9d9'};
+        },
+
+        tColor() {
+            return this.pIsTapped==false ? {color: '#f0be42', borderBottom: 'solid 3px #ffbd00', paddingBottom: '3px'} : {color: '#dbd9d9'};
+        },
+
         gradeNum() {
             let num = 0
             const type = this.$store.state.team.type
@@ -117,13 +217,25 @@ export default {
             return num;
         },
 
+        renderLength() {
+            const myDiaries = this.$store.state.diaries.filter(diary => diary.submit == true && diary.userId == this.$store.state.uid);
+            return myDiaries != '' ? myDiaries.length : 0;
+        },
+
     },
 
     methods: {
+        pTap() {
+          this.pIsTapped = true;
+        },
+        
+        tTap() {
+            this.pIsTapped = false;
+        },
         //todo: croppaにfile-size-limitを設定し、limit超過時にtoastメッセージを表示する。
         editPush() {
-            if(this.edit == '編集する') {
-                this.edit = '保存する';
+            if(this.edit == '編集') {
+                this.edit = '保存';
             } else {
                 if(this.userName == '') {
                     this.$ons.notification.alert('ユーザー名を入力ください。', {title:''});
@@ -140,7 +252,7 @@ export default {
                         this.$ons.notification.alert('保存しました。', {title:''});
                     }
                     this.file = '';
-                    this.edit = '編集する';
+                    this.edit = '編集';
                 }
             }
         },
@@ -183,7 +295,7 @@ export default {
         },
 
         upImage() {
-            if(this.edit == '保存する') {
+            if(this.edit == '保存') {
                 this.croppaVisible = true;
             } 
         },
@@ -200,18 +312,62 @@ export default {
                                                                 }
                                                 }});
         },
+
+        editDiary(data) {
+            this.$store.commit('push', {extends: DiaryWrite,
+                    data() {return {
+                                answers: {
+                                    q1: data.content1,
+                                    q2: data.content2,
+                                    q3: data.content3,
+                                    q4: data.content4,
+                                    q5: data.content5,
+                                    title: data.title
+                                },
+                                id: data.id,
+                                editDate: data.date,
+                                submitted: true
+                            };
+                    },
+                    onsNavigatorOptions: {
+                        animation: 'lift',
+                        animationOptions: { duration: 0.5 }
+                        }
+            });
+        },
+
+        deleteDiary(id) {
+            const vm = this;
+            this.$ons.notification.confirm({messageHTML:'削除します。よろしいですか。',
+                                                title:'',
+                                                callback: function(idx) {
+                                                                if (idx == 0) {
+                                                                    return;
+                                                                } else {
+                                                                    vm.$store.dispatch('deleteDiary', {id: id});
+                                                                    vm.$ons.notification.alert('削除しました。', {title:''});
+                                                                }
+                                                }});
+        }
     },
 }
 
 </script>
 
 <style scoped>
+    .left {
+        font-size: 1rem;
+        width: 140px;
+    }
+
+    .center {
+        font-size: 1rem;
+        width: 140px;
+    }
+
     .container {
-        display: flex;
-        flex-direction: column;
-        width: 100vw;
-        height: 90vh;
         background-color: #fdfeff;
+        color: #575757 !important;
     }
 
     .name-rg {
@@ -230,35 +386,74 @@ export default {
     }
 
     .unedit {
-        padding-left: 0px;
-        padding-top: 6px;
+        position: relative;
+        top: -2px;
+        padding-left: 0;
     }
 
     .imgInp {
         display: flex;
-        align-items: center;
-        padding-top: 4vh;
-        margin-bottom: 1vh;
+        padding-top: 3vh;
+        border-bottom: solid 1px #ccc;
     }
 
     .list-item__thumbnail{
-        height: 15vh;
-        width: 15vh;
+        height: 13vh;
+        width: 13vh;
         border-radius: 8vh;
         margin: 0 18px 0 32px;
+        transform: translateY(-0.6vh);
     }
 
     .role-grade {
         display: flex;
         font-size: 1rem;
+        margin-bottom: 8px;
     }
 
     .role {
         margin-right: 8px;
     }
 
-    .team-info{
-        margin-bottom: 32px;
+    .role-slct {
+        margin-right: 8px;
+        transform: translateY(-4px);
+    }
+
+    .grade-slct {
+        transform: translateY(-4px);
+        margin-bottom: 0;
+    }
+
+    .edit-b {
+        background-color: #9b9b9b;
+        width: 72px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+
+    .cog {
+        color: #f0efef;
+        margin-right: 6px;
+    }
+
+    .edit-b-t {
+        font-size: 1rem;
+        color: #ffffff;
+    }
+
+    .row {
+        border-bottom: solid 1px #ccc;
+        padding: 16px 0 16px 24px ;
+        display: flex;
+        align-items: center;
+    }
+
+    .r-title {
+        width: 112px;
     }
 
     .edit-b {
@@ -274,6 +469,7 @@ export default {
         justify-content: center;
         font-size: 1rem;
         font-size: 1.2rem;
+        margin-top: 32px;
     }
 
     .croppa {

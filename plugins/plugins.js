@@ -3,6 +3,7 @@ import VCalendar from 'v-calendar';
 import 'v-calendar/lib/v-calendar.min.css';
 import AsyncComputed from 'vue-async-computed';
 import Croppa from 'vue-croppa';
+import VueLazyload from 'vue-lazyload';
 
 if (process.browser) {
   Vue.use(VCalendar, {
@@ -12,6 +13,7 @@ if (process.browser) {
   Vue.use(VueOnsen);
   Vue.use(AsyncComputed);
   Vue.use(Croppa);
+  Vue.use(VueLazyload);
 
   function vCompositionModelUpdate (el, { value, expression }, vnode) {
     // data書き換え

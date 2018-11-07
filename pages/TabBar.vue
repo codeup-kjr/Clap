@@ -1,7 +1,6 @@
 <template>
   <v-ons-page :style="swipePosition" class="bg">
     <v-ons-tabbar position="auto"
-      swipeable
       :modifier="md ? 'autogrow white-content' : ''"
       :on-swipe="md ? onSwipe : null"
       :tabbar-style="swipeTheme"

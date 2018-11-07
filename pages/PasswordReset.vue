@@ -12,7 +12,7 @@
 
             <v-ons-input modifier="material" type="email" placeholder="メールアドレス" v-model="email" class="email"/>
             <v-ons-button class="confirm-b" @click.prevent="confirm">確定</v-ons-button>
-            <v-ons-button class="cancel-b" modifier="quiet" @click.prevent="cancel">{{btnTxt}}</v-ons-button>
+            <div class="cancel-b" @click.prevent="cancel">{{btnTxt}}</div>
 
         </div>
     </v-ons-page>
@@ -63,6 +63,9 @@ export default {
         align-items: center;
         justify-content: center;
         height: 100%;
+        color: #ffff;
+        background: linear-gradient(0deg,#6fb1fc,#4364f7, #0052D4);
+        background-size: 100vw 100vh;
     }
 
    .title {
@@ -79,11 +82,11 @@ export default {
     }
 
     .success {
-        color: #0c55ad;
+        color: #ffff;
     }
 
     .error {
-        color: #db2e76;
+        color: #fff703;
     }
 
     .height-container {
@@ -102,13 +105,15 @@ export default {
         text-align: center;
         margin-bottom: 32px;
         width: 200px;
+        border-radius: 24px;
+        background-color: #ffbb00e7;
     }
 
 
     .cancel-b {
-        width: 110px;
+        width: 200px;
         text-align: center;
-        height: fit-content;
+        height: fit-content;   
     }
 
 </style>

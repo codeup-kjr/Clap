@@ -14,6 +14,16 @@ db.settings(settings);
 
  export const state = () => {
     return {
+        questions: {
+            q1: '最も印象に残ったこと',
+            q2: 'あなたは明日、どのような目的意識で、どのように過ごしたいですか？',
+            q3: 'やりたいこと or 提案',
+            q4: 'チームメンバーに質問！',
+            q5: '今日のGood & New',
+            title: '今日のタイトルは？'
+        },
+        glEditMsg: '',
+        groupList: [],
         scheduleOfToday: [],
         diaryData: {},
         commentData: [],
@@ -150,6 +160,10 @@ export const mutations = {
 
     setScheduleOfToday(state, data) {
         state.scheduleOfToday = data;
+    },
+
+    setGlEditMsg(state, text) {
+        state.glEditMsg = text;
     }
 
   }
@@ -197,6 +211,10 @@ export const actions = {
         await bindFirebaseRef('replyData', diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).collection('reply').orderBy('commentId').orderBy('input_at'));
     }),
 
+    bindGroupList: firebaseAction(async ({bindFirebaseRef, state}) => {
+        await bindFirebaseRef('groupList', userRef.doc(String(state.uid)).collection('group'));
+    }),
+
 
     unBindTeam: firebaseAction(async ({unbindFirebaseRef}) => {
         await unbindFirebaseRef('team');
@@ -234,6 +252,10 @@ export const actions = {
         await unbindFirebaseRef('replyData');
     }),
 
+    unBindGroupList: firebaseAction(async ({unbindFirebaseRef}) => {
+        await unbindFirebaseRef('groupList');
+    }),
+
 
     teamRegist: firebaseAction(({context, state}, {name, type, event}) => {
         teamRef.doc(String(state.teamId)).set({
@@ -261,7 +283,7 @@ export const actions = {
             }
 
             //LoginCheck.vueのcheckLoginにより、create後にstate.uidがセットされる。
-            let batch = db.batch()
+            let batch = db.batch();
             batch.set(teamRef.doc(String(state.teamId)).collection('users').doc(String(state.uid)), {
                 userId: state.uid,
                 regist: true
@@ -350,9 +372,14 @@ export const actions = {
                             dispatch('bindTeam');
                             const getU = dispatch('getUser');
                             const bindD = dispatch('bindDiaries');
-                            await Promise.all([getU, bindD]);
+                            const bindG = dispatch('bindGroupList');
+                            await Promise.all([getU, bindD, bindG]);
                             commit('clear');
-                            commit('push', page);
+                            commit('push', {extends: page,
+                                            onsNavigatorOptions: {
+                                                animation: 'fade',
+                                                animationOptions: { duration: 0.1 }
+                                                }});
                     } else {
                         console.log("No such document!");
                     }
@@ -594,6 +621,48 @@ export const actions = {
             update_at:  firebase.firestore.FieldValue.serverTimestamp()
         }).catch(function(error) {
             console.log("Error writing document: ", error);
+        });
+    }),
+
+    glMemberEdit: firebaseAction(({context, state, commit}, {removeList, addList}) => {
+        let batch = db.batch();
+        if(removeList) {
+            const len = removeList.length;
+
+            for(let i=0; i<len; i ++) {
+                batch.delete(userRef.doc(String(state.uid)).collection('group').doc(String(removeList[i])));
+            }
+        }
+
+        if(addList) {
+            const len = addList.length;
+
+            for(let i=0; i<len; i ++) {
+                batch.set(userRef.doc(String(state.uid)).collection('group').doc(String(addList[i])), {
+                    userId:         addList[i],
+                    lastOpenDiary:  firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        }
+
+        batch.commit().then(() => {
+            commit('setGlEditMsg', '編集完了');
+        });
+    }),
+
+    updateOpenTime: firebaseAction(({context, state}, {userId}) => {
+        userRef.doc(String(state.uid)).collection('group').doc(String(userId)).update({
+            lastOpenDiary:  firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function(error) {
+            console.log("Error writing document: ", error);
+        });
+    }),
+
+    deleteDiary: firebaseAction(({context, state}, {id}) => {
+        diaryRef.doc(String(state.teamId)).collection('diaries').doc(String(id)).delete().then(() => {
+            console.log("Document successfully deleted!");
+        }).catch(error => {
+            console.error("Error removing document: ", error);
         });
     }),
   }

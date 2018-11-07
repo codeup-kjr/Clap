@@ -3,32 +3,15 @@
     <v-ons-page>
         <div class="container">
             <div class="route">
-                <div class="point" v-if="!teamRegist">
-                    <img src="../assets/group.png" alt="チームに参加" class="img"><br>
-                    チームに参加
-                </div>
-                <div class="point" v-if="teamRegist">
-                    <img src="../assets/coach.png" alt="チームを登録" class="img"><br>
-                    チームを登録
-                </div>
-                <div class="arrow"/>
-                <div class="point">
-                    <img src="../assets/group.png" alt="チーム情報" class="img"><br>
-                    チーム情報
-                </div>
-                <div class="arrow"/>
-                <div class="point">
-                    <img src="../assets/athlete.png" alt="ユーザー情報" class="img"><br>
-                    ユーザー情報
-                </div>
+                <img :src="teamRegist==true ? barTr : bar" alt="ユーザー登録" class="bar">
             </div>
             <p v-if="!$store.state.uRErr" class="request">{{request}}</p>
             <p v-else class="error">{{$store.state.uRErr}}</p>
             
             <v-ons-input modifier="material" type="text" placeholder="お名前" v-model="userName" class="input"/>
             <v-ons-input modifier="material" type="email" placeholder="メールアドレス" v-model="mail" class="input"/>
-            <v-ons-input modifier="material" type="text" placeholder="パスワード" v-model="pass" class="input"/>
-            <v-ons-input modifier="material" type="text" placeholder="パスワードの確認" v-model="passRe" class="input"/>
+            <v-ons-input modifier="material" type="password" placeholder="パスワード" v-model="pass" class="input"/>
+            <v-ons-input modifier="material" type="password" placeholder="パスワードの確認" v-model="passRe" class="input"/>
 
             <div class="role-grade">
                 <v-ons-select modifier="material" v-model="role" class="select role">
@@ -46,7 +29,7 @@
                 </v-ons-select>
             </div>
             <v-ons-button class="regist-b" @click.prevent="regist">登録する</v-ons-button>
-            <v-ons-button class="cancel-b" modifier="quiet" @click.prevent="cancel">キャンセル</v-ons-button>
+            <div class="cancel-b" @click.prevent="cancel">キャンセル</div>
         </div>
     </v-ons-page>
     <!-- </no-ssr> -->
@@ -55,11 +38,15 @@
 <script>
 import TabBar from './TabBar';
 import { mapActions } from 'vuex';
+import barTr from '../assets/teamRegUserBar@2x.png';
+import bar from '../assets/teamJoinUserBar@2x.png';
 
 export default {
     data() {
         return {
-            request: 'ユーザー情報を登録ください。',
+            barTr: barTr,
+            bar: bar,
+            request: 'ユーザーを登録ください。',
             teamRegist: '',
             userName: '',
             mail: '',
@@ -77,9 +64,9 @@ export default {
     },
 
     destroyed() {
-        Promise.resolve()
-            .then( () => this.unBindTeam())
-            .then( () => this.unBindTeamU());
+        this.unBindTeam();
+        this.unBindTeamU();
+        this.$store.commit('setURErr', '');
     },
 
     methods: {
@@ -134,7 +121,7 @@ export default {
                 return;
             }
 
-            this.request = 'ロード中...';
+            this.request = '内容を確認しています...';
             if (!navigator.onLine) {
                 this.$ons.notification.alert('ネットワークの接続を確認ください。', {title:''});
                 return;
@@ -213,58 +200,54 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         height: 100%;
+        background: linear-gradient(0deg,#6fb1fc,#4364f7, #0052D4);
+        background-size: 100vw 100vh;
+        color: #ffff;
     }
 
     .route {
-        width: 240px;
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 16px;
-        padding-top: 16px;
+        padding-top: 6vh;
+        margin-bottom: 5vh;
     }
 
-    .point {
-        text-align: center;
-        font-size: 0.8rem;
-        color: rgb(109, 108, 108);
+    .bar {
+        width: 100vw; 
     }
 
-    .arrow{
-        position: relative;
-        display: inline-block;
-        padding-left: 10px;
+    @media (min-width: 700px){
+        .bar {
+            width: 50vw; 
+        }
     }
 
-    .arrow::before{
-        content: '';
-        width: 12px;
-        height: 12px;
-        border: 0px;
-        border-top: solid 2px #499cb6;
-        border-right: solid 2px #499cb6;
-        -ms-transform: rotate(45deg);
-        -webkit-transform: rotate(45deg);
-        transform: rotate(45deg);
-        position: absolute;
-        top: 50%;
-        left: 0;
-        margin-top: -8px;
-    }
-
-    .img {
-        width: 40px;
-        height: 40px;
+    @media (min-width: 1200px){
+        .bar {
+            width: 30vw; 
+        }
     }
 
     .request {
-        margin-bottom: 32px;
+        color: #ffbd00;
+        font-size: 1.4rem;
+        margin-bottom: 5vh;
     }
 
     .error {
-        margin-bottom: 32px;
-        color: #db2e76;
+        margin: 6px 0 5.6vh;
+        color: #fff703;
+    }
+
+    @media (min-height: 800px){
+        .error {
+            margin: 6px 0 5.4vh;
+        }
+    }
+
+    @media (min-height: 1000px){
+        .error {
+            margin: 6px 0 5.3vh;
+        }
     }
 
     .input {
@@ -276,10 +259,10 @@ export default {
         width: 185px;
         display: flex;
         justify-content: space-between;
+        margin-bottom: 6vh;
     }
 
     .select {
-        margin-bottom: 24px;
         font-size: 1.6rem;
     }
 
@@ -293,8 +276,15 @@ export default {
 
     .regist-b {
         text-align: center;
-        margin: 8px 0 12px;
-        width: 200px;
+        margin-bottom: 24px;
+        width: 185px;
+        border-radius: 24px;
+        background-color: #ffbb00e7;
+    }
+
+    .cancel-b {
+        text-align: center;
+        width: 185px;
     }
 
 </style>

@@ -5,24 +5,35 @@
             <v-ons-icon icon='ion-android-close' class="close-icon"/>
         </div>
         <div class="center">
-        <v-ons-select class="date" v-model="date" :style="md ? 'position: relative; top: 10px; left: 32px;' : ''">
-            <option v-if="editDate!=''" :selected="editDate=='' ? false : true">{{ editDate }}</option>
-            <option v-if="editDate!=today" :selected="date==today ? true : false">{{ today }}</option>
-            <option v-if="editDate!=yesterday" :selected="date==yesterday">{{ yesterday }}</option>
-        </v-ons-select>
+            <div class="date" @click="toggleDL()">
+                {{dispDate(date)}} 
+                <span :style="{fontSize: '0.9rem', position: 'relative', top: '-2px', left: '2px'}">
+                    <span v-show="!dateListVisible">▼</span>
+                    <span v-show="dateListVisible">▲</span>
+                </span>
+            </div>
         </div>
         <div class="right">
             <div class="save" :style="md ? 'position: relative; top: 3px;' : ''" @click="addDiary(false)">保存</div>
         </div>
     </v-ons-toolbar>
 
+    <div v-show="dateListVisible" class="date-list">
+        <div @click="changeDate(editDate)" v-if="editDate!=''" class="date-list-item">{{ dispDate(editDate) }}</div>
+        <div @click="changeDate(today)" v-if="editDate!=today" class="date-list-item">{{ dispDate(today) }}</div>
+        <div @click="changeDate(yesterday)" v-if="editDate!=yesterday" class="date-list-item">{{ dispDate(yesterday) }}</div>
+        <div @click="showDraft()" class="date-list-item">下書き</div>
+    </div>
+
     <v-ons-carousel fullscreen auto-scroll overscrollable
       :index.sync="carouselIndex" class="carousel"
     >
       <v-ons-carousel-item v-for="(value, key) in questions" :key="key" class="crousel-item">
         <div class="question">{{value}}</div>
-        <p v-if="key!='title'" class="count"><span :style="answers[key].length > 400 ? {color:'red'} : {}">{{answers[key].length}}</span> / 400</p>
-        <p v-else class="count"><span :style="answers[key].length > 12 ? {color:'red'} : {}">{{answers[key].length}}</span> / 12</p>
+        <!-- <p v-if="key!='title'" class="count"><span :style="answers[key].length > 400 ? {color:'red'} : {}">{{answers[key].length}}</span> / 400</p>
+        <p v-else class="count"><span :style="answers[key].length > 12 ? {color:'red'} : {}">{{answers[key].length}}</span> / 12</p> -->
+        <p v-if="key=='title'" class="count"><span :style="answers[key].length > 12 ? {color:'red'} : {}">{{answers[key].length}}</span> / 12</p>
+        <p v-else class="count" :style="{marginTop:'2.4rem'}"></p>
         <textarea cols="30" rows="10" class="answer" placeholder="何でも書こう！" v-model="answers[key]"></textarea>
       </v-ons-carousel-item>
     </v-ons-carousel>
@@ -41,17 +52,17 @@
             </div>
             
         </div>
-        <v-ons-button
-            v-show="Object.values(answers).indexOf('') < 0"
-            class="upload" modifier="quiet"
-            @click="addDiary(true)">
-            <v-ons-icon icon='ion-ios-cloud-upload'/><span class="up-t">up!</span>
-        </v-ons-button>
+
+        <div v-show="Object.values(answers).indexOf('') < 0" class="upload" @click="addDiary(true)">
+            提出する
+        </div>
     </div>
+
   </v-ons-page>
 </template>
 
 <script>
+import DiaryDrafts from './DiaryDrafts';
 export default {
     
     mounted() {
@@ -65,17 +76,12 @@ export default {
 
     data() {
         return {
+            submitted: false, //DiaryDetailから提出済の日誌を編集した場合にextends
             editDate: '',
             date: this.today,
+            dateListVisible: false,
             carouselIndex: 0,
-            questions: {
-                q1: '今日やったこと',
-                q2: '明日やること',
-                q3: '詰まってることor課題',
-                q4: 'やりたいことor提案',
-                q5: '今日の発見',
-                title: '今日のタイトルは？'
-            },
+            questions: this.$store.state.questions,
             answers: {
                 q1: '',
                 q2: '',
@@ -95,6 +101,25 @@ export default {
             this.$store.commit('pop');
         },
 
+        toggleDL() {
+            this.dateListVisible = !this.dateListVisible;
+        },
+
+        changeDate(date) {
+            this.date = date;
+            this.dateListVisible = false;
+        },
+
+        showDraft() {
+            this.$store.commit('push', {extends: DiaryDrafts,
+                            onsNavigatorOptions: {
+                                animation: 'fade',
+                                animationOptions: { duration: 0.1 }
+                                }
+                        });
+            this.dateListVisible = false;
+        },
+
         right() {
             if(this.carouselIndex != 5) {
                 this.carouselIndex++;
@@ -109,36 +134,36 @@ export default {
 
         addDiary(submit) {
             if(submit==true) {
-                if(this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.date && diary.submit == true).length > 0) {
+                if(this.submitted == false && this.$store.state.diaries.filter(diary => diary.userId == this.$store.state.uid && diary.date == this.date && diary.submit == true).length > 0) {
                     this.$ons.notification.alert({messageHTML:`その日付の日誌は既に提出済みです！`, title:''});
                     return;
                 }
 
-                if(this.answers.q1.length > 400) {
-                    this.$ons.notification.alert({messageHTML:`第1項の回答を<br>400字以内に納めてください。`, title:''});
-                    this.carouselIndex = 0;
-                    return;
-                }
-                if(this.answers.q2.length > 400) {
-                    this.$ons.notification.alert({messageHTML:`第2項の回答を<br>400字以内に納めてください。`, title:''});
-                    this.carouselIndex = 1;
-                    return;
-                }
-                if(this.answers.q3.length > 400) {
-                    this.$ons.notification.alert({messageHTML:`第3項の回答を<br>400字以内に納めてください。`, title:''});
-                    this.carouselIndex = 2;
-                    return;
-                }
-                if(this.answers.q4.length > 400) {
-                    this.$ons.notification.alert({messageHTML:`第4項の回答を<br>400字以内に納めてください。`, title:''});
-                    this.carouselIndex = 3;
-                    return;
-                }
-                if(this.answers.q5.length > 400) {
-                    this.$ons.notification.alert({messageHTML:`第5項の回答を<br>400字以内に納めてください。`, title:''});
-                    this.carouselIndex = 4;
-                    return;
-                }
+                // if(this.answers.q1.length > 400) {
+                //     this.$ons.notification.alert({messageHTML:`第1項の回答を<br>400字以内に納めてください。`, title:''});
+                //     this.carouselIndex = 0;
+                //     return;
+                // }
+                // if(this.answers.q2.length > 400) {
+                //     this.$ons.notification.alert({messageHTML:`第2項の回答を<br>400字以内に納めてください。`, title:''});
+                //     this.carouselIndex = 1;
+                //     return;
+                // }
+                // if(this.answers.q3.length > 400) {
+                //     this.$ons.notification.alert({messageHTML:`第3項の回答を<br>400字以内に納めてください。`, title:''});
+                //     this.carouselIndex = 2;
+                //     return;
+                // }
+                // if(this.answers.q4.length > 400) {
+                //     this.$ons.notification.alert({messageHTML:`第4項の回答を<br>400字以内に納めてください。`, title:''});
+                //     this.carouselIndex = 3;
+                //     return;
+                // }
+                // if(this.answers.q5.length > 400) {
+                //     this.$ons.notification.alert({messageHTML:`第5項の回答を<br>400字以内に納めてください。`, title:''});
+                //     this.carouselIndex = 4;
+                //     return;
+                // }
                 if(this.answers.title.length > 12) {
                     this.$ons.notification.alert({messageHTML:`タイトルを<br>12字以内に納めてください。`, title:''});
                     this.carouselIndex = 5;
@@ -159,7 +184,7 @@ export default {
                 }
             }
 
-          this.$store.dispatch('diaryAdd', {  id:         this.id == '' ? id : this.id,
+          this.$store.dispatch('diaryAdd', {        id:         this.id == '' ? id : this.id,
                                                     submit:     submit,
                                                     date:       this.date,
                                                     title:      this.answers.title,
@@ -221,11 +246,23 @@ export default {
             }
           }
         },
+
+        dispDate() {
+            return(date) => {
+                return date == null ? '' : date.substr(5, date.length - 5)
+            }
+        }
     }
 }
 </script>
 
-<style>
+<style scoped>
+    @media (min-width: 760px){
+        .right {
+            padding-right: 1.5vw;
+        }
+    }
+
     .crousel {
         height: 10vh;
         overflow: hidden;
@@ -235,16 +272,9 @@ export default {
         background-color: #fefefe;
     }
 
-    .close-icon {
-        font-size: 1.3rem;
-        padding-left: 12px;
-        position: relative;
-        top: -2px;
-    }
-
     .date {
-        width: 172px;
-        padding-top: 4px;
+        margin-left: 16px;
+        margin-top: -2px;
     }
 
     .save {
@@ -252,6 +282,21 @@ export default {
         padding-right: 12px;
         position: relative;
         top: -2px;
+    }
+
+    .date-list {
+        position: fixed;
+        top: 44px;
+        width: 100vw;
+        text-align: center;
+        background-color: #fefefe;
+        color: #828080;
+        z-index: 1000;
+    }
+
+    .date-list-item {
+        border-bottom: solid 1px #ccc;
+        padding: 8px 0;
     }
 
     .question {
@@ -292,6 +337,12 @@ export default {
         margin-bottom: 24px;
     }
 
+    @media (min-width: 1200px){
+        .control {
+            transform: translateY(50vh);
+        }
+    }
+
     .number-carousel {
         color: #a3a2a2;
         z-index: 1;
@@ -311,19 +362,15 @@ export default {
     }
 
     .upload {
+        width: 100vw;
+        height: 60px;
         display: flex;
-        font-size: 40px;
-        margin: 0 auto;
-        padding: 4px 16px;
-        color: #67a3d8;
-        width: fit-content;
-        border: solid 1px #dad8d8;
-        border-radius: 12px;
-    }
-
-    .up-t {
-        padding-top: 4px;
-        margin-left: 4px;
-        font-size: 70%;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        bottom: 0;
+        background-color: #86a1f2;
+        font-size: 1.4rem;
+        color: #fefefe;
     }
 </style>

@@ -3,15 +3,7 @@
     <v-ons-page>
         <div class="container">
             <div class="route">
-                <div class="point">
-                    <img src="../assets/coach.png" alt="チームを登録" class="img"><br>
-                    チームを登録
-                </div>
-                <div class="arrow"/>
-                <div class="point">
-                    <img src="../assets/group.png" alt="チーム情報" class="img"><br>
-                    チーム情報
-                </div>
+                <img :src="bar" alt="チーム登録" class="bar">
             </div>
             <p class="request">チーム情報を登録ください。</p>
             
@@ -31,8 +23,8 @@
                 </option>
             </v-ons-select>
 
-            <v-ons-button class="regist-b" @click.prevent="regist">登録する</v-ons-button>
-            <v-ons-button class="cancel-b" modifier="quiet" @click.prevent="cancel">キャンセル</v-ons-button>
+            <v-ons-button class="regist-b" @click.prevent="regist">次へ</v-ons-button>
+            <div class="cancel-b" @click.prevent="cancel">キャンセル</div>
         </div>
     </v-ons-page>
     <!-- </no-ssr> -->
@@ -40,10 +32,12 @@
 
 <script>
 import UserRegist from './UserRegist';
+import bar from '../assets/teamRegBar@2x.png';
 
 export default {
     data() {
         return {
+            bar: bar,
             teamName: '',
             teamType: '種別',
             teamEvent: '競技種目'
@@ -101,52 +95,37 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        height: 90%;
+        height: 100%;
+        background: linear-gradient(0deg,#6fb1fc,#4364f7, #0052D4);
+        background-size: 100vw 100vh;
+        color: #ffff;
     }
 
     .route {
-        width: 160px;
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 16px;
+        padding-top: 6vh;
+        margin-bottom: 9vh;
+    }
+    
+    .bar {
+        width: 100vw; 
     }
 
-    .point {
-        text-align: center;
-        font-size: 0.8rem;
-        color: rgb(109, 108, 108);
+    @media (min-width: 700px){
+        .bar {
+            width: 50vw; 
+        }
     }
 
-    .arrow{
-        position: relative;
-        display: inline-block;
-        padding-left: 10px;
-    }
-
-    .arrow::before{
-        content: '';
-        width: 12px;
-        height: 12px;
-        border: 0px;
-        border-top: solid 2px #499cb6;
-        border-right: solid 2px #499cb6;
-        -ms-transform: rotate(45deg);
-        -webkit-transform: rotate(45deg);
-        transform: rotate(45deg);
-        position: absolute;
-        top: 50%;
-        left: 0;
-        margin-top: -8px;
-    }
-
-    .img {
-        width: 40px;
-        height: 40px;
+    @media (min-width: 1200px){
+        .bar {
+            width: 30vw; 
+        }
     }
 
     .request {
-        margin-bottom: 48px;
+        color: #ffbd00;
+        font-size: 1.4rem;
+        margin-bottom: 8vh;
     }
 
     .input {
@@ -162,7 +141,9 @@ export default {
 
     .regist-b {
         text-align: center;
-        margin: 8px 0 12px;
-        width: 200px;
+        margin: 5vh 0 6vh;
+        width: 185px;
+        border-radius: 24px;
+        background-color: #ffbb00e7;
     }
 </style>

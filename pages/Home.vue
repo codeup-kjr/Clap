@@ -2,19 +2,17 @@
   <no-ssr>
    <v-ons-page>
     <div class="container">
-      <Logo class="logo"/>
-      <p class="lead">仲間のいいとこ見つけよう</p>
+      <img :src="logo" class="logo"/>
 
       <div v-html="errMsg" class="err-msg"></div>
       <v-ons-input modifier="material" type="email" placeholder="メールアドレス" class="input" v-model="mail"/>
 
       <v-ons-input modifier="material" type="password" placeholder="パスワード" class="input" v-model="pass"/>
 
+      <div class="forgot-b" @click="forgotPass">パスワードを忘れた方</div>
+
       <v-ons-button class="btn" @click.prevent="login">ログイン</v-ons-button>
-
-      <v-ons-button modifier="quiet" class="forgot-b" @click="forgotPass">パスワードを忘れた方</v-ons-button>
-
-      <v-ons-button class="btn" @click.prevent="regist">新規登録</v-ons-button>
+      <v-ons-button class="btn btn-new" @click.prevent="regist">新規登録</v-ons-button>
     </div>
   </v-ons-page>
   </no-ssr>
@@ -25,19 +23,18 @@ import Logo from '../components/Logo';
 import TabBar from './TabBar';
 import TypeSelect from './TypeSelect';
 import PasswordReset from './PasswordReset';
+import logo from '../assets/clapLogo.png'; 
 
 export default {
   data() {
     return {
+      logo: logo,
       mail: '',
       pass: '',
       errMsg: '',
     }
   },
 
-  components: {
-    Logo,
-  },
     methods: {
         async login() {
           if(this.mail == '') {
@@ -90,12 +87,19 @@ export default {
     align-items: center;
     justify-content: center;
     height: 100%;
+    background: linear-gradient(0deg,#6fb1fc,#4364f7, #0052D4);
+    background-size: 100vw 100vh;
   }
 
   .logo {
-    font-size: 3rem;
-    color: rgb(210, 30, 30);
+    width: 38vw;
     margin-bottom: 8px;
+  }
+
+  @media (min-width: 1200px){
+    .logo {
+        width: 12vw;
+      }
   }
 
   .lead {
@@ -106,27 +110,35 @@ export default {
   .err-msg {
     height: 40px;
     font-size: 0.85rem;
-    color: #db2e76;
+    color: #fff703;
     margin-bottom: 8px;
   }
 
   .input {
-    margin-bottom: 16px;
+    margin-bottom: 24px;
     font-size: 1.6rem;
-  }
-
-  .btn {
-      text-align: center;
-      margin: 24px 0;
-      width: 200px;
+    color: #ffff !important;
   }
 
   .forgot-b {
     text-align: center;
-    margin: 6px 0;
+    margin-top: 8px;
+    margin-bottom: 10vh;
     width: 200px;
     font-size: 0.9rem;
-    margin: -8px 0 0 -4px;
+    color: #ffff;
+  }
+
+  .btn {
+      text-align: center;
+      margin-bottom: 16px;
+      width: 185px;
+      border-radius: 24px;
+      background-color: #ffbb00e7;
+  }
+
+  .btn-new {
+      background-color: transparent;
   }
 </style>
 

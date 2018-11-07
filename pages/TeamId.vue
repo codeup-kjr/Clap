@@ -3,39 +3,36 @@
     <v-ons-page>
         <div class="container">
             <div class="route">
-                <div class="point">
-                    <img src="../assets/group.png" alt="チームに参加" class="img"><br>
-                    チームに参加
-                </div>
-                <div class="arrow"/>
-                <div class="point">
-                    <img src="../assets/group.png" alt="チーム情報" class="img"><br>
-                    チーム情報
-                </div>
+                <img :src="$store.state.schTIdConfirmed == true &&!$store.state.schTIdErrbar == true ? barId : bar"
+                        alt="チームに参加" class="bar">
             </div>
             <div v-show="!$store.state.schTIdConfirmed&&!$store.state.schTIdErr">
-                <p class="description">チームIDを入力ください。
-                <br>わからない場合は、<br>使用中のチームメンバーに
-                <br>MyPageを確認してもらおう。</p>
+                <p class="request">チームIDを入力ください。</p>
+                <p class="description">わからない場合は、すでに登録しているチームメンバーに確認ください。</p>
             </div>
 
             <div v-show="$store.state.schTIdConfirmed&&!$store.state.schTIdErr">
-                <p class="description">あなたのチームはこちらですか？
-                <br><span class="name-emp">{{$store.state.schTeamId.name}}</span></p>
+                <p class="request">チームを確認ください。</p>
+                <div class="description name"><div class="your">あなたのチームは</div>
+                <div class="name-emp">{{$store.state.schTeamId.name}}</div>
+                でお間違いないですか？</div>
             </div>
 
-            <div v-show="$store.state.schTIdErr" v-html="$store.state.schTIdErr" class="description"></div>
+            <div v-show="$store.state.schTIdErr">
+                <p class="request">チームIDを確認ください。</p>
+                <div v-html="$store.state.schTIdErr" class="description"></div>
+            </div>
             <div class="height-container">
                 <div class="un-confirmed" v-show="!$store.state.schTIdConfirmed">
                     <v-ons-input modifier="material" type="text" placeholder="チームID" v-model="teamId" class="input"/>
-                    <v-ons-button class="confirm-b" @click.prevent="confirm">確定</v-ons-button>
+                    <v-ons-button class="confirm" @click.prevent="confirm">確定</v-ons-button>
                 </div>
-                <div class="confirmed-btns" v-show="$store.state.schTIdConfirmed">
-                    <v-ons-button class="confirmed-b" @click.prevent="yes">はい</v-ons-button>
-                    <v-ons-button class="confirmed-b" modifier="quiet" @click.prevent="no">いいえ</v-ons-button>
+                <div v-show="$store.state.schTIdConfirmed">
+                    <v-ons-button class="yes" @click.prevent="yes">はい</v-ons-button>
+                    <div class="no" @click.prevent="no">いいえ</div>
                 </div>
             </div>
-            <v-ons-button class="confirmed-b" modifier="quiet" @click.prevent="cancel">キャンセル</v-ons-button>
+            <div :style="$store.state.schTIdConfirmed == true ? {marginTop: '36px'} : {marginTop: '84px'}" @click.prevent="cancel">キャンセル</div>
 
         </div>
     </v-ons-page>
@@ -43,13 +40,21 @@
 </template>
 
 <script>
-import UserRegist from './UserRegist'
+import UserRegist from './UserRegist';
+import bar from '../assets/teamJoinBar@2x.png';
+import barId from '../assets/teamJoinIdBar@2x.png';
 
 export default {
     data() {
         return {
+            bar: bar,
+            barId: barId,
             teamId: '',
         }
+    },
+
+    destroyed() {
+        this.$store.commit('setSchTIdConfirmed', false);
     },
 
     methods: {
@@ -82,6 +87,7 @@ export default {
             this.$store.commit('pop');
             this.$store.commit('pop');
             this.$store.commit('setSchTIdConfirmed', false);
+            this.$store.commit('setSchTIdErr', '');
         }
     }
 }
@@ -92,102 +98,101 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         height: 100%;
+        background: linear-gradient(0deg,#6fb1fc,#4364f7, #0052D4);
+        background-size: 100vw 100vh;
+        color: #ffff;
     }
 
     .route {
-        width: 200px;
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 16px;
-        padding-top: 16px;
+        padding-top: 6vh;
+        margin-bottom: 9vh;
     }
 
-    .point {
-        text-align: center;
-        font-size: 0.8rem;
-        color: rgb(109, 108, 108);
+    .bar {
+        width: 100vw; 
     }
 
-    .arrow{
-        position: relative;
-        display: inline-block;
-        padding-left: 10px;
+    @media (min-width: 700px){
+        .bar {
+            width: 50vw; 
+        }
     }
 
-    .arrow::before{
-        content: '';
-        width: 12px;
-        height: 12px;
-        border: 0px;
-        border-top: solid 2px #499cb6;
-        border-right: solid 2px #499cb6;
-        -ms-transform: rotate(45deg);
-        -webkit-transform: rotate(45deg);
-        transform: rotate(45deg);
-        position: absolute;
-        top: 50%;
-        left: 0;
-        margin-top: -8px;
+    @media (min-width: 1200px){
+        .bar {
+            width: 30vw; 
+        }
     }
 
-    .img {
-        width: 40px;
-        height: 40px;
+    .request {
+        color: #ffbd00;
+        font-size: 1.4rem;
+        margin-bottom: 8vh;
     }
 
     .description {
         width: 280px;
-        height: 96px;
         margin-bottom: 32px;
+        /* text-align: center; */
+    }
+
+    .name {
         text-align: center;
+    }
+
+    .your {
+        margin-bottom: 10px;
     }
 
     .name-emp {
         font-size: 1.3rem;
         font-weight: bold;
         overflow: auto;
-        font-style: italic;
+        border-bottom: solid 1px #ffff;
+        padding-bottom: 4px;
+        margin-bottom: 16px;
     }
 
     .height-container {
-        margin-bottom: 24px;
+        /* margin-bottom: 24px;
         height: 88px;
-        text-align: center;
+        text-align: center; */
     }
 
     .un-confirmed {
-        height: 84px;
         display: flex;
         flex-direction: column;
-        /* confirmed-btnsの高さと同じにする。 */
     }
 
     .input {
         font-size: 1.6rem;
-        margin-bottom: 8px
+        margin-bottom: 31px
     }
 
 
-    .confirm-b {
+    .confirm {
         text-align: center;
-        margin: 6px 0;
+        width: 200px;
+        border-radius: 24px;
+        background-color: #ffbb00e7;
+    }
+
+    .yes {
+        text-align: center;
+        margin-bottom: 24px;
+        width: 200px;
+        border-radius: 24px;
+        background-color: #ffbb00e7;
+    }
+
+    .no {
+        text-align: center;
         width: 200px;
     }
 
-    .confirmed-btns {
-        width: 200px;
-        display: flex;
-        align-items: flex-end;
-        height: 84px;
-        /* un-confirmedの高さと同じにする。 */
-    }
-
-    .confirmed-b {
-        width: 110px;
-        text-align: center;
-        height: fit-content;
+    .cancel {
+        
     }
 
 </style>

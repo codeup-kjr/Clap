@@ -8,8 +8,9 @@
 </template>
 
 <script>
-import LoginCheck from './LoginCheck'
-import Vue from 'vue'
+import LoginCheck from './LoginCheck';
+import Vue from 'vue';
+
 export default {
 
   beforeCreate() {
@@ -39,11 +40,35 @@ export default {
 
 <style>
 /* OnsenUIのCSS調整。 */
+
+
   ::placeholder{
-    color:#999;
+    color:#dbdbdb !important;
   }
   ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
-    color:#999;
+    color:#dbdbdb !important;
+  }
+
+  .text-input:invalid,
+  .text-input--material {
+    color: #ffff !important;
+  }
+
+  .text-input--material__label {
+    color: #ffff !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 4px !important;
+  }
+
+  .text-input--material:focus {
+  background-image:
+    linear-gradient(#ffbd00, #ffbd00),
+    linear-gradient(to top, transparent 1px, #afafaf 1px) !important;
+  }
+
+  .select-input--material {
+    color: #ffff !important;
   }
 
   .page {
@@ -68,30 +93,20 @@ export default {
 
   .list {
     border: none;
-    background-color: #fff;
+    background-color: #fcfcfc;
   }
 
   .list--material {
     border: none;
-    background-color: #fff;
+    background-color: #fcfcfc;
   }
 
   .tabbar {
-      background-color: #fafafa;
-  }
-
-  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx) {
-    .tabbar {
-      border-top: none;
-      background-size: 100% 1.7px;
-      background-repeat: no-repeat;
-      background-position: top;
-      background-image: linear-gradient(-90deg, #0D4B91, #2FF4B9);
-    }
+      background-color: #fcfcfc;
   }
 
   :checked + .tabbar__button {
-    color: #4ABEC8;
+    color: #1251c4;
   }
 
   .tabbar--material {
@@ -99,50 +114,39 @@ export default {
   }
 
   .toolbar {
-    background: #fefefe;
-    background-image: linear-gradient(-90deg, #2FF4B9, #0D4B91);
-    background-size: 100% 2px;
-    background-position: bottom;
-    background-repeat: no-repeat;
+    background: #1251c4;
   }
 
-  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx) {
-    .toolbar {
-      /* background-image: linear-gradient(0deg, #b2b2b2, #b2b2b2 50%, transparent 50%); */
-      background-image: linear-gradient(-90deg, #2FF4B9, #0D4B91);
-
-    }
-  }
-  
-  .toolbar__bg {
-    background-image: linear-gradient(-90deg, #2FF4B9, #0D4B91);
-    /* background-image: rgb(31, 158, 120) */
+  .toolbar__left {
+    padding-left: 16px;
   }
 
-  .toolbar--material {
-    background-image: linear-gradient(-90deg, #2FF4B9, #0D4B91);
-    background-size: 100% 2px;
-    background-position: bottom;
-    background-repeat: no-repeat;
+  .toolbar__center {
+    color: #fefefe;
+    font-size: 1.2rem;
+    font-weight: 550;
   }
 
-  /* Calendar.vue用 */
+  .toolbar  {
+    color: #fefefe;
+    font-size: 1.2rem;
+    font-weight: 550;
+  }
+
  .c-day-content[data-v-3db80f80] {
     font-size: 1rem;
   }
   
-  .c-weekdays[data-v-2083cb72]{
-    margin-bottom: -5px;
+  .c-weekdays[data-v-2083cb72] {
+
   }
 
-  .c-header{
-    color: rgb(210, 30, 30);
-    width: 296px;
-    margin: 0 auto;
+  .c-header[data-v-2083cb72] {
+    /* カレンダーのheaderは、Carendar.vue内のthemeStylesによって決めている。これはDatePicker用。 */
   }
 
   .c-week[data-v-28896542] {
-    border-top: solid .5px rgb(206, 206, 206);
+    /* border-top: solid .5px rgb(206, 206, 206); */
   }
 
   .c-day[data-v-3db80f80]{
@@ -215,6 +219,7 @@ export default {
 
   .d-time {
     color: #8e8e8e;
+    /* color: transparent; */
     font-size: calc(0.6rem + 0.5vw);
   }
 
@@ -238,4 +243,87 @@ export default {
   .select-input--material__label {
     will-change: transform;
   }
+
+  .left > .close-icon {
+    font-size: 1.3rem;
+    padding-left: 12px;
+    transform: translateY(-4px);
+  }
+
+
+  /* DiaryDetail.vue, DiaryDrafts.vue, MyPage.vue用 */
+
+    .diary-wrap {
+        border-bottom: solid 1px #575757;
+        padding-bottom: 0;
+    }
+
+    .header {
+        width: 100vw;
+        padding: 16px 16px;
+        margin-bottom: 8px;
+        border-bottom: solid 1px #e2e1e1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .title-date {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .diary-title {
+        font-size: 1.2rem;
+    }
+
+    .diary-date {
+        padding-left: 8px;
+        color: #575757;
+    }
+
+    .diary-contents {
+        width: 96vw;
+        word-wrap: break-word;
+    }
+
+    .qTitle {
+        padding: 8px 16px 0;
+        margin-bottom: 8px;
+    }
+
+    .qAnswer {
+        padding: 0 16px 16px;
+        border-bottom: solid 1px #e2e1e1;
+        color: #575757;
+        white-space: pre-wrap;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .icon-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #575757;
+    }
+    
+    .edit {
+      margin-right: 16px;
+    }
+
+    .pen {
+      font-size: 1.5rem;
+    }
+
+    .trash {
+        font-size: 1.5rem;
+    }
+
+    .text {
+        font-size: 0.9rem;
+    }
 </style>

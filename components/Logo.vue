@@ -10,8 +10,7 @@ export default {
 
 <style>
     .logo {
-        font-family: 'Verdana';
+        font-family: 'Furuta';
         letter-spacing: 0.8px;
-        font-style: italic;
     }
 </style>

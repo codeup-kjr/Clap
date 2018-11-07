@@ -59,9 +59,9 @@ module.exports = {
   manifest: {
     name: 'Clap',
     lang: 'ja',
-    description: '仲間のいいとこ見つけよう', 
+    description: 'チームビルディングアプリ', 
     icons: [{
-      src: 'static/icon.png',
+      src: 'static/60pt@2x.png',
       sizes: '48×48',
       type: 'image/png'
     }],

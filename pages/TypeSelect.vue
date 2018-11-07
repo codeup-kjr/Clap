@@ -2,19 +2,16 @@
 <!-- <no-ssr> -->
 <v-ons-page>
     <div class="container">
-        <p class="request">利用タイプを選んでください。</p>
-        <div class="types">
-            <div class="type"  @click="pushPage(TeamId)">
-                <img src="../assets/athlete.png" alt="チームに参加" class="typeImg"><br>
-                チームに参加
-            </div>
-            <hr width="1" size="105">
-            <div class="type" @click="pushPage(TeamRegist)">
-                <img src="../assets/coach.png" alt="チームを登録" class="typeImg"><br>
-                チームを登録
-            </div>
+        <div class="point-title">
+            <v-ons-icon icon='fa-hand-o-up' class="point"/>
+            <div class="title">利用タイプ選択</div>
         </div>
-        <v-ons-button class="cancel-b" modifier="quiet" @click.prevent="popPage">キャンセル</v-ons-button>
+        <p class="question">あなたはどちらですか？</p>
+        <div class="types">
+            <img :src="join" alt="チームに参加" class="typeImg" @click="pushPage(TeamId)">
+            <img :src="reg" alt="チームを登録" class="typeImg" @click="pushPage(TeamRegist)">
+        </div>
+        <div class="cancel-b" @click.prevent="popPage">キャンセル</div>
     </div>
 </v-ons-page>
 <!-- </no-ssr> -->
@@ -23,11 +20,16 @@
 <script>
 import TeamId from './TeamId';
 import TeamRegist from './TeamRegist';
+import join from '../assets/teamJoinButton@2x.png';
+import reg from '../assets/teamRegButton@2x.png';
+
 export default {
     data() {
         return {
-            TeamRegist: TeamRegist,
-            TeamId: TeamId
+            join: join,
+            reg: reg,
+            TeamId: TeamId,
+            TeamRegist: TeamRegist
         }
     },
 
@@ -48,27 +50,54 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        height: 90%;
+        height: 100%;
+        background: linear-gradient(0deg,#6fb1fc,#4364f7, #0052D4);
+        background-size: 100vw 100vh;
+        color: #ffff;
     }
 
-    .request {
-        margin-bottom: 48px;
+    .point-title {
+        margin-bottom: 9vh;
+        border-bottom: solid 1px #ffff;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        padding-top: 6vh;
+        padding-bottom: 16px;
+    }
+
+    .point {
+        margin-right: 12px;
+        font-size: 1.4rem;
+    }
+
+    .title {
+
+    }
+
+    .question {
+        color: #ffbd00;
+        font-size: 1.4rem;
+        margin-bottom: 8vh;
     }
 
     .types {
-        width: 216px;
+        width: 84vw;
+        max-width: 376px;
         display: flex;
         justify-content: space-between;
-        margin-bottom: 48px;
-    }
-
-    .type {
-        text-align: center;
+        margin-bottom: 12vh;
     }
 
     .typeImg {
-        width: 80px;
-        height: 80px;
+        width: 40vw;
+        height: 40vw;
+        max-width: 160px;
+        max-height: 160px;
+        /* height: 80px; */
+    }
+
+    .cancel-b {
+        color: #ffff;
     }
 </style>
