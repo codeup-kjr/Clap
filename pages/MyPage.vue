@@ -79,19 +79,19 @@
             
                     <div class="row">
                         <div class="r-title">チーム名</div>
-                        <div class="r-contetent">{{$store.state.team.name}}</div>
+                        <div class="r-content">{{$store.state.team.name}}</div>
                     </div>
                     <div class="row">
                         <div class="r-title">チームID</div>
-                        <div class="r-contetent">{{$store.state.teamId}}</div>
+                        <div class="r-content">{{$store.state.teamId}}</div>
                     </div>
                     <div class="row">
                         <div class="r-title">メール</div>
-                        <div class="r-contetent">{{$store.state.myData.email}}</div>
+                        <div class="r-content">{{$store.state.myData.email}}</div>
                     </div>
                     <div class="row">
                         <div class="r-title">日誌カテゴリ</div>
-                        <div class="r-contetent">Comming Soon</div>
+                        <div class="r-content">Comming Soon</div>
                     </div>
                 <v-ons-button modifier="quiet" class="logout-b" @click="logoutPush">ログアウト</v-ons-button>
             </div>
@@ -355,6 +355,7 @@ export default {
 </script>
 
 <style scoped>
+@media (max-width: 600px){
     .left {
         font-size: 1rem;
         width: 140px;
@@ -364,10 +365,10 @@ export default {
         font-size: 1rem;
         width: 140px;
     }
-
+}
     .container {
         background-color: #fdfeff;
-        color: #575757 !important;
+        color: #575757;
     }
 
     .name-rg {
@@ -377,18 +378,20 @@ export default {
     }
 
     .user-name {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         font-weight: bold;
         border: none;
-        width: 40vw;
+        width: 50vw;
         overflow: auto;
-        height: 32px;
+        white-space:nowrap;
+        height: 28px;
     }
 
     .unedit {
         position: relative;
-        top: -2px;
+        top: -0.5px;
         padding-left: 0;
+        color: #575757;
     }
 
     .imgInp {
@@ -408,7 +411,7 @@ export default {
     .role-grade {
         display: flex;
         font-size: 1rem;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
 
     .role {
@@ -417,11 +420,11 @@ export default {
 
     .role-slct {
         margin-right: 8px;
-        transform: translateY(-4px);
+        transform: translateY(-5px);
     }
 
     .grade-slct {
-        transform: translateY(-4px);
+        transform: translateY(-5px);
         margin-bottom: 0;
     }
 
@@ -544,5 +547,17 @@ export default {
         font-size: 1.1rem;
         text-align: center;
         width: 120px;
+    }
+
+
+    @media (max-width: 340px){
+        .r-title {
+            width: 104px;
+            font-size: 0.92rem;
+        }
+        .r-content {
+            font-size: 0.92rem;
+        }
+
     }
 </style>

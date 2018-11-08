@@ -13,7 +13,7 @@
 <script>
 import Home from './Home';
 import TabBar from './TabBar';
-import logo from '../assets/clapLogo.png';
+import logo from '../assets/clapLogo@2x.png';
 
 export default {
   mounted() {

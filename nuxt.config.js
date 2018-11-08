@@ -61,8 +61,8 @@ module.exports = {
     lang: 'ja',
     description: 'チームビルディングアプリ', 
     icons: [{
-      src: 'static/60pt@2x.png',
-      sizes: '48×48',
+      src: 'static/icon.png',
+      sizes: '72×72',
       type: 'image/png'
     }],
   }

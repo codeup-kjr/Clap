@@ -3,7 +3,7 @@
     <v-ons-page>
         <v-ons-toolbar>
             <div class="left" @click="close">
-                <v-ons-icon icon='ion-android-close' class="close-icon"/>
+                <v-ons-icon icon='ion-ios-arrow-back' class="close-icon"/>
             </div>
             <div class="center">
                 {{writerName}}
@@ -651,6 +651,11 @@ export default {
 </script>
 
 <style scoped>
+    .center {
+        overflow-x: auto;
+        font-size: 0.95rem;
+    }
+
     .save {
         font-size: 1rem;
         padding-right: 12px;

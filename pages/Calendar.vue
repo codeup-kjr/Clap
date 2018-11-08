@@ -179,8 +179,8 @@ export default {
               backgroundColor: '#1251c4',
               height: '44px',
               color: '#ffff',
-              margin: '-0.8px -0.8px 8px -0.8px ', //余白調整。子要素であるcalendarを親要素であるpageからはみ出させる。
-              padding: '0.8px 0.8px 0 0.8px'//余白調整。
+              margin: '-1px -1px 8px -1px ', //余白調整。子要素であるcalendarを親要素であるpageからはみ出させる。
+              padding: '1px 1px 0 1px'//余白調整。
             },
             headerTitle: {
               fontSize: '1.2rem'

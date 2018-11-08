@@ -23,7 +23,7 @@ import Logo from '../components/Logo';
 import TabBar from './TabBar';
 import TypeSelect from './TypeSelect';
 import PasswordReset from './PasswordReset';
-import logo from '../assets/clapLogo.png'; 
+import logo from '../assets/clapLogo@2x.png'; 
 
 export default {
   data() {

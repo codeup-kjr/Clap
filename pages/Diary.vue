@@ -1,16 +1,26 @@
 <template>
     <v-ons-page>
         <v-ons-toolbar>
-            <div class="left" :style="gColor" @click="gTap()">
-                グループ
-            </div>
-            <div class="center" :style="tColor" @click="tTap()">
+            <div class="left" :style="tColor" @click="tTap()">
                 タイムライン
+            </div>
+            <div class="center" :style="gColor" @click="gTap()">
+                グループ
             </div>
             <div class="right">
             </div>
         </v-ons-toolbar>
         <div class="container">
+        
+        <v-ons-list class="list" v-show="!gIsTapped">
+            <v-ons-lazy-repeat
+                :render-item="renderItem"
+                :length="renderLength"
+                :calculate-item-height="calculateItemHeight"
+            >
+            </v-ons-lazy-repeat>
+        </v-ons-list>
+
         <div v-show="gIsTapped" class="gl">
             <!-- 日誌の提出順に並び替える必要がない場合。 -->
             <!-- <div class="gl-wrap" v-for="item in $store.state.groupList" :key="item.userId" @click="showDetail(groupUDiary(item.userId))"> -->
@@ -27,15 +37,6 @@
                 <div class="gl-add-t">メンバー追加</div>
             </div>
         </div>
-
-        <v-ons-list class="list" v-show="!gIsTapped">
-            <v-ons-lazy-repeat
-                :render-item="renderItem"
-                :length="renderLength"
-                :calculate-item-height="calculateItemHeight"
-            >
-            </v-ons-lazy-repeat>
-        </v-ons-list>
 
         </div>
 
@@ -55,7 +56,7 @@ import GlEdit from './GlEdit';
 export default {
   data () {
     return {
-        gIsTapped: true,
+        gIsTapped: false,
         type: ['タイムライン', '下書き', '提出済み'],
         selectedType: 'タイムライン',
         // 正確な値を渡すと、計算を早くでき、スクロールにプラスに働く。指定しないと、日誌追加後、itemHeight無指定のエラーが発生する。
@@ -321,14 +322,17 @@ export default {
 </script>
 
 <style scoped>
+@media (max-width: 600px){
     .left {
         font-size: 1rem;
+        width: 130px;
     }
 
     .center {
         font-size: 1rem;
+        width: 130px;
     }
-
+}
     .container {
         min-height: calc(100vh - 44px);
         overflow: auto;
@@ -356,11 +360,11 @@ export default {
 
     .gl {
         height: fit-content;
+        width: 98vw;
         padding: 16px 0 96px;
         display: flex;
         flex-wrap: wrap;
         align-items: flex-start;
-        width: 98vw;
         margin: 0 auto;
     }
 
@@ -436,6 +440,9 @@ export default {
     }
 
     @media (min-width: 700px){
+        .gl {
+            width: 88.1vw;
+        }
         .left {
             padding-left: 8.5vw;
         }
@@ -465,7 +472,7 @@ export default {
 
         .gl-title {
             font-size: 1.1rem;
-            height: 1.3rem;
+            height: 1.4rem;
         }
 
         .gl-add {

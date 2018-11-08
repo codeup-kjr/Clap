@@ -200,7 +200,7 @@ export default {
     justify-content: flex-end;
     height: 14vw;
     max-height: 56px;
-    width: 78%;
+    width: 60vw;
   }
 
   .d-title {
@@ -215,11 +215,45 @@ export default {
   .d-name {
     color: #8e8e8e;
     font-size: calc(0.6rem + 0.5vw);
+    width: 48vw;
+    height: calc(0.6rem + 0.5vw + 3px);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
+
+@media (min-width: 699px){
+  .d-t-div {
+    width: 79vw;
+  }
+
+  .d-name {
+    width: 77vw;
+  }
+}
+
+@media (min-width: 1000px){
+  .d-t-div {
+    width: 82vw;
+  }
+
+  .d-name {
+    width: 78vw;
+  }
+}
+
+@media (min-width: 1200px){
+  .d-t-div {
+    width: 85vw;
+  }
+
+  .d-name {
+    width: 81vw;
+  }
+}
 
   .d-time {
     color: #8e8e8e;
-    /* color: transparent; */
     font-size: calc(0.6rem + 0.5vw);
   }
 
