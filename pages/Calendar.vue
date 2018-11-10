@@ -1,7 +1,7 @@
 <template>
    <!-- <no-ssr> -->
     <v-ons-page>
-      <div class="container">
+      
         <v-calendar :attributes='attrs(currentPage)' :theme-styles='themeStyles' :from-page.sync="currentPage" @dayclick="dayClick" class="calendar">
           <div
             slot='header-title'
@@ -23,6 +23,8 @@
             </div>
         </v-ons-toolbar> -->
         </v-calendar>
+
+        <div class="container">
           <!-- :from-page.sync="currentPage"でカレンダーの月をattributesとシンクロさせる。 -->
           <!-- attrs(currentPage)とすることで、その月のスケジュールのみ読み込むことが可能になり、パフォーマンスが上がる。 -->
         <v-ons-modal :visible="addVisible">
@@ -92,7 +94,7 @@
           <v-ons-list class="eventList" v-if="dayClicked">
             <!-- リストアイテムはstateを直接読むように変更。初期表示は今日を読む。ただし、dayclickイベントを発火することはできないため、firebaseから読む方法しかないと思われる。今はv-showで非表示にしている。 -->
             <!-- 「今日」をハイライトするために、keyをtodayにしてschedule(event)に追加している。空のリストなので、表示しない。 -->
-            <v-ons-list-item v-show="ordered.filter(data => data.key != 'today') != '' && attr.key != 'today'" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem">
+            <v-ons-list-item v-show="ordered.filter(data => data.key != 'today' && data.key != 'clicked') != '' && attr.key != 'today' && attr.key != 'clicked'" tappable v-for='attr in ordered' :key="attr.key" @click="eventClick(attr)" class="eventLItem">
               <div class="time-title" v-if="attr.customData.time_start!='00:00' && attr.customData.time_end!='00:00'">
                 <div class="time-colmn">
                   <p>{{ attr.customData.time_start }}</p>
@@ -102,7 +104,7 @@
               </div>
               <p v-else class="event-title-notime">{{ attr.customData.title }}</p>
             </v-ons-list-item>
-            <v-ons-list-item v-show="ordered.filter(data => data.key != 'today') == ''" class="eventLItem" style="color: #8e8e8e">
+            <v-ons-list-item v-show="ordered.filter(data => data.key != 'today' && data.key != 'clicked') == ''" class="eventLItem" style="color: #8e8e8e">
               イベントはありません
             </v-ons-list-item>
           </v-ons-list>
@@ -111,6 +113,7 @@
           <v-ons-list class="eventList" v-if="!dayClicked">
             <!-- リストアイテムはstateを直接読むように変更。初期表示は今日を読む。ただし、dayclickイベントを発火することはできないため、firebaseから読む方法しかないと思われる。 -->
             <v-ons-list-item v-if="getScheduleOfOneday != ''" tappable v-for='attr in getScheduleOfOneday' :key="attr.id" @click="eventOfOnedayClick(attr)" class="eventLItem">
+              <div v-if="attr.id!=null">
               <div class="time-title" v-if="attr.time_start!='00:00' && attr.time_end!='00:00'">
                 <div class="time-colmn">
                   <p>{{ attr.time_start }}</p>
@@ -119,6 +122,7 @@
                   <p class="event-title">{{ attr.title }}</p>
               </div>
               <p v-else class="event-title-notime">{{ attr.title }}</p>
+              </div>
             </v-ons-list-item>
             <v-ons-list-item v-if="getScheduleOfOneday == ''" class="eventLItem" style="color: #8e8e8e">
               イベントはありません
@@ -128,7 +132,7 @@
 
 
       </div>
-        <v-ons-fab class="add-b" @click="addPushed">
+        <v-ons-fab class="add-b btn-sticky" @click="addPushed">
             <v-ons-icon icon="md-plus"></v-ons-icon>
         </v-ons-fab>
     </v-ons-page>
@@ -228,22 +232,22 @@ export default {
 
         if(this.isToday) {
           const today = new Date();
-          year = today.getFullYear();
+          year  = today.getFullYear();
           month = today.getMonth() + 1;
-          date = today.getDate();
+          date  = today.getDate();
         } else {
-          year = this.eventSYear;
+          year  = this.eventSYear;
           month = this.eventSMonth;
-          date = this.eventSDate;
+          date  = this.eventSDate;
         }
 
         let listS = [];
         let listE = [];
-        let list = [];
+        let list  = [];
 
         listS = listS.concat(this.$store.state.schedule.filter(data => data.date_start == date && data.month_start == month && data.year_start == year));
         listE = listE.concat(this.$store.state.schedule.filter(data => data.date_end == date && data.month_end == month && data.year_end == year));
-        list = listS.concat(listE);
+        list  = listS.concat(listE);
         const cleanList = list.filter(function(v1,i1,a1){ 
             return (a1.findIndex(function(v2){ 
               return (v1.id===v2.id);
@@ -263,11 +267,11 @@ export default {
       attrs() {
         return(currentPage)=> {
           let events = [];
-          let listS = [];
-          let listE = [];
+          let listS  = [];
+          let listE  = [];
 
-          listS = listS.concat(this.$store.state.schedule.filter(schedule => schedule.month_start == currentPage.month && schedule.year_start == currentPage.year));
-          listE = listE.concat(this.$store.state.schedule.filter(schedule => schedule.month_end == currentPage.month && schedule.year_end == currentPage.year));
+          listS  = listS.concat(this.$store.state.schedule.filter(schedule => schedule.month_start == currentPage.month && schedule.year_start == currentPage.year));
+          listE  = listE.concat(this.$store.state.schedule.filter(schedule => schedule.month_end == currentPage.month && schedule.year_end == currentPage.year));
           events = listS.concat(listE);
 
           let cleanList = events.filter(function(v1,i1,a1){ 
@@ -293,19 +297,40 @@ export default {
                         //orderedにて、customDataを並べ替えのキーにしているため、からのオブジェクトを作成する。
                       }
                     });
+                  
+          let circleY;
+          let circleM;
+          let circleD;
 
-          cleanList.push({
-                      key: 'clicked',
-                      highlight: {backgroundColor: 'rgb(31, 158, 120)'},
-                      contentStyle: {
-                        color: '#fcfcfc',
-                        fontWeight: '700'
-                      },
-                      dates: new Date(this.selectedDay.year, this.selectedDay.month - 1, this.selectedDay.day),
-                      customData: {
-                        //orderedにて、customDataを並べ替えのキーにしているため、からのオブジェクトを作成する。
-                      }
-                    });
+          if(this.dayClicked) {
+            circleY = this.selectedDay.year;
+            circleM = this.selectedDay.month - 1;
+            circleD = this.selectedDay.day;
+          } else {
+            if(this.isToday) {
+              const today = new Date();
+              circleY  = today.getFullYear();
+              circleM  = today.getMonth();
+              circleD  = today.getDate();
+            } else {
+              circleY  = this.eventSYear;
+              circleM  = this.eventSMonth - 1;
+              circleD  = this.eventSDate;
+            }
+          }
+
+            cleanList.push({
+                        key: 'clicked',
+                        highlight: {backgroundColor: 'rgb(31, 158, 120)'},
+                        contentStyle: {
+                          color: '#fcfcfc',
+                          fontWeight: '700'
+                        },
+                        dates: new Date(circleY, circleM, circleD),
+                        customData: {
+                          //orderedにて、customDataを並べ替えのキーにしているため、からのオブジェクトを作成する。
+                        }
+                      });
 
           return cleanList;
         }
@@ -530,6 +555,7 @@ export default {
       },
 
       eventClick(attr) {
+          console.log(attr.key);
           this.addVisible = true;
           this.isDetail = true;
           this.isROnly = true;
@@ -681,12 +707,11 @@ export default {
 </script>
 
 <style scoped>
-
   .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: calc(100vh - 49px);
+    height: calc(100vh - 49px - 340px - 44px - 8px - 4px);
   }
 
   .calendar {
@@ -730,7 +755,7 @@ export default {
     font-size: 0.85rem;
     width: 100vw;
     /* height: 39vh; */
-    height: calc((100vh - 49px) - (340px + 28px + 40px));
+    height: calc((100vh - 49px - 340px) - (28px + 40px));
   }
 
   .eventLItem {
@@ -768,15 +793,18 @@ export default {
     align-items: center;
   }
   
-  .add-b {
-    background-color: #ffbd00;
-    color: #fffefe;
-    margin-left: 79%;
-    position: fixed;
-    bottom: 6%;
-    /* left: 79%; */
-    /* z-index: 100; */
+  .btn-sticky {
+      position: sticky;
+      bottom: 6vh;
+      display: block;
   }
+
+  .add-b {
+      background-color: #ffbb00e7;
+      color: #ffff;
+      margin-left: 79%;
+  }
+
 
   .add-container {
     display: flex;

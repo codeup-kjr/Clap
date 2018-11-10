@@ -4,7 +4,7 @@
     <div class="container">
       <img :src="logo" class="logo"/>
 
-      <div v-html="errMsg" class="err-msg"></div>
+      <div v-html="$sanitize(errMsg)" class="err-msg"></div>
       <v-ons-input modifier="material" type="email" placeholder="メールアドレス" class="input" v-model="mail"/>
 
       <v-ons-input modifier="material" type="password" placeholder="パスワード" class="input" v-model="pass"/>
@@ -96,6 +96,12 @@ export default {
     margin-bottom: 8px;
   }
 
+  @media (min-width: 600px){
+    .logo {
+        width: 20vw;
+      }
+  }
+
   @media (min-width: 1200px){
     .logo {
         width: 12vw;
@@ -115,6 +121,7 @@ export default {
   }
 
   .input {
+    width: 240px;
     margin-bottom: 24px;
     font-size: 1.6rem;
     color: #ffff !important;

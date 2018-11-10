@@ -24,16 +24,16 @@
             </div>
         </div>
         <div class="diary-contents">
-                <div class="qTitle" v-html="'1. ' + questions.q1"></div>
-                <div class="qAnswer" v-html="answers.q1"></div>
-                <div class="qTitle" v-html="'2. ' + questions.q2"></div>
-                <div class="qAnswer" v-html="answers.q2"></div>
-                <div class="qTitle" v-html="'3. ' + questions.q3"></div>
-                <div class="qAnswer" v-html="answers.q3"></div>
-                <div class="qTitle" v-html="'4. ' + questions.q4"></div>
-                <div class="qAnswer" v-html="answers.q4"></div>
-                <div class="qTitle" v-html="'5. ' + questions.q5"></div>
-                <div class="qAnswer" v-html="answers.q5"></div>
+                <div class="qTitle" v-html="$sanitize('1. ' + questions.q1)"></div>
+                <div class="qAnswer" v-html="$sanitize(answers.q1)"></div>
+                <div class="qTitle" v-html="$sanitize('2. ' + questions.q2)"></div>
+                <div class="qAnswer" v-html="$sanitize(answers.q2)"></div>
+                <div class="qTitle" v-html="$sanitize('3. ' + questions.q3)"></div>
+                <div class="qAnswer" v-html="$sanitize(answers.q3)"></div>
+                <div class="qTitle" v-html="$sanitize('4. ' + questions.q4)"></div>
+                <div class="qAnswer" v-html="$sanitize(answers.q4)"></div>
+                <div class="qTitle" v-html="$sanitize('5. ' + questions.q5)"></div>
+                <div class="qAnswer" v-html="$sanitize(answers.q5)"></div>
         </div>
 
         <p class="comment-count">{{this.commentSync.length}}件のコメント</p>
@@ -148,7 +148,7 @@ export default {
                                                 createElement('img', {attrs: { src: userD.image == null ? png : userD.image}, 
                                                     class: 'dd-cimg'}),
                                                 createElement('div', {class: 'dd-column'},[
-                                                    createElement('p', {style:{marginBottom: '4px'}}, userD.name),
+                                                    createElement('p', {class: 'dd-com-name', style:{marginBottom: '4px'}}, userD.name),
                                                     this.commentEdit[i] == '編集' ?
                                                         createElement('textarea', {attrs: {readonly: true}, style:{marginBottom: '6px',
                                                             height: this.areaHeight(this.commentSync[i].text, 'commentEdit')}, 'class': {'comment-inputD': true}
@@ -201,7 +201,7 @@ export default {
                                                             createElement('div', {class: 'dd-card'},[
                                                                 createElement('img', {attrs: { src: this.$store.state.usersData.filter(data => data.id == item.userId)[0].image == null ? png : this.$store.state.usersData.filter(data => data.id == item.userId)[0].image}, class: 'dd-rimg'},),
                                                                 createElement('div', {class: 'dd-column'},[
-                                                                    createElement('p', {}, this.$store.state.usersData.filter(data => data.id == item.userId)[0].name),
+                                                                    createElement('p', {class: 'dd-rep-name'}, this.$store.state.usersData.filter(data => data.id == item.userId)[0].name),
                                                                     this.replyEdit[item.id] == '編集' ?
                                                                         createElement('textarea', {domProps: {value: item.text}, attrs: {readonly: true}, style:{marginBottom: '6px',
                                                                             height: this.areaHeight(item.text, 'replyEdit')}, 'class': {'reply-inputD': true}

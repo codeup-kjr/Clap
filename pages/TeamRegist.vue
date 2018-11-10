@@ -129,11 +129,13 @@ export default {
     }
 
     .input {
+        width: 240px;
         margin-bottom: 24px;
         font-size: 1.6rem;
     }
 
     .select {
+        width: 240px !important;
         margin-bottom: 24px;
         font-size: 1.6rem;
         width: 185px;

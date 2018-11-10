@@ -523,8 +523,8 @@ export default {
     }
 
     .add-b {
-        background-color: #ffbd00;
-        color: #fffefe;
+        background-color: #ffbb00e7;
+        color: #ffff;
         margin-left: 79%;
     }
 
@@ -642,6 +642,13 @@ export default {
         flex-direction: column;
     }
 
+    .dd-com-name {
+        width: 235px;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
     .dd-edit-flex {
         display: flex;
         justify-content: space-between;
@@ -670,6 +677,13 @@ export default {
         max-width: 38px;
         border-radius: 2vh;
         margin-right: 8px;
+    }
+
+    .dd-rep-name {
+        width: 204px;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
     }
 
 </style>

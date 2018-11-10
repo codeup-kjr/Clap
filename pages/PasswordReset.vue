@@ -96,6 +96,7 @@ export default {
     }
 
     .email {
+        width: 240px;
         font-size: 1.6rem;
         margin-bottom: 24px
     }

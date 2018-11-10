@@ -20,7 +20,7 @@
 
             <div v-show="$store.state.schTIdErr">
                 <p class="request">チームIDを確認ください。</p>
-                <div v-html="$store.state.schTIdErr" class="description"></div>
+                <div v-html="$sanitize($store.state.schTIdErr)" class="description"></div>
             </div>
             <div class="height-container">
                 <div class="un-confirmed" v-show="!$store.state.schTIdConfirmed">

@@ -251,12 +251,13 @@ export default {
     }
 
     .input {
+        width: 240px;
         margin-bottom: 24px;
         font-size: 1.6rem;
     }
 
     .role-grade {
-        width: 185px;
+        width: 240px;
         display: flex;
         justify-content: space-between;
         margin-bottom: 6vh;
@@ -267,11 +268,11 @@ export default {
     }
 
     .role {
-        width: 96px;
+        width: 140px;
     }
 
     .grade {
-        width: 64px;
+        width: 60px;
     }
 
     .regist-b {

@@ -4,6 +4,7 @@ import 'v-calendar/lib/v-calendar.min.css';
 import AsyncComputed from 'vue-async-computed';
 import Croppa from 'vue-croppa';
 import VueLazyload from 'vue-lazyload';
+import sanitizeHTML from 'sanitize-html';
 
 if (process.browser) {
   Vue.use(VCalendar, {
@@ -31,5 +32,7 @@ if (process.browser) {
       el.value = value
     }
   });
+
+  Vue.prototype.$sanitize = sanitizeHTML;
 
 }

@@ -164,16 +164,16 @@ export default {
                                                     ])
                                                 ]),
                                                 createElement('div', {class: 'diary-contents'},[
-                                                    createElement('div', {domProps: {innerHTML: '1. ' + this.questions.q1}, class: 'qTitle'},[]),
-                                                    createElement('div', {domProps: {innerHTML: target.content1}, class: 'qAnswer'},[]),
-                                                    createElement('div', {domProps: {innerHTML: '2. ' + this.questions.q2}, class: 'qTitle'},[]),
-                                                    createElement('div', {domProps: {innerHTML: target.content2}, class: 'qAnswer'},[]),
-                                                    createElement('div', {domProps: {innerHTML: '3. ' + this.questions.q3}, class: 'qTitle'},[]),
-                                                    createElement('div', {domProps: {innerHTML: target.content3}, class: 'qAnswer'},[]),
-                                                    createElement('div', {domProps: {innerHTML: '4. ' + this.questions.q4}, class: 'qTitle'},[]),
-                                                    createElement('div', {domProps: {innerHTML: target.content4}, class: 'qAnswer'},[]),
-                                                    createElement('div', {domProps: {innerHTML: '5. ' + this.questions.q5}, class: 'qTitle'},[]),
-                                                    createElement('div', {domProps: {innerHTML: target.content5}, class: 'qAnswer'},[])
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize('1. ' + this.questions.q1)}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize(target.content1)}, class: 'qAnswer'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize('2. ' + this.questions.q2)}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize(target.content2)}, class: 'qAnswer'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize('3. ' + this.questions.q3)}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize(target.content3)}, class: 'qAnswer'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize('4. ' + this.questions.q4)}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize(target.content4)}, class: 'qAnswer'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize('5. ' + this.questions.q5)}, class: 'qTitle'},[]),
+                                                    createElement('div', {domProps: {innerHTML: this.$sanitize(target.content5)}, class: 'qAnswer'},[])
                                                 ])        
                                             ]);
                                 })(),
@@ -457,6 +457,12 @@ export default {
 
     .r-title {
         width: 112px;
+    }
+
+    .r-content {
+        width: calc(100% - 112px - 16px);
+        overflow: auto;
+        white-space:nowrap;
     }
 
     .edit-b {

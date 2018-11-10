@@ -30,16 +30,16 @@
                 </div>
             </div>
             <div class="diary-contents">
-                    <div class="qTitle" v-html="'1. ' + questions.q1"></div>
-                    <div class="qAnswer" v-html="draft.content1"></div>
-                    <div class="qTitle" v-html="'2. ' + questions.q2"></div>
-                    <div class="qAnswer" v-html="draft.content2"></div>
-                    <div class="qTitle" v-html="'3. ' + questions.q3"></div>
-                    <div class="qAnswer" v-html="draft.content3"></div>
-                    <div class="qTitle" v-html="'4. ' + questions.q4"></div>
-                    <div class="qAnswer" v-html="draft.content4"></div>
-                    <div class="qTitle" v-html="'5. ' + questions.q5"></div>
-                    <div class="qAnswer" v-html="draft.content5"></div>
+                    <div class="qTitle" v-html="$sanitize('1. ' + questions.q1)"></div>
+                    <div class="qAnswer" v-html="$sanitize(draft.content1)"></div>
+                    <div class="qTitle" v-html="$sanitize('2. ' + questions.q2)"></div>
+                    <div class="qAnswer" v-html="$sanitize(draft.content2)"></div>
+                    <div class="qTitle" v-html="$sanitize('3. ' + questions.q3)"></div>
+                    <div class="qAnswer" v-html="$sanitize(draft.content3)"></div>
+                    <div class="qTitle" v-html="$sanitize('4. ' + questions.q4)"></div>
+                    <div class="qAnswer" v-html="$sanitize(draft.content4)"></div>
+                    <div class="qTitle" v-html="$sanitize('5. ' + questions.q5)"></div>
+                    <div class="qAnswer" v-html="$sanitize(draft.content5)"></div>
             </div>
         </div>
     </v-ons-page>
